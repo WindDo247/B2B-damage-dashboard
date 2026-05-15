@@ -26,9 +26,9 @@ Tại mỗi ô tương ứng, bạn có 2 cách tải dữ liệu:
   - (Lưu ý: Link Google cần được mở quyền chia sẻ *"Bất kỳ ai có đường liên kết - Anyone with the link"*).
   - Bấm **"Tải Link"**. Hệ thống sẽ tự động lưu lại link này để tự động điền trong các lần sử dụng tiếp theo.
 
-### 2.2 Xử lý dữ liệu
+### 2.2 Xử lý dữ liệu (QUAN TRỌNG)
 Sau khi cả 3 ô đều hiện trạng thái màu xanh (Đã tải xong), nút **"Xử Lý Dữ Liệu"** sẽ sáng lên.
-- Bấm vào **Xử Lý Dữ Liệu**. Hệ thống sẽ tự động tổng hợp, dọn dẹp data và tự động chuyển trang sang phần Báo Cáo.
+- Bạn **bắt buộc phải bấm vào "Xử Lý Dữ Liệu"** để hệ thống bắt đầu quy trình dọn dẹp, chuẩn hóa font chữ (NFC) và ánh xạ từ khóa. Nếu chỉ nhấn `F5` tải lại trang, hệ thống sẽ sử dụng dữ liệu cũ lưu trong bộ nhớ tạm.
 
 ---
 
@@ -38,28 +38,38 @@ Giao diện báo cáo được chia làm 3 phần chính:
 
 ### Phần 1: Biểu Đồ Thống Kê (Dashboard)
 - **Biểu đồ Đường (Xu Hướng Hư Hỏng):** Hiển thị số lượng lỗi phát sinh theo từng tuần vận hành.
-- **Top 10 KTC/KCT & Top 10 Kho Giao:** 
-  - Chỉ lọc và hiển thị những đơn vị phát sinh nhóm lỗi có chứa từ khóa **"damage"**.
-  - Bạn có thể dùng bộ lọc **"Chọn Tuần"** ở góc trên mỗi biểu đồ để xem riêng cho từng khoảng thời gian.
-- **Biểu đồ Tròn (Tỉ Lệ Loại Lỗi):** Phân tích tỉ trọng các loại nhãn lỗi (Label) đã được tự động phân loại.
-- **Biểu đồ Ngang (Khách Hàng):** Top 5 khách hàng B2B chịu ảnh hưởng hư hỏng nhiều nhất.
-
-*(Ghi chú: Đưa chuột vào biểu đồ để xem chi tiết tỉ lệ % và số lượng tuyệt đối).*
+- **Top 10 KTC/KCT & Top 10 Kho Giao:** Lọc riêng các lỗi có nhãn chứa từ khóa **"damage"**.
+- **Biểu đồ Tròn & Biểu đồ Ngang:** Thể hiện tỉ trọng các loại lỗi và Top 5 khách hàng B2B chịu thiệt hại.
 
 ### Phần 2: Báo Cáo Chi Tiết B2B (Text Report)
-Đây là phần trí tuệ nhân tạo tổng hợp dữ liệu thành văn bản báo cáo. 
-Hệ thống sẽ chỉ ra cụ thể Kho Trung Chuyển (KTC) và Kho Giao (GXT) nào đang là "điểm nóng" cần được kiểm tra quy trình chất xếp. Bạn có thể copy phần báo cáo này để gửi trực tiếp cho khối Vận Hành (Operations).
+Hệ thống AI tự động tổng hợp câu chữ báo cáo để bạn có thể Copy và gửi trực tiếp cho khối Vận Hành (Operations), chỉ ra rõ đâu là "điểm nóng" cần khắc phục.
 
-### Phần 3: Bảng Dữ Liệu Đã Mapping (Data Table)
+### Phần 3: Bảng Dữ Liệu & Bộ Lọc Đa Lớp (Data Filter)
 Bảng hiển thị chi tiết tất cả các đơn hàng sau khi hệ thống đã "làm sạch" và tự động gán nhãn.
-- **Chỉnh sửa Nhãn (Adhoc Edit):** Nếu công cụ tự động gán nhãn chưa đúng ý, bạn có thể **click thẳng vào cột Label** trong bảng và chọn lại từ danh sách thả xuống (Droplist).
-  - Khi bạn chọn nhãn mới, mọi biểu đồ và báo cáo phía trên sẽ **ngay lập tức cập nhật lại**.
-- **Xuất Báo Cáo (Export):** Để lấy dữ liệu tổng hợp về máy, bấm nút **"Xuất Báo Cáo"**. Hệ thống sẽ tải về một file Excel (`.xlsx`) chứa đầy đủ các trường dữ liệu kể cả các nhãn bạn vừa chỉnh tay.
+- **Bộ Lọc Excel-Style:** Ngay dưới tiêu đề của các cột (Mã Đơn, Tuần, Khách Hàng, GXT, KTC, Chi Tiết Lỗi...) là các ô tìm kiếm hoặc danh sách thả xuống. Bạn có thể gõ trực tiếp vào các ô này để lọc dữ liệu chéo nhau giống y hệt tính năng Data Filter của Excel.
+- **Chỉnh sửa Nhãn Thủ Công:** Click thẳng vào cột Label trong bảng để chọn lại nhãn từ danh sách. Biểu đồ sẽ tự động thay đổi theo.
+- **Xuất Excel:** Bấm "Xuất Báo Cáo" để tải toàn bộ dữ liệu (đã kèm nhãn Label) về máy.
 
 ---
 
-## 4. Tính Năng "Tự Động Khôi Phục" (Persistent Session)
-Công cụ sở hữu bộ nhớ ngầm độc lập:
-- Nếu bạn lỡ tay nhấn F5 (Tải lại trang) hoặc đóng nhầm tab trình duyệt, **đừng lo lắng**.
-- Khi mở lại, hệ thống sẽ **tự động khôi phục 100% dữ liệu** và nhảy thẳng lại trang Dashboard cuối cùng bạn đang xem.
-- Bạn không cần phải tải lại file hay dán lại link từ đầu.
+## 4. Cơ Chế Nhận Diện Cột Nâng Cao (Dual-Scan)
+
+Hệ thống được trang bị bộ máy tự động nhận diện tên cột cực mạnh:
+1. Nó có khả năng tự động hiểu được các tên cột biến thể. Ví dụ: cột Chi tiết lỗi có thể được đặt tên là *"Chi tiết, Ghi chú, Mô tả, Tình trạng, Nội dung, Lỗi, Vấn đề, Nguyên nhân..."*
+2. **Dual-Scan:** Nếu Google Sheets bị lỗi định dạng khiến dòng tiêu đề bị đẩy xuống thành dòng dữ liệu đầu tiên, hệ thống vẫn sẽ tự động quét xuống dòng dữ liệu để tìm ra đúng cột cần lấy.
+
+---
+
+## 5. Xử Lý Sự Cố (Troubleshooting)
+
+**1. Bảng dữ liệu trống trơn ở một số cột (ví dụ: Chi tiết lỗi bị trống)**
+- Nguyên nhân 1: Dữ liệu bị lưu Cache. -> **Cách sửa:** Quay về tab Nhập Dữ Liệu và bấm lại nút **"Xử Lý Dữ Liệu"**.
+- Nguyên nhân 2: Tên cột trong Google Sheets của bạn không chứa bất kỳ từ khóa nào mà hệ thống nhận diện được. -> **Cách sửa:** Đổi tên cột trong Google Sheets thành "Chi tiết lỗi" hoặc "Ghi chú".
+
+**2. Toàn bộ đơn hàng đều bị gán nhãn "Khác"**
+- Kéo xuống cuối trang Báo cáo và xem **Bảng Gỡ Lỗi (Debug Log)**. Nếu phần "Số lượng từ khóa đọc được" là **0 từ**, nghĩa là file Keyword của bạn đang trống hoặc bạn dán nhầm link Data vào ô Keyword.
+- **Cách sửa:** Lấy đúng link của sheet Keyword và tải lại, sau đó bấm "Xử Lý Dữ Liệu".
+
+**3. Web bị treo "Đang xử lý dữ liệu..."**
+- Do lỗi kết nối mạng khiến việc lấy dữ liệu từ Google Sheets bị Timeout (vượt quá 15s).
+- **Cách sửa:** Nhấn F5 để tải lại trang web và thử lại. Công cụ có bộ nhớ đệm (Persistent Session) nên bạn sẽ không bị mất các link đã nhập.

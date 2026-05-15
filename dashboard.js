@@ -4,6 +4,7 @@ const AppState = {
     kwData: [],
     gxtData: [],
     mappedData: [],
+    filteredData: [],
     uniqueLabels: [],
     filesLoaded: { db: false, kw: false, gxt: false },
     charts: {}
@@ -453,14 +454,36 @@ function processData() {
     
     // Nhận diện cột động từ dòng đầu tiên để tránh sai lệch do tên cột (case-sensitive)
     const firstRowKeys = Object.keys(AppState.dbData[0]);
-    const weekKey = firstRowKeys.find(k => k.toLowerCase().includes('week')) || firstRowKeys.find(k => k.toLowerCase().includes('tuần')) || 'pickup_week';
-    const clientKey = firstRowKeys.find(k => k.toLowerCase().includes('client')) || firstRowKeys.find(k => k.toLowerCase().includes('khách')) || 'client_name';
-    const orderKey = firstRowKeys.find(k => k.toLowerCase().includes('order')) || firstRowKeys.find(k => k.toLowerCase().includes('mã')) || 'order_code';
-    const typeKey = firstRowKeys.find(k => k.toLowerCase().includes('type')) || firstRowKeys.find(k => k.toLowerCase().includes('loại')) || 'damage_type';
-    const detailKey = firstRowKeys.find(k => k.toLowerCase().includes('detail')) || firstRowKeys.find(k => k.toLowerCase().includes('chi tiết')) || firstRowKeys.find(k => k.toLowerCase().includes('ghi chú')) || 'damage_details';
-    const gxtKeyField = firstRowKeys.find(k => k.toLowerCase().includes('gxt')) || firstRowKeys.find(k => k.toLowerCase().includes('giao')) || firstRowKeys.find(k => k.toLowerCase().includes('kho')) || 'warehouse_giao';
+    const firstRowValues = AppState.dbData[0];
+    
+    function findColumnKey(keywords) {
+        // 1. Dò trong Header (Keys)
+        const keyMatch = firstRowKeys.find(k => keywords.some(kw => normalizeStr(k).includes(kw)));
+        if (keyMatch) return keyMatch;
+        // 2. Dò trong Data dòng 1 (Values) trường hợp Google Sheets mất Header
+        const valMatch = firstRowKeys.find(k => {
+            const val = String(firstRowValues[k] || '');
+            return keywords.some(kw => normalizeStr(val).includes(kw));
+        });
+        return valMatch || null;
+    }
 
-    AppState.mappedData = AppState.dbData.map(row => {
+    const weekKey = findColumnKey(['week', 'tuần']) || 'pickup_week';
+    const clientKey = findColumnKey(['client', 'khách', 'người gửi']) || 'client_name';
+    const orderKey = findColumnKey(['order', 'mã', 'tracking', 'vận đơn']) || 'order_code';
+    const typeKey = findColumnKey(['type', 'loại', 'phân loại', 'nhóm']) || 'damage_type';
+    const detailKey = findColumnKey(['detail', 'chi tiết', 'ghi chú', 'mô tả', 'tình trạng', 'nội dung', 'lỗi', 'vấn đề', 'nguyên nhân']) || 'damage_details';
+    const gxtKeyField = findColumnKey(['gxt', 'giao', 'kho']) || 'warehouse_giao';
+
+    AppState.debugKeys = { weekKey, clientKey, orderKey, typeKey, detailKey, gxtKeyField };
+
+    let isFirstRowHeader = false;
+    if (String(firstRowValues[orderKey] || '').toLowerCase().includes('mã')) {
+        isFirstRowHeader = true;
+    }
+
+    AppState.mappedData = AppState.dbData.map((row, index) => {
+        if (isFirstRowHeader && index === 0) return null; // Bỏ qua dòng tiêu đề nếu bị lọt vào data
         // Gom chung text của Loại lỗi và Chi tiết lỗi để đối chiếu Keyword (tăng độ chính xác)
         const typeText = String(row[typeKey] || '');
         const detailText = String(row[detailKey] || '');
@@ -479,17 +502,44 @@ function processData() {
         const matchedKTC = gxtMap[gxtName.toLowerCase()] || "Chưa xác định";
 
         return {
-            ...row,
-            mapped_label: matchedLabel,
-            mapped_ktc: matchedKTC,
             clean_week: row[weekKey] || "W_Unknown",
             clean_client: row[clientKey] || "Khách lẻ",
             clean_order: row[orderKey] || "N/A",
-            clean_gxt: gxtName,
             clean_type: typeText || "N/A",
-            damage_details: detailText
+            clean_detail: detailText,
+            clean_gxt: gxtName,
+            mapped_ktc: matchedKTC,
+            mapped_label: matchedLabel
         };
-    });
+    }).filter(d => d !== null); // Xóa bỏ dòng null (tiêu đề)
+
+    // Populate Table Filters
+    const filterLabel = document.getElementById('col-filter-label');
+    const filterWeek = document.getElementById('col-filter-week');
+    
+    if (filterLabel && filterWeek) {
+        filterLabel.innerHTML = '<option value="all">Tất cả</option>';
+        filterWeek.innerHTML = '<option value="all">Tất cả</option>';
+        
+        const uniqueMappedLabels = [...new Set(AppState.mappedData.map(d => d.mapped_label))].sort();
+        uniqueMappedLabels.forEach(l => {
+            const opt = document.createElement('option');
+            opt.value = l;
+            opt.textContent = l;
+            filterLabel.appendChild(opt);
+        });
+        
+        const uniqueWeeks = [...new Set(AppState.mappedData.map(d => d.clean_week))].sort();
+        uniqueWeeks.forEach(w => {
+            const opt = document.createElement('option');
+            opt.value = w;
+            opt.textContent = w;
+            filterWeek.appendChild(opt);
+        });
+    }
+
+    // Reset filter
+    AppState.filteredData = AppState.mappedData;
 }
 
 // Dashboard Building
@@ -758,21 +808,99 @@ function generateReport(keepPage = false) {
     // DEBUG INFO
     const kwMap = AppState.keywordMap || [];
     const kwPreview = kwMap.length > 0 ? kwMap.map(k => k.keyword).join(', ') : "Không tìm thấy";
-    const dbKeys = AppState.dbData.length > 0 ? Object.keys(AppState.dbData[0]).join(' | ') : "Không có";
+    
+    let dbKeys = "Không có";
+    let dbRow1 = "Không có";
+    if (AppState.dbData && AppState.dbData.length > 0) {
+        dbKeys = Object.keys(AppState.dbData[0]).join(' | ');
+        dbRow1 = Object.values(AppState.dbData[0]).join(' | ');
+    }
+    
+    const dk = AppState.debugKeys || {};
     
     html += `
         <div style="margin-top:30px; padding:15px; background:var(--bg-secondary); border-radius:5px; font-size:12px; color:var(--text-muted); border: 1px dashed var(--accent-danger);">
             <strong>🔍 BẢNG GỠ LỖI (DEBUG LOG):</strong><br/><br/>
             - <strong>Số lượng từ khóa đọc được từ Link Keyword:</strong> <span style="color:var(--text-main);">${kwMap.length}</span> từ.<br/>
-            - <strong>Danh sách từ khóa:</strong> <span style="color:var(--text-main);">${kwPreview}</span><br/><br/>
-            - <strong>Danh sách Tên Cột Data đọc được:</strong> <span style="color:var(--text-main);">${dbKeys}</span>
+            - <strong>Danh sách Tên Cột Data gốc (Keys):</strong> <span style="color:var(--accent-warning);">${dbKeys}</span><br/>
+            - <strong>Danh sách Dữ Liệu Dòng 1 (Values):</strong> <span style="color:var(--accent-warning);">${dbRow1}</span><br/><br/>
+            - <strong>Web nhận diện cột Mã Đơn là:</strong> <span style="color:var(--accent-success);">${dk.orderKey}</span><br/>
+            - <strong>Web nhận diện cột Loại Lỗi là:</strong> <span style="color:var(--accent-success);">${dk.typeKey}</span><br/>
+            - <strong>Web nhận diện cột Chi Tiết Lỗi là:</strong> <span style="color:var(--accent-danger);">${dk.detailKey}</span>
         </div>
     `;
 
     reportContent.innerHTML = html;
     
     // Populate Table
-    renderTable(keepPage ? currentPage : 1);
+    applyTableFilters(); // This will call renderTable(1) or keepPage
+}
+
+// Table Filtering Logic
+function applyTableFilters() {
+    const orderQuery = (document.getElementById('col-filter-order')?.value || '').toLowerCase().trim();
+    const typeQuery = (document.getElementById('col-filter-type')?.value || '').toLowerCase().trim();
+    const gxtQuery = (document.getElementById('col-filter-gxt')?.value || '').toLowerCase().trim();
+    const ktcQuery = (document.getElementById('col-filter-ktc')?.value || '').toLowerCase().trim();
+    const clientQuery = (document.getElementById('col-filter-client')?.value || '').toLowerCase().trim();
+    const detailQuery = (document.getElementById('col-filter-detail')?.value || '').toLowerCase().trim();
+    const labelQuery = document.getElementById('col-filter-label')?.value || 'all';
+    const weekQuery = document.getElementById('col-filter-week')?.value || 'all';
+    
+    AppState.filteredData = AppState.mappedData.filter(d => {
+        const matchOrder = !orderQuery || d.clean_order.toLowerCase().includes(orderQuery);
+        const matchType = !typeQuery || d.clean_type.toLowerCase().includes(typeQuery);
+        const matchGxt = !gxtQuery || d.clean_gxt.toLowerCase().includes(gxtQuery);
+        const matchKtc = !ktcQuery || d.mapped_ktc.toLowerCase().includes(ktcQuery);
+        const matchClient = !clientQuery || d.clean_client.toLowerCase().includes(clientQuery);
+        const matchDetail = !detailQuery || (d.clean_detail && d.clean_detail.toLowerCase().includes(detailQuery));
+        const matchLabel = labelQuery === 'all' || d.mapped_label === labelQuery;
+        const matchWeek = weekQuery === 'all' || d.clean_week === weekQuery;
+        
+        return matchOrder && matchType && matchGxt && matchKtc && matchClient && matchDetail && matchLabel && matchWeek;
+    });
+    
+    renderTable(1);
+}
+
+// Event listeners for filters (Safely bind if elements exist)
+const elOrder = document.getElementById('col-filter-order');
+if (elOrder) elOrder.addEventListener('input', applyTableFilters);
+
+const elType = document.getElementById('col-filter-type');
+if (elType) elType.addEventListener('input', applyTableFilters);
+
+const elGxt = document.getElementById('col-filter-gxt');
+if (elGxt) elGxt.addEventListener('input', applyTableFilters);
+
+const elKtc = document.getElementById('col-filter-ktc');
+if (elKtc) elKtc.addEventListener('input', applyTableFilters);
+
+const elClient = document.getElementById('col-filter-client');
+if (elClient) elClient.addEventListener('input', applyTableFilters);
+
+const elDetail = document.getElementById('col-filter-detail');
+if (elDetail) elDetail.addEventListener('input', applyTableFilters);
+
+const elLabel = document.getElementById('col-filter-label');
+if (elLabel) elLabel.addEventListener('change', applyTableFilters);
+
+const elWeek = document.getElementById('col-filter-week');
+if (elWeek) elWeek.addEventListener('change', applyTableFilters);
+
+const btnClear = document.getElementById('btn-clear-filter');
+if (btnClear) {
+    btnClear.addEventListener('click', () => {
+        if (elOrder) elOrder.value = '';
+        if (elType) elType.value = '';
+        if (elGxt) elGxt.value = '';
+        if (elKtc) elKtc.value = '';
+        if (elClient) elClient.value = '';
+        if (elDetail) elDetail.value = '';
+        if (elLabel) elLabel.value = 'all';
+        if (elWeek) elWeek.value = 'all';
+        applyTableFilters();
+    });
 }
 
 // Table Pagination
@@ -781,8 +909,8 @@ const rowsPerPage = 15;
 
 function renderTable(page) {
     const tbody = document.getElementById('table-body');
-    const data = AppState.mappedData;
-    const totalPages = Math.ceil(data.length / rowsPerPage);
+    const data = AppState.filteredData || AppState.mappedData;
+    const totalPages = Math.ceil(data.length / rowsPerPage) || 1;
     
     if (page < 1) page = 1;
     if (page > totalPages) page = totalPages;
@@ -814,8 +942,8 @@ function renderTable(page) {
             <td>${row.clean_gxt}</td>
             <td>${row.mapped_ktc}</td>
             <td>${row.clean_client}</td>
-            <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${row.damage_details || ''}">
-                ${row.damage_details || ''}
+            <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${row.clean_detail || ''}">
+                ${row.clean_detail || ''}
             </td>
             <td>
                 <select class="label-select" data-index="${globalIndex}" title="Thay đổi nhãn">

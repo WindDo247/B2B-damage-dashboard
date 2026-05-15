@@ -204,23 +204,26 @@
                         </div>
                         <div class="report-content" id="report-content">
                             <!-- Report content will be generated here -->
-                            <div class="loading-state">Đang phân tích dữ liệu...</div>
                         </div>
                         
                         <div class="data-table-container">
-                            <h4>Dữ Liệu Đã Mapping</h4>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <h4>Dữ Liệu Đã Mapping</h4>
+                                <button id="btn-clear-filter" class="btn-secondary" style="padding: 4px 12px; font-size: 0.8rem;">Xóa bộ lọc</button>
+                            </div>
+                            
                             <div class="table-wrapper">
                                 <table id="mapped-data-table">
                                     <thead>
                                         <tr>
-                                            <th>Mã Đơn</th>
-                                            <th>Tuần</th>
-                                            <th>Loại Hư Hỏng</th>
-                                            <th>Kho Giao (GXT)</th>
-                                            <th>Kho Trung Chuyển (KTC)</th>
-                                            <th>Khách Hàng</th>
-                                            <th>Chi Tiết Lỗi</th>
-                                            <th>Label</th>
+                                            <th>Mã Đơn<br><input type="text" id="col-filter-order" class="column-filter" placeholder="Tìm..."></th>
+                                            <th>Tuần<br><select id="col-filter-week" class="column-filter"><option value="all">Tất cả</option></select></th>
+                                            <th>Loại Hư Hỏng<br><input type="text" id="col-filter-type" class="column-filter" placeholder="Tìm..."></th>
+                                            <th>Kho Giao (GXT)<br><input type="text" id="col-filter-gxt" class="column-filter" placeholder="Tìm..."></th>
+                                            <th>Kho Trung Chuyển (KTC)<br><input type="text" id="col-filter-ktc" class="column-filter" placeholder="Tìm..."></th>
+                                            <th>Khách Hàng<br><input type="text" id="col-filter-client" class="column-filter" placeholder="Tìm..."></th>
+                                            <th>Chi Tiết Lỗi<br><input type="text" id="col-filter-detail" class="column-filter" placeholder="Tìm..."></th>
+                                            <th>Label<br><select id="col-filter-label" class="column-filter"><option value="all">Tất cả</option></select></th>
                                         </tr>
                                     </thead>
                                     <tbody id="table-body">
@@ -246,6 +249,6 @@
         <p>Đang xử lý dữ liệu...</p>
     </div>
 
-    <script src="dashboard.js?v=5"></script>
+    <script src="dashboard.js?v=12"></script>
 </body>
 </html>

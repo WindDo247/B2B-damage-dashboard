@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quy Chuẩn Chất Xếp Hàng Điện Máy</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+
+        :root {
+            --primary: #d32f2f;
+            --secondary: #2e7d32;
+            --bg: #ffffff;
+            --text: #1a1a1a;
+            --light-bg: #f8f9fa;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .a4-page {
+            width: 210mm;
+            height: 297mm;
+            background: var(--bg);
+            padding: 10mm;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 4px solid var(--primary);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            font-weight: 900;
+            font-size: 24pt;
+            color: var(--primary);
+            text-transform: uppercase;
+        }
+
+        .sub-header {
+            font-size: 14pt;
+            font-weight: 700;
+            color: #555;
+            margin-top: 5px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            flex-grow: 0;
+        }
+
+        .section {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            background: var(--light-bg);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section-title {
+            font-weight: 700;
+            font-size: 12pt;
+            background: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        .rule-list {
+            list-style: none;
+        }
+
+        .rule-item {
+            margin-bottom: 6px;
+            font-size: 10.5pt;
+            line-height: 1.2;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .rule-item::before {
+            content: "•";
+            color: var(--primary);
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .highlight-red {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .highlight-green {
+            color: var(--secondary);
+            font-weight: 700;
+        }
+
+        .image-container {
+            width: 100%;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: auto;
+            border: 1px solid #eee;
+        }
+
+        .image-container img {
+            width: 100%;
+            display: block;
+            height: 160px;
+            object-fit: cover;
+        }
+
+        .do-dont-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .do-box {
+            border: 3px solid var(--secondary);
+            border-radius: 8px;
+            padding: 8px;
+        }
+
+        .dont-box {
+            border: 3px solid var(--primary);
+            border-radius: 8px;
+            padding: 8px;
+        }
+
+        .label {
+            font-weight: 900;
+            font-size: 14pt;
+            text-align: center;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .label.do { color: var(--secondary); }
+        .label.dont { color: var(--primary); }
+
+        .warning-box {
+            background: #fff3f3;
+            border: 2px dashed var(--primary);
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 8px;
+        }
+
+        .warning-box strong {
+            color: var(--primary);
+            font-size: 12pt;
+        }
+
+        footer {
+            margin-top: auto;
+            text-align: center;
+            font-size: 9pt;
+            color: #777;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+
+        @media print {
+            body { background: none; padding: 0; }
+            .a4-page { box-shadow: none; margin: 0; border: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="a4-page">
+        <header>
+            <h1>QUY CHUẨN CHẤT XẾP HÀNG ĐIỆN MÁY</h1>
+            <div class="sub-header">HƯỚNG DẪN DÀNH CHO NHÂN VIÊN BỐC XẾP</div>
+        </header>
+
+        <div class="grid">
+            <!-- Nhóm Hàng Nặng -->
+            <div class="section">
+                <div class="section-title">1. HÀNG RẤT NẶNG (Máy giặt, Tủ lạnh...)</div>
+                <ul class="rule-list">
+                    <li class="rule-item">Xếp <span class="highlight-green">DƯỚI CÙNG</span>, trên sàn xe.</li>
+                    <li class="rule-item">Dựng <span class="highlight-green">THẲNG ĐỨNG 100%</span>.</li>
+                    <li class="rule-item"><span class="highlight-red">KHÔNG ĐỂ NẰM NGANG</span>.</li>
+                    <li class="rule-item">Chồng tối đa <span class="highlight-green">2 LỚP</span>.</li>
+                </ul>
+                <div class="image-container">
+                    <img src="C:\Users\hanhdth\.gemini\antigravity\brain\7397f1bb-7de1-46a1-94e5-f9304e8a1818\stacking_do_dont_1778480874934.png" alt="Quy tắc chất xếp hàng nặng">
+                </div>
+            </div>
+
+            <!-- Nhóm Tivi -->
+            <div class="section">
+                <div class="section-title">2. NHÓM TIVI (Hàng có màn hình)</div>
+                <ul class="rule-list">
+                    <li class="rule-item">Xếp ở <span class="highlight-green">LỚP TRÊN CÙNG</span>.</li>
+                    <li class="rule-item">Dựng <span class="highlight-green">THẲNG ĐỨNG</span> hông xe.</li>
+                    <li class="rule-item"><span class="highlight-red">CẤM ĐỂ NẰM NGỬA/SẤP</span>.</li>
+                    <li class="rule-item">Chồng tối đa <span class="highlight-green">2 LỚP</span>.</li>
+                </ul>
+                <div class="image-container">
+                    <img src="C:\Users\hanhdth\.gemini\antigravity\brain\7397f1bb-7de1-46a1-94e5-f9304e8a1818\tv_orientation_rules_1778480896429.png" alt="Quy tắc chất xếp Tivi">
+                </div>
+            </div>
+        </div>
+
+        <div class="do-dont-grid">
+            <div class="do-box">
+                <div class="label do">ĐƯỢC LÀM (DO)</div>
+                <ul class="rule-list">
+                    <li class="rule-item">Xếp đúng chiều <span class="highlight-green">MŨI TÊN</span>.</li>
+                    <li class="rule-item">Dùng <span class="highlight-green">DÂY, TÚI KHÍ</span> cố định.</li>
+                    <li class="rule-item">Cách vật sắc nhọn <span class="highlight-green">10CM</span>.</li>
+                    <li class="rule-item">Hàng nặng dưới, hàng nhẹ trên.</li>
+                </ul>
+            </div>
+            <div class="dont-box">
+                <div class="label dont">KHÔNG ĐƯỢC LÀM (DON'T)</div>
+                <ul class="rule-list">
+                    <li class="rule-item"><span class="highlight-red">KHÔNG QUĂNG NÉM</span> mạnh.</li>
+                    <li class="rule-item"><span class="highlight-red">KHÔNG DẪM ĐẠP</span> lên thùng.</li>
+                    <li class="rule-item"><span class="highlight-red">KHÔNG DÙNG MÓC</span> kéo hàng.</li>
+                    <li class="rule-item"><span class="highlight-red">KHÔNG ĐỂ CẤN MÓP, RÁCH</span>.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="warning-box">
+            <strong>LƯU Ý QUAN TRỌNG:</strong>
+            <p style="font-size: 10pt; margin-top: 5px;">
+                Sàn xe phải <b>SẠCH, KHÔ, PHẲNG</b>. Hàng điện máy yêu cầu ngoại quan 100% không tì vết. Bất kỳ vết cấn móp nào cũng sẽ bị từ chối nhận hàng.
+            </p>
+        </div>
+
+        <footer>
+            Tài liệu nội bộ - Tuân thủ nghiêm ngặt quy chuẩn chất xếp
+        </footer>
+    </div>
+</body>
+</html>

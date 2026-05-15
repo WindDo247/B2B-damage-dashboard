@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QUY CHUẨN CHẤT XẾP HÀNG ĐIỆN MÁY</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --primary: #004a99;
+            --secondary: #0066cc;
+            --danger: #d32f2f;
+            --warning: #ff9800;
+            --bg: #f0f4f8;
+        }
+        body {
+            font-family: Arial, Tahoma, sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            padding: 10px;
+            color: #1a1a1a;
+            line-height: 1.4;
+        }
+        .a4-page {
+            width: 210mm;
+            height: 297mm;
+            max-width: 100%;
+            background: white;
+            padding: 8mm 12mm; 
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; 
+            border: 1px solid #ccc;
+        }
+        header {
+            text-align: center;
+            border-bottom: 4px solid var(--primary);
+            padding-bottom: 6px;
+            margin-bottom: 8px;
+        }
+        h1 {
+            font-size: 19pt;
+            color: var(--primary);
+            margin: 0;
+            text-transform: uppercase;
+            font-weight: 900;
+        }
+        .sub-header {
+            font-size: 11pt;
+            font-weight: bold;
+            color: #333;
+            margin-top: 4px;
+        }
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 10px;
+            flex-grow: 1;
+        }
+        .section-box {
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            padding: 8px;
+            background: #f9fcff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .section-title {
+            background: var(--primary);
+            color: white;
+            padding: 5px;
+            font-weight: bold;
+            font-size: 11pt;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        .image-frame {
+            height: 180px; /* Thu nhỏ từ 230px xuống 180px để nhường chỗ cho phần Cốt Lõi */
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 8px;
+            background: #2a2a2a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .image-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; 
+        }
+        .image-frame.split img {
+            width: 49%;
+            object-fit: contain; 
+        }
+        .rules {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-grow: 0; 
+        }
+        .rule-item {
+            margin-bottom: 4px;
+            font-size: 9.5pt;
+            display: flex;
+            align-items: flex-start;
+            font-weight: bold;
+            word-wrap: break-word;
+            text-align: left;
+        }
+        .rule-item::before {
+            content: "●";
+            color: var(--primary);
+            margin-right: 6px;
+            font-size: 10pt;
+            margin-top: 1px;
+        }
+        
+        /* Phần nhấn mạnh mới thêm */
+        .core-points {
+            background: #fff8e1;
+            border: 2px dashed var(--warning);
+            padding: 8px 12px;
+            margin-top: 8px;
+            border-radius: 8px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+        }
+        .core-title {
+            background: var(--danger);
+            color: white;
+            font-weight: 900;
+            font-size: 13pt;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-right: 15px;
+            text-align: center;
+            white-space: nowrap;
+            text-transform: uppercase;
+        }
+        .core-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .core-item {
+            font-size: 10pt;
+            color: #b71c1c;
+            font-weight: bold;
+        }
+
+        .slogan-area {
+            background: #eef5ff;
+            border: 2px solid var(--primary);
+            padding: 8px;
+            margin-top: 8px;
+            border-radius: 8px;
+            text-align: center;
+            flex-shrink: 0; 
+        }
+        .slogan-text {
+            color: var(--primary);
+            font-size: 13pt;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+        .slogan-sub {
+            color: #333;
+            font-size: 9.5pt;
+            margin-top: 2px;
+            font-weight: bold;
+        }
+        .blue { color: var(--primary); }
+        .danger { color: var(--danger); }
+        
+        footer {
+            margin-top: 6px;
+            text-align: center;
+            font-size: 8.5pt;
+            color: #666;
+            border-top: 1px solid #eee;
+            padding-top: 4px;
+            font-style: italic;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="a4-page">
+        <header>
+            <h1>QUY&nbsp;<wbr>CHUẨN&nbsp;<wbr>CHẤT&nbsp;<wbr>XẾP&nbsp;<wbr>HÀNG&nbsp;<wbr>ĐIỆN&nbsp;<wbr>MÁY</h1>
+            <div class="sub-header">Tài&nbsp;<wbr>liệu&nbsp;<wbr>hướng&nbsp;<wbr>dẫn&nbsp;<wbr>nghiệp&nbsp;<wbr>vụ&nbsp;<wbr>cho&nbsp;<wbr>nhân&nbsp;<wbr>viên&nbsp;<wbr>kho</div>
+        </header>
+
+        <div class="main-grid">
+            <!-- Nhóm 1: Hàng Nặng -->
+            <div class="section-box">
+                <div class="section-title">1.&nbsp;<wbr>HÀNG&nbsp;<wbr>NẶNG&nbsp;<wbr>(TỦ&nbsp;<wbr>LẠNH,&nbsp;<wbr>MÁY&nbsp;<wbr>GIẶT)</div>
+                <div class="image-frame">
+                    <img src="hinh1.png.jpg" alt="Hàng nặng">
+                </div>
+                <ul class="rules">
+                    <li class="rule-item">Xếp&nbsp;<wbr>ở&nbsp;<wbr>tầng&nbsp;<wbr><span class="blue">DƯỚI&nbsp;<wbr>CÙNG</span>.</li>
+                    <li class="rule-item">Phải&nbsp;<wbr>dựng&nbsp;<wbr><span class="blue">THẲNG&nbsp;<wbr>ĐỨNG</span>&nbsp;<wbr>100%.</li>
+                    <li class="rule-item"><span class="danger">KHÔNG</span>&nbsp;<wbr>được&nbsp;<wbr>để&nbsp;<wbr>nằm&nbsp;<wbr>ngang.</li>
+                    <li class="rule-item">Chồng&nbsp;<wbr>tối&nbsp;<wbr>đa&nbsp;<wbr>2&nbsp;<wbr>lớp&nbsp;<wbr>kiện&nbsp;<wbr>hàng.</li>
+                </ul>
+            </div>
+
+            <!-- Nhóm 2: Tivi -->
+            <div class="section-box">
+                <div class="section-title">2.&nbsp;<wbr>NHÓM&nbsp;<wbr>TIVI&nbsp;<wbr>(HÀNG&nbsp;<wbr>CÓ&nbsp;<wbr>MÀN&nbsp;<wbr>HÌNH)</div>
+                <div class="image-frame split">
+                    <img src="hinh2.png.jpg" alt="Tivi 1">
+                    <img src="hinh3.png.jpg" alt="Tivi 2">
+                </div>
+                <ul class="rules">
+                    <li class="rule-item">Dựng&nbsp;<wbr><span class="blue">THẲNG&nbsp;<wbr>ĐỨNG</span>&nbsp;<wbr>dọc&nbsp;<wbr>hông&nbsp;<wbr>xe.</li>
+                    <li class="rule-item"><span class="danger">CẤM</span>&nbsp;<wbr>để&nbsp;<wbr>nằm&nbsp;<wbr>ngửa&nbsp;<wbr>hoặc&nbsp;<wbr>sấp.</li>
+                    <li class="rule-item">Dùng&nbsp;<wbr>hàng&nbsp;<wbr>khác&nbsp;<wbr>để&nbsp;<wbr><span class="blue">CHÈN&nbsp;<wbr>CHẶT</span>.</li>
+                    <li class="rule-item">Tuyệt&nbsp;<wbr>đối&nbsp;<wbr>không&nbsp;<wbr>làm&nbsp;<wbr>Tivi&nbsp;<wbr>đổ&nbsp;<wbr>ngã.</li>
+                </ul>
+            </div>
+
+            <!-- Nhóm 3: Hàng Nhẹ -->
+            <div class="section-box">
+                <div class="section-title">3.&nbsp;<wbr>NHÓM&nbsp;<wbr>HÀNG&nbsp;<wbr>NHẸ&nbsp;<wbr>(GIA&nbsp;<wbr>DỤNG)</div>
+                <div class="image-frame">
+                    <img src="hinh4.png.jpg" alt="Hàng nhẹ">
+                </div>
+                <ul class="rules">
+                    <li class="rule-item">Xếp&nbsp;<wbr>ở&nbsp;<wbr><span class="blue">LỚP&nbsp;<wbr>TRÊN&nbsp;<wbr>CÙNG</span>.</li>
+                    <li class="rule-item">Được&nbsp;<wbr>đặt&nbsp;<wbr>trên&nbsp;<wbr>hàng&nbsp;<wbr>nặng&nbsp;<wbr>nếu&nbsp;<wbr>không&nbsp;<wbr>gây&nbsp;<wbr>móp.</li>
+                    <li class="rule-item"><span class="danger">KHÔNG</span>&nbsp;<wbr>quăng&nbsp;<wbr>ném&nbsp;<wbr>hoặc&nbsp;<wbr>nhồi&nbsp;<wbr>nhét&nbsp;<wbr>mạnh.</li>
+                    <li class="rule-item">Cố&nbsp;<wbr>định&nbsp;<wbr>bằng&nbsp;<wbr>dây&nbsp;<wbr>hoặc&nbsp;<wbr>xốp&nbsp;<wbr>tránh&nbsp;<wbr>trôi&nbsp;<wbr>hàng.</li>
+                </ul>
+            </div>
+
+            <!-- Nhóm 4: Cùng Hàng Ecom -->
+            <div class="section-box" style="border-color: #d32f2f; background: #fff8f8;">
+                <div class="section-title" style="background: #d32f2f;">4.&nbsp;<wbr>KHI&nbsp;<wbr>CHẤT&nbsp;<wbr>XẾP&nbsp;<wbr>CÙNG&nbsp;<wbr>HÀNG&nbsp;<wbr>ECOM</div>
+                <div class="image-frame split" style="position: relative;">
+                    <img src="hinh5.png.jpg" alt="Ecom Sai 1">
+                    <img src="hinh6.png.jpg" alt="Ecom Sai 2">
+                    
+                    <!-- Dấu Chéo Đỏ nhỏ góc trên phải cho hình bên trái -->
+                    <div style="position: absolute; left: 0; top: 0; width: 49%; height: 100%; display: flex; justify-content: flex-end; align-items: flex-start; padding: 5px 15px; pointer-events: none;">
+                        <span style="color: #d32f2f; font-size: 65px; font-weight: bold; text-shadow: 0 0 8px white, 0 0 15px white, 2px 2px 0 white, -2px -2px 0 white, 2px -2px 0 white, -2px 2px 0 white;">&#10008;</span>
+                    </div>
+
+                    <!-- Dấu Chéo Đỏ nhỏ sát góc phải cho hình bên phải -->
+                    <div style="position: absolute; right: 0; top: 0; width: 49%; height: 100%; display: flex; justify-content: flex-end; align-items: flex-start; padding: 5px 2px; pointer-events: none;">
+                        <span style="color: #d32f2f; font-size: 65px; font-weight: bold; text-shadow: 0 0 8px white, 0 0 15px white, 2px 2px 0 white, -2px -2px 0 white, 2px -2px 0 white, -2px 2px 0 white;">&#10008;</span>
+                    </div>
+                </div>
+                <ul class="rules">
+                    <li class="rule-item">Tuyệt&nbsp;<wbr>đối&nbsp;<wbr><span class="danger">KHÔNG</span>&nbsp;<wbr>để&nbsp;<wbr>hàng&nbsp;<wbr>ecom&nbsp;<wbr>đè&nbsp;<wbr>lên.</li>
+                    <li class="rule-item">Dùng&nbsp;<wbr><span class="blue">XỐP&nbsp;<wbr>/&nbsp;<wbr>BÌA&nbsp;<wbr>CỨNG</span>&nbsp;<wbr>để&nbsp;<wbr>ngăn&nbsp;<wbr>cách.</li>
+                    <li class="rule-item"><span class="danger">KHÔNG&nbsp;<wbr>ĐỂ&nbsp;<wbr>VẬT&nbsp;<wbr>SẮC&nbsp;<wbr>NHỌN&nbsp;<wbr>GẦN&nbsp;<wbr>VỎ&nbsp;<wbr>THÙNG,&nbsp;<wbr>phải&nbsp;<wbr>cách&nbsp;<wbr>xa&nbsp;<wbr>ít&nbsp;<wbr>nhất&nbsp;<wbr>10CM.</span></li>
+                    <li class="rule-item">Sàn&nbsp;<wbr>xe&nbsp;<wbr>phải&nbsp;<wbr><span class="blue">SẠCH,&nbsp;<wbr>KHÔ&nbsp;<wbr>VÀ&nbsp;<wbr>PHẲNG</span>.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- PHẦN GHI NHỚ CỐT LÕI -->
+        <div class="core-points">
+            <div class="core-title">LUÔN&nbsp;<wbr>GHI&nbsp;<wbr>NHỚ</div>
+            <div class="core-list">
+                <div class="core-item">1.&nbsp;<wbr>XẾP&nbsp;<wbr>CHÈN&nbsp;<wbr>THẬT&nbsp;<wbr>CHẶT:&nbsp;<wbr>Hạn&nbsp;<wbr>chế&nbsp;<wbr>tuyệt&nbsp;<wbr>đối&nbsp;<wbr>khoảng&nbsp;<wbr>trống&nbsp;<wbr>tránh&nbsp;<wbr>hàng&nbsp;<wbr>bị&nbsp;<wbr>xê&nbsp;<wbr>dịch,&nbsp;<wbr>va&nbsp;<wbr>đập.</div>
+                <div class="core-item">2.&nbsp;<wbr>ĐÚNG&nbsp;<wbr>CHIỀU&nbsp;<wbr>&&nbsp;<wbr>TRÁNH&nbsp;<wbr>VẬT&nbsp;<wbr>NHỌN:&nbsp;<wbr>Đặt&nbsp;<wbr>chuẩn&nbsp;<wbr>chiều&nbsp;<wbr>NSX,&nbsp;<wbr>cách&nbsp;<wbr>ly&nbsp;<wbr>hoàn&nbsp;<wbr>toàn&nbsp;<wbr>khỏi&nbsp;<wbr>đồ&nbsp;<wbr>sắc&nbsp;<wbr>nhọn.</div>
+                <div class="core-item" style="font-size: 13pt; color: #d32f2f; text-decoration: underline; margin-top: 4px; font-weight: 900;">3.&nbsp;<wbr>TUYỆT&nbsp;<wbr>ĐỐI&nbsp;<wbr>KHÔNG&nbsp;<wbr>QUĂNG&nbsp;<wbr>NÉM!</div>
+            </div>
+        </div>
+
+        <div class="slogan-area">
+            <div class="slogan-text">THÙNG&nbsp;<wbr>HÀNG&nbsp;<wbr>NGUYÊN&nbsp;<wbr>VẸN&nbsp;<wbr>-&nbsp;<wbr>GIAO&nbsp;<wbr>HÀNG&nbsp;<wbr>THÀNH&nbsp;<wbr>CÔNG</div>
+            <div class="slogan-sub">BẢO&nbsp;<wbr>VỆ&nbsp;<wbr>NGOẠI&nbsp;<wbr>QUAN&nbsp;<wbr>HÀNG&nbsp;<wbr>HÓA&nbsp;<wbr>CHÍNH&nbsp;<wbr>LÀ&nbsp;<wbr>BẢO&nbsp;<wbr>VỆ&nbsp;<wbr>DOANH&nbsp;<wbr>THU&nbsp;<wbr>CÔNG&nbsp;<wbr>TY</div>
+        </div>
+
+        <footer>
+            Quy&nbsp;<wbr>trình&nbsp;<wbr>nội&nbsp;<wbr>bộ&nbsp;<wbr>-&nbsp;<wbr>Yêu&nbsp;<wbr>cầu&nbsp;<wbr>tuân&nbsp;<wbr>thủ&nbsp;<wbr>nghiêm&nbsp;<wbr>ngặt&nbsp;<wbr>để&nbsp;<wbr>đảm&nbsp;<wbr>bảo&nbsp;<wbr>chất&nbsp;<wbr>lượng&nbsp;<wbr>dịch&nbsp;<wbr>vụ
+        </footer>
+    </div>
+</body>
+</html>

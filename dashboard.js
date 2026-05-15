@@ -373,6 +373,12 @@ btnProcess.addEventListener('click', () => {
     }, 500);
 });
 
+// Helper function to normalize Vietnamese text (NFC), lowercase, and remove extra spaces
+function normalizeStr(str) {
+    if (!str) return '';
+    return String(str).normalize('NFC').toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
 function processData() {
     // 1. Prepare Keyword Mapping (keyword -> label)
     const keywordMap = [];
@@ -386,7 +392,10 @@ function processData() {
             let label = row[labelKeyField];
             
             if (kw && label) {
-                keywordMap.push({ keyword: String(kw).toLowerCase().trim(), label: String(label).trim() });
+                keywordMap.push({ 
+                    keyword: normalizeStr(kw), 
+                    label: String(label).trim() // Keep label original case for display
+                });
             }
         });
     }
@@ -429,7 +438,7 @@ function processData() {
         // Gom chung text của Loại lỗi và Chi tiết lỗi để đối chiếu Keyword (tăng độ chính xác)
         const typeText = String(row[typeKey] || '');
         const detailText = String(row[detailKey] || '');
-        const combinedText = (typeText + " " + detailText).toLowerCase();
+        const combinedText = normalizeStr(typeText + " " + detailText);
         
         let matchedLabel = "Khác";
         

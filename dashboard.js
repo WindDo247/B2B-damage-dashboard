@@ -394,7 +394,7 @@ function processData() {
         }
         
         if (kw && label) {
-            keywordMap.push({ keyword: String(kw).toLowerCase(), label: String(label) });
+            keywordMap.push({ keyword: String(kw).toLowerCase().trim(), label: String(label).trim() });
         }
     });
 

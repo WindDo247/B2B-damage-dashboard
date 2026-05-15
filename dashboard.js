@@ -368,19 +368,24 @@ btnProcess.addEventListener('click', () => {
     
     // Simulate slight delay for UI responsiveness
     setTimeout(() => {
-        processData();
-        buildDashboard();
-        generateReport();
-        
-        // Enable navigation and switch to dashboard
-        document.getElementById('nav-dashboard').style.display = 'flex';
-        document.getElementById('nav-report').style.display = 'flex';
-        navItems[1].click(); // Click dashboard
-        
-        loadingOverlay.classList.remove('active');
-        
-        // Lưu toàn bộ trạng thái vào DB
-        saveStateToDB();
+        try {
+            processData();
+            buildDashboard();
+            generateReport();
+            
+            // Enable navigation and switch to dashboard
+            document.getElementById('nav-dashboard').style.display = 'flex';
+            document.getElementById('nav-report').style.display = 'flex';
+            navItems[1].click(); // Click dashboard
+            
+            // Lưu toàn bộ trạng thái vào DB
+            saveStateToDB();
+        } catch (error) {
+            console.error("Lỗi khi xử lý dữ liệu:", error);
+            alert("Có lỗi xảy ra trong quá trình xử lý: " + error.message);
+        } finally {
+            loadingOverlay.classList.remove('active');
+        }
     }, 500);
 });
 
@@ -417,6 +422,9 @@ function processData() {
             }
         });
     }
+
+    // Lưu keywordMap vào AppState để debug
+    AppState.keywordMap = keywordMap;
 
     // Lọc ra danh sách các nhãn (labels) duy nhất để làm Droplist
     AppState.uniqueLabels = [...new Set(keywordMap.map(m => m.label))];
@@ -748,13 +756,14 @@ function generateReport(keepPage = false) {
     `;
     
     // DEBUG INFO
-    const kwPreview = keywordMap.length > 0 ? keywordMap.map(k => k.keyword).join(', ') : "Không tìm thấy";
+    const kwMap = AppState.keywordMap || [];
+    const kwPreview = kwMap.length > 0 ? kwMap.map(k => k.keyword).join(', ') : "Không tìm thấy";
     const dbKeys = AppState.dbData.length > 0 ? Object.keys(AppState.dbData[0]).join(' | ') : "Không có";
     
     html += `
         <div style="margin-top:30px; padding:15px; background:var(--bg-secondary); border-radius:5px; font-size:12px; color:var(--text-muted); border: 1px dashed var(--accent-danger);">
             <strong>🔍 BẢNG GỠ LỖI (DEBUG LOG):</strong><br/><br/>
-            - <strong>Số lượng từ khóa đọc được từ Link Keyword:</strong> <span style="color:var(--text-main);">${keywordMap.length}</span> từ.<br/>
+            - <strong>Số lượng từ khóa đọc được từ Link Keyword:</strong> <span style="color:var(--text-main);">${kwMap.length}</span> từ.<br/>
             - <strong>Danh sách từ khóa:</strong> <span style="color:var(--text-main);">${kwPreview}</span><br/><br/>
             - <strong>Danh sách Tên Cột Data đọc được:</strong> <span style="color:var(--text-main);">${dbKeys}</span>
         </div>

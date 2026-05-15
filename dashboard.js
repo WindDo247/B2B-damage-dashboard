@@ -206,6 +206,7 @@ document.querySelectorAll('.btn-fetch').forEach(btn => {
             let isGoogleSheet = false;
             let isGoogleDrive = false;
             let gId = null;
+            let sheetGid = null;
             
             // Xử lý link Google Sheets
             if (url.includes('docs.google.com/spreadsheets')) {
@@ -213,6 +214,10 @@ document.querySelectorAll('.btn-fetch').forEach(btn => {
                 if (match) {
                     gId = match[1];
                     isGoogleSheet = true;
+                }
+                const gidMatch = url.match(/[#&?]gid=([0-9]+)/);
+                if (gidMatch) {
+                    sheetGid = gidMatch[1];
                 }
             } 
             // Xử lý link Google Drive
@@ -257,7 +262,8 @@ document.querySelectorAll('.btn-fetch').forEach(btn => {
                                 const rowObj = {};
                                 row.c.forEach((cell, i) => {
                                     if (cols[i]) {
-                                        rowObj[cols[i]] = cell ? (cell.f !== undefined ? cell.f : (cell.v !== null ? cell.v : "")) : "";
+                                        // Ưu tiên lấy giá trị gốc cell.v, ép kiểu về chuỗi để đảm bảo an toàn
+                                        rowObj[cols[i]] = cell && cell.v !== null && cell.v !== undefined ? String(cell.v) : "";
                                     }
                                 });
                                 return rowObj;
@@ -282,8 +288,13 @@ document.querySelectorAll('.btn-fetch').forEach(btn => {
                     
                     const script = document.createElement('script');
                     script.id = callbackName;
-                    // FIX: Cú pháp của Google là responseHandler:TênHàm chứ không phải =
-                    script.src = `https://docs.google.com/spreadsheets/d/${gId}/gviz/tq?tqx=out:json;responseHandler:${callbackName}&headers=1`;
+                    
+                    let gvizUrl = `https://docs.google.com/spreadsheets/d/${gId}/gviz/tq?tqx=out:json;responseHandler:${callbackName}&headers=1`;
+                    if (sheetGid) {
+                        gvizUrl += `&gid=${sheetGid}`;
+                    }
+                    script.src = gvizUrl;
+                    
                     script.onerror = () => {
                         clearTimeout(timeoutId);
                         delete window[callbackName];

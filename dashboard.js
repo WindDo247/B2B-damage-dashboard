@@ -747,6 +747,19 @@ function generateReport(keepPage = false) {
         </ul>
     `;
     
+    // DEBUG INFO
+    const kwPreview = keywordMap.length > 0 ? keywordMap.map(k => k.keyword).join(', ') : "Không tìm thấy";
+    const dbKeys = AppState.dbData.length > 0 ? Object.keys(AppState.dbData[0]).join(' | ') : "Không có";
+    
+    html += `
+        <div style="margin-top:30px; padding:15px; background:var(--bg-secondary); border-radius:5px; font-size:12px; color:var(--text-muted); border: 1px dashed var(--accent-danger);">
+            <strong>🔍 BẢNG GỠ LỖI (DEBUG LOG):</strong><br/><br/>
+            - <strong>Số lượng từ khóa đọc được từ Link Keyword:</strong> <span style="color:var(--text-main);">${keywordMap.length}</span> từ.<br/>
+            - <strong>Danh sách từ khóa:</strong> <span style="color:var(--text-main);">${kwPreview}</span><br/><br/>
+            - <strong>Danh sách Tên Cột Data đọc được:</strong> <span style="color:var(--text-main);">${dbKeys}</span>
+        </div>
+    `;
+
     reportContent.innerHTML = html;
     
     // Populate Table

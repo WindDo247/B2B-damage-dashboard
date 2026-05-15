@@ -376,27 +376,20 @@ btnProcess.addEventListener('click', () => {
 function processData() {
     // 1. Prepare Keyword Mapping (keyword -> label)
     const keywordMap = [];
-    AppState.kwData.forEach(row => {
-        const kwKeys = Object.keys(row);
-        let kw = "", label = "";
-        
-        // Try to guess columns if exact names aren't used
-        kwKeys.forEach(k => {
-            const kl = k.toLowerCase();
-            if (kl.includes('key')) kw = row[k];
-            else if (kl.includes('label') || kl.includes('loại')) label = row[k];
+    if (AppState.kwData.length > 0) {
+        const kwKeysFirstRow = Object.keys(AppState.kwData[0]);
+        const kwKeyField = kwKeysFirstRow.find(k => k.toLowerCase().includes('key') || k.toLowerCase().includes('từ khóa') || k.toLowerCase().includes('word')) || kwKeysFirstRow[0];
+        const labelKeyField = kwKeysFirstRow.find(k => k.toLowerCase().includes('label') || k.toLowerCase().includes('nhãn') || k.toLowerCase().includes('loại')) || kwKeysFirstRow[1];
+
+        AppState.kwData.forEach(row => {
+            let kw = row[kwKeyField];
+            let label = row[labelKeyField];
+            
+            if (kw && label) {
+                keywordMap.push({ keyword: String(kw).toLowerCase().trim(), label: String(label).trim() });
+            }
         });
-        
-        // Fallback for simple 2 column structure
-        if (!kw && kwKeys.length >= 2) {
-            kw = row[kwKeys[0]];
-            label = row[kwKeys[1]];
-        }
-        
-        if (kw && label) {
-            keywordMap.push({ keyword: String(kw).toLowerCase().trim(), label: String(label).trim() });
-        }
-    });
+    }
 
     // Lọc ra danh sách các nhãn (labels) duy nhất để làm Droplist
     AppState.uniqueLabels = [...new Set(keywordMap.map(m => m.label))];
@@ -406,25 +399,19 @@ function processData() {
 
     // 2. Prepare GXT to KTC Mapping
     const gxtMap = {};
-    AppState.gxtData.forEach(row => {
-        const keys = Object.keys(row);
-        let gxt = "", ktc = "";
-        
-        keys.forEach(k => {
-            const kl = k.toLowerCase();
-            if (kl.includes('giao hàng') || kl.includes('gxt') || kl.includes('kho')) gxt = row[k];
-            if (kl.includes('ktc') || kl.includes('kct')) ktc = row[k];
+    if (AppState.gxtData.length > 0) {
+        const gxtKeysFirstRow = Object.keys(AppState.gxtData[0]);
+        const gxtField = gxtKeysFirstRow.find(k => k.toLowerCase().includes('giao') || k.toLowerCase().includes('gxt') || k.toLowerCase().includes('kho')) || gxtKeysFirstRow[0];
+        const ktcField = gxtKeysFirstRow.find(k => k.toLowerCase().includes('ktc') || k.toLowerCase().includes('kct') || k.toLowerCase().includes('trước')) || gxtKeysFirstRow[1];
+
+        AppState.gxtData.forEach(row => {
+            let gxt = row[gxtField];
+            let ktc = row[ktcField];
+            if (gxt) {
+                gxtMap[String(gxt).trim().toLowerCase()] = ktc || "Chưa xác định";
+            }
         });
-        
-        if (!gxt && keys.length >= 2) {
-            gxt = row[keys[0]];
-            ktc = row[keys[1]];
-        }
-        
-        if (gxt) {
-            gxtMap[String(gxt).trim().toLowerCase()] = ktc;
-        }
-    });
+    }
 
     // 3. Map Database
     if (AppState.dbData.length === 0) return;

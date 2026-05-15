@@ -431,12 +431,12 @@ function processData() {
     
     // Nhận diện cột động từ dòng đầu tiên để tránh sai lệch do tên cột (case-sensitive)
     const firstRowKeys = Object.keys(AppState.dbData[0]);
-    const weekKey = firstRowKeys.find(k => k.toLowerCase().includes('week') || k.toLowerCase().includes('tuần')) || 'pickup_week';
-    const clientKey = firstRowKeys.find(k => k.toLowerCase().includes('client') || k.toLowerCase().includes('khách')) || 'client_name';
-    const orderKey = firstRowKeys.find(k => k.toLowerCase().includes('order') || k.toLowerCase().includes('mã')) || 'order_code';
-    const typeKey = firstRowKeys.find(k => k.toLowerCase().includes('type') || k.toLowerCase().includes('loại')) || 'damage_type';
-    const detailKey = firstRowKeys.find(k => k.toLowerCase().includes('detail') || k.toLowerCase().includes('chi tiết') || k.toLowerCase().includes('ghi chú')) || 'damage_details';
-    const gxtKeyField = firstRowKeys.find(k => k.toLowerCase().includes('giao') || k.toLowerCase().includes('gxt') || k.toLowerCase().includes('kho')) || 'warehouse_giao';
+    const weekKey = firstRowKeys.find(k => k.toLowerCase().includes('week')) || firstRowKeys.find(k => k.toLowerCase().includes('tuần')) || 'pickup_week';
+    const clientKey = firstRowKeys.find(k => k.toLowerCase().includes('client')) || firstRowKeys.find(k => k.toLowerCase().includes('khách')) || 'client_name';
+    const orderKey = firstRowKeys.find(k => k.toLowerCase().includes('order')) || firstRowKeys.find(k => k.toLowerCase().includes('mã')) || 'order_code';
+    const typeKey = firstRowKeys.find(k => k.toLowerCase().includes('type')) || firstRowKeys.find(k => k.toLowerCase().includes('loại')) || 'damage_type';
+    const detailKey = firstRowKeys.find(k => k.toLowerCase().includes('detail')) || firstRowKeys.find(k => k.toLowerCase().includes('chi tiết')) || firstRowKeys.find(k => k.toLowerCase().includes('ghi chú')) || 'damage_details';
+    const gxtKeyField = firstRowKeys.find(k => k.toLowerCase().includes('gxt')) || firstRowKeys.find(k => k.toLowerCase().includes('giao')) || firstRowKeys.find(k => k.toLowerCase().includes('kho')) || 'warehouse_giao';
 
     AppState.mappedData = AppState.dbData.map(row => {
         // Gom chung text của Loại lỗi và Chi tiết lỗi để đối chiếu Keyword (tăng độ chính xác)

@@ -395,8 +395,15 @@ function processData() {
     const keywordMap = [];
     if (AppState.kwData.length > 0) {
         const kwKeysFirstRow = Object.keys(AppState.kwData[0]);
-        const kwKeyField = kwKeysFirstRow.find(k => k.toLowerCase().includes('key') || k.toLowerCase().includes('từ khóa') || k.toLowerCase().includes('word')) || kwKeysFirstRow[0];
-        const labelKeyField = kwKeysFirstRow.find(k => k.toLowerCase().includes('label') || k.toLowerCase().includes('nhãn') || k.toLowerCase().includes('loại')) || kwKeysFirstRow[1];
+        
+        // Cảnh báo nếu dán nhầm link Data vào ô Keyword
+        const hasKeywordCol = kwKeysFirstRow.some(k => normalizeStr(k).includes('key') || normalizeStr(k).includes('từ khóa') || normalizeStr(k).includes('word'));
+        if (!hasKeywordCol && AppState.kwData.length > 5) {
+            alert("⚠️ CẢNH BÁO: Hình như bạn đang dán nhầm Link Data vào ô Keyword (chưa chuyển sang Tab Keyword lúc copy link). Vui lòng dán đúng link của Tab chứa từ khóa!");
+        }
+
+        const kwKeyField = kwKeysFirstRow.find(k => normalizeStr(k).includes('key') || normalizeStr(k).includes('từ khóa') || normalizeStr(k).includes('word')) || kwKeysFirstRow[0];
+        const labelKeyField = kwKeysFirstRow.find(k => normalizeStr(k).includes('label') || normalizeStr(k).includes('nhãn') || normalizeStr(k).includes('loại')) || kwKeysFirstRow[1];
 
         AppState.kwData.forEach(row => {
             let kw = row[kwKeyField];

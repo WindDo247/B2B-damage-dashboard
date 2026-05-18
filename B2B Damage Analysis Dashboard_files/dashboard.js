@@ -25,7 +25,7 @@ function saveStateToDB() {
             const db = e.target.result;
             const tx = db.transaction(STORE_NAME, 'readwrite');
             const store = tx.objectStore(STORE_NAME);
-
+            
             store.put({
                 dbData: AppState.dbData,
                 kwData: AppState.kwData,
@@ -34,7 +34,7 @@ function saveStateToDB() {
                 uniqueLabels: AppState.uniqueLabels,
                 filesLoaded: AppState.filesLoaded
             }, 'state');
-
+            
             tx.oncomplete = () => resolve();
             tx.onerror = () => reject(tx.error);
         };
@@ -69,7 +69,7 @@ function loadStateFromDB() {
     if (input) {
         const savedUrl = localStorage.getItem(`saved_url_${target}`);
         if (savedUrl) input.value = savedUrl;
-
+        
         input.addEventListener('input', (e) => {
             localStorage.setItem(`saved_url_${target}`, e.target.value.trim());
         });
@@ -102,15 +102,15 @@ navItems.forEach(item => {
     item.addEventListener('click', (e) => {
         e.preventDefault();
         const targetId = item.getAttribute('data-target');
-
+        
         // Update nav
         navItems.forEach(nav => nav.classList.remove('active'));
         item.classList.add('active');
-
+        
         // Update sections
         sections.forEach(sec => sec.classList.remove('active'));
         document.getElementById(targetId).classList.add('active');
-
+        
         // Resize charts if dashboard is shown
         if (targetId === 'dashboard-section') {
             Object.values(AppState.charts).forEach(chart => {
@@ -125,12 +125,12 @@ document.querySelectorAll('.import-tab').forEach(tab => {
     tab.addEventListener('click', (e) => {
         const type = tab.getAttribute('data-type'); // 'file' or 'link'
         const target = tab.getAttribute('data-target'); // 'db', 'kw', or 'gxt'
-
+        
         // Update active tab
         const tabContainer = tab.closest('.import-tabs');
         tabContainer.querySelectorAll('.import-tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
-
+        
         // Show corresponding content
         const box = document.getElementById(`drop-${target}`);
         box.querySelectorAll('.import-content').forEach(c => c.classList.remove('active'));
@@ -141,20 +141,20 @@ document.querySelectorAll('.import-tab').forEach(tab => {
 // Common Data Handler
 function handleDataLoad(type, data, filename) {
     try {
-        const workbook = XLSX.read(data, { type: 'array' });
+        const workbook = XLSX.read(data, {type: 'array'});
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
         const json = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
-
+        
         if (type === 'db') AppState.dbData = json;
         if (type === 'kw') AppState.kwData = json;
         if (type === 'gxt') AppState.gxtData = json;
-
+        
         AppState.filesLoaded[type] = true;
         statuses[type].textContent = `${filename} (${json.length} dòng)`;
         statuses[type].style.color = 'var(--accent-success)';
         dropBoxes[type].classList.add('success');
-
+        
         checkAllFilesLoaded();
         saveStateToDB(); // Lưu vào DB ngay khi import thành công
     } catch (error) {
@@ -171,9 +171,9 @@ Object.keys(fileInputs).forEach(key => {
     fileInputs[key].addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
+        
         const reader = new FileReader();
-        reader.onload = function (e) {
+        reader.onload = function(e) {
             const data = new Uint8Array(e.target.result);
             handleDataLoad(key, data, file.name);
         };
@@ -187,28 +187,28 @@ document.querySelectorAll('.btn-fetch').forEach(btn => {
         const target = btn.getAttribute('data-target');
         const linkInput = document.getElementById(`link-${target}`);
         const url = linkInput.value.trim();
-
+        
         if (!url) {
             alert('Vui lòng nhập URL hợp lệ');
             return;
         }
-
+        
         // Lưu URL vào bộ nhớ tạm của trình duyệt để lần sau mở lại vẫn còn
         localStorage.setItem(`saved_url_${target}`, url);
-
+        
         const originalText = btn.textContent;
         btn.textContent = 'Đang tải...';
         btn.disabled = true;
         statuses[target].textContent = 'Đang tải dữ liệu từ URL...';
         statuses[target].style.color = 'var(--text-secondary)';
-
+        
         try {
             let fetchUrl = url;
             let isGoogleSheet = false;
             let isGoogleDrive = false;
             let gId = null;
             let sheetGid = null;
-
+            
             // Xử lý link Google Sheets
             if (url.includes('docs.google.com/spreadsheets')) {
                 const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
@@ -220,7 +220,7 @@ document.querySelectorAll('.btn-fetch').forEach(btn => {
                 if (gidMatch) {
                     sheetGid = gidMatch[1];
                 }
-            }
+            } 
             // Xử lý link Google Drive
             else if (url.includes('drive.google.com/file/d/')) {
                 const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
@@ -235,7 +235,7 @@ document.querySelectorAll('.btn-fetch').forEach(btn => {
                 // Tận dụng kỹ thuật JSONP riêng của Google Sheets (bỏ qua mọi rào cản CORS & Origin null)
                 await new Promise((resolve, reject) => {
                     const callbackName = 'gvizCallback_' + Math.round(Math.random() * 1000000);
-
+                    
                     // Thiết lập timeout 15 giây để tránh kẹt mãi mãi
                     const timeoutId = setTimeout(() => {
                         delete window[callbackName];
@@ -244,19 +244,19 @@ document.querySelectorAll('.btn-fetch').forEach(btn => {
                         }
                         reject(new Error("Hết thời gian chờ (Timeout). Có vẻ như Google không phản hồi đúng định dạng."));
                     }, 15000);
-
-                    window[callbackName] = function (data) {
+                    
+                    window[callbackName] = function(data) {
                         clearTimeout(timeoutId);
                         delete window[callbackName];
                         if (document.getElementById(callbackName)) {
                             document.body.removeChild(document.getElementById(callbackName));
                         }
-
+                        
                         if (data.status === 'error') {
                             reject(new Error("Google Sheets báo lỗi: " + (data.errors ? data.errors[0].message : 'Quyền truy cập')));
                             return;
                         }
-
+                        
                         try {
                             const cols = data.table.cols.map((c, i) => c && c.label ? c.label : (c && c.id ? c.id : `Cột_${i}`));
                             const jsonArray = data.table.rows.map(row => {
@@ -269,33 +269,33 @@ document.querySelectorAll('.btn-fetch').forEach(btn => {
                                 });
                                 return rowObj;
                             });
-
+                            
                             if (target === 'db') AppState.dbData = jsonArray;
                             if (target === 'kw') AppState.kwData = jsonArray;
                             if (target === 'gxt') AppState.gxtData = jsonArray;
-
+                            
                             AppState.filesLoaded[target] = true;
                             statuses[target].textContent = `Google Sheets (${jsonArray.length} dòng)`;
                             statuses[target].style.color = 'var(--accent-success)';
                             dropBoxes[target].classList.add('success');
-
+                            
                             checkAllFilesLoaded();
                             saveStateToDB(); // Lưu state
                             resolve();
-                        } catch (e) {
+                        } catch(e) {
                             reject(new Error("Lỗi khi giải mã dữ liệu Google Sheets"));
                         }
                     };
-
+                    
                     const script = document.createElement('script');
                     script.id = callbackName;
-
+                    
                     let gvizUrl = `https://docs.google.com/spreadsheets/d/${gId}/gviz/tq?tqx=out:json;responseHandler:${callbackName}&headers=1`;
                     if (sheetGid) {
                         gvizUrl += `&gid=${sheetGid}`;
                     }
                     script.src = gvizUrl;
-
+                    
                     script.onerror = () => {
                         clearTimeout(timeoutId);
                         delete window[callbackName];
@@ -304,14 +304,14 @@ document.querySelectorAll('.btn-fetch').forEach(btn => {
                         }
                         reject(new Error("Không thể kết nối. Đảm bảo link là Google Sheets ở chế độ Anyone with link."));
                     };
-
+                    
                     document.body.appendChild(script);
                 });
             } else {
                 // Với Google Drive hoặc file tĩnh khác, buộc phải dùng Proxy
                 const proxy1 = `https://corsproxy.io/?${encodeURIComponent(fetchUrl)}`;
                 const proxy2 = `https://api.allorigins.win/raw?url=${encodeURIComponent(fetchUrl)}`;
-
+                
                 let response = null;
                 try {
                     response = await fetch(proxy1);
@@ -321,25 +321,25 @@ document.querySelectorAll('.btn-fetch').forEach(btn => {
                         response = await fetch(proxy2);
                         if (!response.ok) throw new Error("p2 fail");
                     } catch (e2) {
-                        response = await fetch(fetchUrl);
+                        response = await fetch(fetchUrl); 
                     }
                 }
 
                 if (!response || !response.ok) {
                     throw new Error(`HTTP ${response ? response.status : 'Unknown'} - Không thể kết nối. Máy chủ từ chối file cục bộ (file://).`);
                 }
-
+                
                 const arrayBuffer = await response.arrayBuffer();
                 const data = new Uint8Array(arrayBuffer);
-
+                
                 const decoder = new TextDecoder('utf-8');
                 const sampleText = decoder.decode(data.slice(0, 150));
                 const lowerSample = sampleText.toLowerCase();
-
+                
                 if (lowerSample.includes('<!doctype html>') || lowerSample.includes('<html') || lowerSample.includes('google sign in')) {
-                    throw new Error("Link trả về trang HTML/Đăng nhập. Hãy đổi sang định dạng tải trực tiếp.");
+                     throw new Error("Link trả về trang HTML/Đăng nhập. Hãy đổi sang định dạng tải trực tiếp.");
                 }
-
+                
                 const filename = fetchUrl.split('/').pop().split('?')[0] || `Link Data`;
                 handleDataLoad(target, data, filename);
             }
@@ -366,19 +366,19 @@ function checkAllFilesLoaded() {
 
 btnProcess.addEventListener('click', () => {
     loadingOverlay.classList.add('active');
-
+    
     // Simulate slight delay for UI responsiveness
     setTimeout(() => {
         try {
             processData();
             buildDashboard();
             generateReport();
-
+            
             // Enable navigation and switch to dashboard
             document.getElementById('nav-dashboard').style.display = 'flex';
             document.getElementById('nav-report').style.display = 'flex';
             navItems[1].click(); // Click dashboard
-
+            
             // Lưu toàn bộ trạng thái vào DB
             saveStateToDB();
         } catch (error) {
@@ -393,12 +393,7 @@ btnProcess.addEventListener('click', () => {
 // Helper function to normalize Vietnamese text (NFC), lowercase, and remove extra spaces
 function normalizeStr(str) {
     if (!str) return '';
-    return String(str)
-        .normalize('NFC')
-        .toLowerCase()
-        .replace(/[\u200B-\u200D\uFEFF]/g, '') // Remove zero-width spaces
-        .replace(/\s+/g, ' ')
-        .trim();
+    return String(str).normalize('NFC').toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
 function processData() {
@@ -406,7 +401,7 @@ function processData() {
         if (!dataArray || dataArray.length === 0) return null;
         const keys = Object.keys(dataArray[0]);
         const firstRowValues = dataArray[0];
-
+        
         // 1. Scan headers (Keys)
         const keyMatch = keys.find(k => keywords.some(kw => normalizeStr(k).includes(kw)));
         if (keyMatch) return keyMatch;
@@ -421,41 +416,24 @@ function processData() {
     // 1. Prepare Keyword Mapping (keyword -> label)
     const keywordMap = [];
     if (AppState.kwData.length > 0) {
-        const kwKeys = Object.keys(AppState.kwData[0]);
-        const kwKeyField = dualScanFindKey(AppState.kwData, ['key', 'từ khóa', 'word', 'lỗi', 'mô tả', 'chi tiết']) || kwKeys[0];
-        const labelKeyField = dualScanFindKey(AppState.kwData, ['label', 'nhãn', 'loại', 'nhóm', 'phân']) || kwKeys[1];
-
-        // Phục hồi dòng đầu tiên nếu người dùng không đặt Header (ví dụ: dòng đầu tiên là "rách" -> "damage")
-        const isKwHeader = ['key', 'từ khóa', 'word', 'lỗi', 'mô tả', 'chi tiết', 'cột_'].some(w => String(kwKeyField).toLowerCase().includes(w));
-        if (!isKwHeader) {
-            let normKw = normalizeStr(kwKeyField);
-            if (normKw.length > 0 && labelKeyField) {
-                keywordMap.push({
-                    keyword: normKw,
-                    label: String(labelKeyField).trim()
-                });
-            }
-        }
+        const kwKeyField = dualScanFindKey(AppState.kwData, ['key', 'từ khóa', 'word']) || Object.keys(AppState.kwData[0])[0];
+        const labelKeyField = dualScanFindKey(AppState.kwData, ['label', 'nhãn', 'loại']) || Object.keys(AppState.kwData[0])[1];
 
         AppState.kwData.forEach((row, index) => {
             // Bỏ qua dòng tiêu đề nếu vô tình lọt vào data
-            if (index === 0 && isKwHeader) return;
+            if (index === 0 && (String(row[kwKeyField] || '').toLowerCase().includes('key') || String(row[kwKeyField] || '').toLowerCase().includes('từ khóa'))) return;
 
             let kw = row[kwKeyField];
             let label = row[labelKeyField];
-
-            let normKw = normalizeStr(kw);
-            if (normKw.length > 0 && label) {
-                keywordMap.push({
-                    keyword: normKw,
+            
+            if (kw && label) {
+                keywordMap.push({ 
+                    keyword: normalizeStr(kw), 
                     label: String(label).trim() // Keep label original case for display
                 });
             }
         });
     }
-
-    // Ưu tiên so khớp các từ khóa DÀI TRƯỚC (cụm từ cụ thể) để tránh bị từ khóa ngắn (ví dụ: "rách" vs "rách tem") bắt nhầm
-    keywordMap.sort((a, b) => b.keyword.length - a.keyword.length);
 
     // Lưu keywordMap vào AppState để debug
     AppState.keywordMap = keywordMap;
@@ -469,18 +447,10 @@ function processData() {
     // 2. Prepare GXT to KTC Mapping
     const gxtMap = {};
     if (AppState.gxtData.length > 0) {
-        const gxtKeys = Object.keys(AppState.gxtData[0]);
-        const gxtField = dualScanFindKey(AppState.gxtData, ['giao', 'gxt', 'kho']) || gxtKeys[0];
-        const ktcField = dualScanFindKey(AppState.gxtData, ['ktc', 'kct', 'trước']) || gxtKeys[1];
+        const gxtField = dualScanFindKey(AppState.gxtData, ['giao', 'gxt', 'kho']) || Object.keys(AppState.gxtData[0])[0];
+        const ktcField = dualScanFindKey(AppState.gxtData, ['ktc', 'kct', 'trước']) || Object.keys(AppState.gxtData[0])[1];
 
-        // Phục hồi dòng đầu tiên nếu người dùng không đặt Header
-        const isGxtHeader = ['giao', 'gxt', 'kho', 'cột_'].some(w => String(gxtField).toLowerCase().includes(w));
-        if (!isGxtHeader) {
-            gxtMap[String(gxtField).toLowerCase().trim()] = String(ktcField).trim();
-        }
-
-        AppState.gxtData.forEach((row, index) => {
-            if (index === 0 && isGxtHeader) return;
+        AppState.gxtData.forEach(row => {
             let gxt = row[gxtField];
             let ktc = row[ktcField];
             if (gxt) {
@@ -491,7 +461,7 @@ function processData() {
 
     // 3. Map Database
     if (AppState.dbData.length === 0) return;
-
+    
     const weekKey = dualScanFindKey(AppState.dbData, ['week', 'tuần']) || 'pickup_week';
     const clientKey = dualScanFindKey(AppState.dbData, ['client', 'khách', 'người gửi']) || 'client_name';
     const orderKey = dualScanFindKey(AppState.dbData, ['order', 'mã', 'tracking', 'vận đơn']) || 'order_code';
@@ -507,38 +477,24 @@ function processData() {
         isFirstRowHeader = true;
     }
 
-    const debugTrace = []; // Lấy 5 dòng đầu để trace lỗi
-
-
     AppState.mappedData = AppState.dbData.map((row, index) => {
         if (isFirstRowHeader && index === 0) return null; // Bỏ qua dòng tiêu đề nếu bị lọt vào data
         // Gom chung text của Loại lỗi và Chi tiết lỗi để đối chiếu Keyword (tăng độ chính xác)
         const typeText = String(row[typeKey] || '');
         const detailText = String(row[detailKey] || '');
         const combinedText = normalizeStr(typeText + " " + detailText);
-
+        
         let matchedLabel = "Khác";
-        let keywordHit = "";
-
+        
         for (let mapObj of keywordMap) {
             if (combinedText.includes(mapObj.keyword)) {
                 matchedLabel = mapObj.label;
-                keywordHit = mapObj.keyword;
                 break; // Lấy nhãn đầu tiên match được
             }
         }
-
+        
         const gxtName = String(row[gxtKeyField] || '').trim();
         const matchedKTC = gxtMap[gxtName.toLowerCase()] || "Chưa xác định";
-
-        if (debugTrace.length < 5) {
-            debugTrace.push({
-                order: row[orderKey],
-                combined: combinedText,
-                keywordHit: keywordHit,
-                finalLabel: matchedLabel
-            });
-        }
 
         return {
             clean_week: row[weekKey] || "W_Unknown",
@@ -548,12 +504,9 @@ function processData() {
             clean_detail: detailText,
             clean_gxt: gxtName,
             mapped_ktc: matchedKTC,
-            mapped_label: matchedLabel,
-            keyword_hit: keywordHit
+            mapped_label: matchedLabel
         };
     }).filter(d => d !== null); // Xóa bỏ dòng null (tiêu đề)
-
-    AppState.debugTrace = debugTrace;
 
     // Reset filter
     AppState.filteredData = AppState.mappedData;
@@ -562,7 +515,7 @@ function processData() {
 // Dashboard Building
 function buildDashboard() {
     const data = AppState.mappedData;
-
+    
     // Grouping Helpers
     const groupBy = (array, key) => {
         return array.reduce((result, currentValue) => {
@@ -575,7 +528,7 @@ function buildDashboard() {
     const weekGroups = groupBy(data, 'clean_week');
     const weeks = Object.keys(weekGroups).sort();
     const trendData = weeks.map(w => weekGroups[w].length);
-
+    
     createChart('trendChart', 'line', {
         labels: weeks,
         datasets: [{
@@ -597,7 +550,7 @@ function buildDashboard() {
     const weekFilterGxt = document.getElementById('week-filter-gxt');
     weekFilterKtc.innerHTML = '<option value="all">Tất cả các tuần</option>';
     weekFilterGxt.innerHTML = '<option value="all">Tất cả các tuần</option>';
-
+    
     weeks.forEach(w => {
         weekFilterKtc.innerHTML += `<option value="${w}">${w}</option>`;
         weekFilterGxt.innerHTML += `<option value="${w}">${w}</option>`;
@@ -613,9 +566,9 @@ function buildDashboard() {
 
     // 3. Label Breakdown (Pie Chart)
     const labelGroups = groupBy(data, 'mapped_label');
-    const labels = Object.keys(labelGroups).sort((a, b) => labelGroups[b].length - labelGroups[a].length);
+    const labels = Object.keys(labelGroups).sort((a,b) => labelGroups[b].length - labelGroups[a].length);
     const labelData = labels.map(l => labelGroups[l].length);
-
+    
     createChart('labelChart', 'doughnut', {
         labels: labels,
         datasets: [{
@@ -630,9 +583,9 @@ function buildDashboard() {
 
     // 4. Client Chart
     const clientGroups = groupBy(data, 'clean_client');
-    const clients = Object.keys(clientGroups).sort((a, b) => clientGroups[b].length - clientGroups[a].length).slice(0, 5);
+    const clients = Object.keys(clientGroups).sort((a,b) => clientGroups[b].length - clientGroups[a].length).slice(0, 5);
     const clientData = clients.map(c => clientGroups[c].length);
-
+    
     createChart('clientChart', 'bar', {
         labels: clients,
         datasets: [{
@@ -649,17 +602,17 @@ function updateKtcChart(week) {
     if (week !== 'all') {
         targetData = targetData.filter(d => d.clean_week === week);
     }
-
+    
     // Chỉ quan tâm lỗi 'damage'
     targetData = targetData.filter(d => d.mapped_label.toLowerCase().includes('damage'));
-
+    
     const ktcMap = {};
     targetData.forEach(d => {
         ktcMap[d.mapped_ktc] = (ktcMap[d.mapped_ktc] || 0) + 1;
     });
-
+    
     const sortedKtc = Object.entries(ktcMap).sort((a, b) => b[1] - a[1]).slice(0, 10); // Top 10
-
+    
     createChart('ktcChart', 'bar', {
         labels: sortedKtc.map(k => k[0]),
         datasets: [{
@@ -676,17 +629,17 @@ function updateGxtChart(week) {
     if (week !== 'all') {
         targetData = targetData.filter(d => d.clean_week === week);
     }
-
+    
     // Chỉ quan tâm lỗi 'damage'
     targetData = targetData.filter(d => d.mapped_label.toLowerCase().includes('damage'));
-
+    
     const gxtMap = {};
     targetData.forEach(d => {
         gxtMap[d.clean_gxt] = (gxtMap[d.clean_gxt] || 0) + 1;
     });
-
+    
     const sortedGxt = Object.entries(gxtMap).sort((a, b) => b[1] - a[1]).slice(0, 10); // Top 10
-
+    
     createChart('gxtChart', 'bar', {
         labels: sortedGxt.map(k => k[0]),
         datasets: [{
@@ -702,12 +655,12 @@ function createChart(id, type, data, options = {}) {
     if (AppState.charts[id]) {
         AppState.charts[id].destroy();
     }
-
+    
     const ctx = document.getElementById(id).getContext('2d');
-
+    
     Chart.defaults.color = '#94a3b8';
     Chart.defaults.font.family = "'Inter', sans-serif";
-
+    
     const baseOptions = {
         responsive: true,
         maintainAspectRatio: false,
@@ -719,7 +672,7 @@ function createChart(id, type, data, options = {}) {
         },
         ...options
     };
-
+    
     if (type === 'bar' || type === 'line') {
         baseOptions.scales = {
             y: {
@@ -736,7 +689,7 @@ function createChart(id, type, data, options = {}) {
             baseOptions.scales.y.grid = { display: false };
         }
     }
-
+    
     if (typeof ChartDataLabels !== 'undefined') {
         Chart.register(ChartDataLabels);
         baseOptions.plugins.datalabels = {
@@ -757,7 +710,7 @@ function createChart(id, type, data, options = {}) {
             }
         };
     }
-
+    
     AppState.charts[id] = new Chart(ctx, {
         type: type,
         data: data,
@@ -769,21 +722,21 @@ function createChart(id, type, data, options = {}) {
 function generateReport(keepPage = false) {
     const data = AppState.mappedData;
     const reportContent = document.getElementById('report-content');
-
+    
     // Calculations
     const totalIssues = data.length;
-
+    
     const weekGroups = {};
     data.forEach(d => { weekGroups[d.clean_week] = (weekGroups[d.clean_week] || 0) + 1; });
     const weeks = Object.keys(weekGroups).sort();
-
+    
     let trendText = "Chưa đủ dữ liệu tuần";
     if (weeks.length >= 2) {
-        const lastW = weekGroups[weeks[weeks.length - 1]];
-        const prevW = weekGroups[weeks[weeks.length - 2]];
+        const lastW = weekGroups[weeks[weeks.length-1]];
+        const prevW = weekGroups[weeks[weeks.length-2]];
         const diff = lastW - prevW;
         const pct = ((Math.abs(diff) / prevW) * 100).toFixed(1);
-
+        
         if (diff > 0) trendText = `<span style="color: var(--accent-danger)">Tăng ${pct}%</span> so với tuần trước.`;
         else if (diff < 0) trendText = `<span style="color: var(--accent-success)">Giảm ${pct}%</span> so với tuần trước.`;
         else trendText = "Tương đương tuần trước.";
@@ -797,9 +750,9 @@ function generateReport(keepPage = false) {
         ktcGroups[d.mapped_ktc] = (ktcGroups[d.mapped_ktc] || 0) + 1;
         gxtGroups[d.clean_gxt] = (gxtGroups[d.clean_gxt] || 0) + 1;
     });
-
-    const topKtc = Object.entries(ktcGroups).sort((a, b) => b[1] - a[1])[0] || ["N/A", 0];
-    const topGxt = Object.entries(gxtGroups).sort((a, b) => b[1] - a[1])[0] || ["N/A", 0];
+    
+    const topKtc = Object.entries(ktcGroups).sort((a,b) => b[1] - a[1])[0] || ["N/A", 0];
+    const topGxt = Object.entries(gxtGroups).sort((a,b) => b[1] - a[1])[0] || ["N/A", 0];
 
     // Build HTML Report
     let html = `
@@ -821,38 +774,35 @@ function generateReport(keepPage = false) {
             <li>Tăng cường kiểm tra ngẫu nhiên (audit) ngoại quan thùng xe trước khi rời kho B2B đối với các tuyến chạy thẳng về ${topKtc[0]}.</li>
         </ul>
     `;
-
+    
     // DEBUG INFO
     const kwMap = AppState.keywordMap || [];
-    const kwPreview = kwMap.length > 0 ? kwMap.map(k => `[${k.keyword}]`).join(', ') : "Không tìm thấy";
-
+    const kwPreview = kwMap.length > 0 ? kwMap.map(k => `[${k.keyword} -> ${k.label}]`).slice(0, 10).join(', ') : "Không tìm thấy";
+    
     let dbKeys = "Không có";
     let dbRow1 = "Không có";
     if (AppState.dbData && AppState.dbData.length > 0) {
         dbKeys = Object.keys(AppState.dbData[0]).join(' | ');
         dbRow1 = Object.values(AppState.dbData[0]).join(' | ');
     }
-
+    
     const dk = AppState.debugKeys || {};
-    const traceHtml = AppState.debugTrace ? AppState.debugTrace.map(t => `<div>Mã: ${t.order} | Câu dò: "${t.combined}" => Khớp từ: [${t.keywordHit}] => Nhãn: ${t.finalLabel}</div>`).join('') : "";
-
+    
     html += `
         <div style="margin-top:30px; padding:15px; background:var(--bg-secondary); border-radius:5px; font-size:12px; color:var(--text-muted); border: 1px dashed var(--accent-danger);">
             <strong>🔍 BẢNG GỠ LỖI (DEBUG LOG):</strong><br/><br/>
-            - <strong>Số lượng từ khóa:</strong> <span style="color:var(--text-main);">${kwMap.length}</span> từ.<br/>
-            - <strong>Toàn bộ từ khóa đã nhận diện:</strong> <span style="color:var(--text-main);">${kwPreview}</span><br/>
-            <hr style="border-top:1px dashed #ccc; margin:10px 0;"/>
-            <strong>TRACE 5 ĐƠN HÀNG ĐẦU TIÊN:</strong><br/>
-            ${traceHtml}
-            <hr style="border-top:1px dashed #ccc; margin:10px 0;"/>
-            - <strong>Cột Mã Đơn:</strong> <span style="color:var(--accent-success);">${dk.orderKey}</span><br/>
-            - <strong>Cột Loại Lỗi:</strong> <span style="color:var(--accent-success);">${dk.typeKey}</span><br/>
-            - <strong>Cột Chi Tiết Lỗi:</strong> <span style="color:var(--accent-danger);">${dk.detailKey}</span>
+            - <strong>Số lượng từ khóa đọc được từ Link Keyword:</strong> <span style="color:var(--text-main);">${kwMap.length}</span> từ.<br/>
+            - <strong>10 Từ khóa đầu tiên:</strong> <span style="color:var(--text-main);">${kwPreview}</span><br/><br/>
+            - <strong>Danh sách Tên Cột Data gốc (Keys):</strong> <span style="color:var(--accent-warning);">${dbKeys}</span><br/>
+            - <strong>Danh sách Dữ Liệu Dòng 1 (Values):</strong> <span style="color:var(--accent-warning);">${dbRow1}</span><br/><br/>
+            - <strong>Web nhận diện cột Mã Đơn là:</strong> <span style="color:var(--accent-success);">${dk.orderKey}</span><br/>
+            - <strong>Web nhận diện cột Loại Lỗi là:</strong> <span style="color:var(--accent-success);">${dk.typeKey}</span><br/>
+            - <strong>Web nhận diện cột Chi Tiết Lỗi là:</strong> <span style="color:var(--accent-danger);">${dk.detailKey}</span>
         </div>
     `;
 
     reportContent.innerHTML = html;
-
+    
     // Populate Table Filters & Render
     populateTableFilters();
     applyTableFilters(); // This will call renderTable(1) or keepPage
@@ -861,7 +811,7 @@ function generateReport(keepPage = false) {
 // Table Filtering Logic
 function populateTableFilters() {
     if (!AppState.mappedData || AppState.mappedData.length === 0) return;
-
+    
     const filters = [
         { id: 'col-filter-week', key: 'clean_week' },
         { id: 'col-filter-type', key: 'clean_type' },
@@ -876,17 +826,17 @@ function populateTableFilters() {
         if (el) {
             const currentValue = el.value; // Store current selection
             el.innerHTML = '<option value="all">Tất cả</option>';
-
+            
             // Lấy danh sách giá trị độc nhất và lọc bỏ các giá trị rỗng/null
             const uniqueValues = [...new Set(AppState.mappedData.map(d => d[f.key]).filter(v => v !== null && v !== undefined && v !== ''))].sort();
-
+            
             uniqueValues.forEach(val => {
                 const opt = document.createElement('option');
                 opt.value = val;
                 opt.textContent = val;
                 el.appendChild(opt);
             });
-
+            
             // Khôi phục lại giá trị đã chọn nếu còn tồn tại trong danh sách mới
             if (currentValue && uniqueValues.includes(currentValue)) {
                 el.value = currentValue;
@@ -898,28 +848,28 @@ function populateTableFilters() {
 function applyTableFilters() {
     const orderQuery = (document.getElementById('col-filter-order')?.value || '').toLowerCase().trim();
     const detailQuery = (document.getElementById('col-filter-detail')?.value || '').toLowerCase().trim();
-
+    
     const typeQuery = document.getElementById('col-filter-type')?.value || 'all';
     const gxtQuery = document.getElementById('col-filter-gxt')?.value || 'all';
     const ktcQuery = document.getElementById('col-filter-ktc')?.value || 'all';
     const clientQuery = document.getElementById('col-filter-client')?.value || 'all';
     const labelQuery = document.getElementById('col-filter-label')?.value || 'all';
     const weekQuery = document.getElementById('col-filter-week')?.value || 'all';
-
+    
     AppState.filteredData = AppState.mappedData.filter(d => {
         const matchOrder = !orderQuery || d.clean_order.toLowerCase().includes(orderQuery);
         const matchDetail = !detailQuery || (d.clean_detail && d.clean_detail.toLowerCase().includes(detailQuery));
-
+        
         const matchType = typeQuery === 'all' || d.clean_type === typeQuery;
         const matchGxt = gxtQuery === 'all' || d.clean_gxt === gxtQuery;
         const matchKtc = ktcQuery === 'all' || d.mapped_ktc === ktcQuery;
         const matchClient = clientQuery === 'all' || d.clean_client === clientQuery;
         const matchLabel = labelQuery === 'all' || d.mapped_label === labelQuery;
         const matchWeek = weekQuery === 'all' || d.clean_week === weekQuery;
-
+        
         return matchOrder && matchDetail && matchType && matchGxt && matchKtc && matchClient && matchLabel && matchWeek;
     });
-
+    
     renderTable(1);
 }
 
@@ -971,24 +921,24 @@ function renderTable(page) {
     const tbody = document.getElementById('table-body');
     const data = AppState.filteredData || AppState.mappedData;
     const totalPages = Math.ceil(data.length / rowsPerPage) || 1;
-
+    
     if (page < 1) page = 1;
     if (page > totalPages) page = totalPages;
     currentPage = page;
-
+    
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
     const pageData = data.slice(start, end);
-
+    
     tbody.innerHTML = '';
     pageData.forEach((row, i) => {
         const globalIndex = start + i;
-
+        
         // Tạo HTML cho Dropdown list dựa trên danh sách nhãn đã có
-        let optionsHtml = AppState.uniqueLabels.map(l =>
+        let optionsHtml = AppState.uniqueLabels.map(l => 
             `<option value="${l}" ${l === row.mapped_label ? 'selected' : ''}>${l}</option>`
         ).join('');
-
+        
         // Bổ sung thêm nhãn nếu nhãn hiện tại không nằm trong bộ keyword map
         if (!AppState.uniqueLabels.includes(row.mapped_label)) {
             optionsHtml += `<option value="${row.mapped_label}" selected>${row.mapped_label}</option>`;
@@ -1006,14 +956,14 @@ function renderTable(page) {
                 ${row.clean_detail || ''}
             </td>
             <td>
-                <select class="label-select" data-index="${globalIndex}" title="${row.keyword_hit ? 'Bắt được từ: ' + row.keyword_hit : 'Không bắt được từ khóa nào'}">
+                <select class="label-select" data-index="${globalIndex}" title="Thay đổi nhãn">
                     ${optionsHtml}
                 </select>
             </td>
         `;
         tbody.appendChild(tr);
     });
-
+    
     document.getElementById('page-info').textContent = `Trang ${currentPage} / ${totalPages || 1}`;
 }
 
@@ -1025,14 +975,14 @@ document.getElementById('table-body').addEventListener('change', (e) => {
     if (e.target.classList.contains('label-select')) {
         const idx = parseInt(e.target.getAttribute('data-index'));
         const newVal = e.target.value;
-
+        
         if (AppState.mappedData[idx] && AppState.mappedData[idx].mapped_label !== newVal) {
             AppState.mappedData[idx].mapped_label = newVal;
-
+            
             // Xây dựng lại biểu đồ và báo cáo mà KHÔNG reset lại trang table hiện tại
             buildDashboard();
             generateReport(true);
-
+            
             // Lưu lại state để không mất khi F5
             saveStateToDB();
         }
@@ -1045,17 +995,17 @@ document.getElementById('btn-export-report').addEventListener('click', () => {
         alert("Không có dữ liệu để xuất!");
         return;
     }
-
+    
     // Tự động sử dụng SheetJS (đã được load qua CDN)
     const ws = XLSX.utils.json_to_sheet(AppState.mappedData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Mapped_Data");
-
+    
     // Tạo tên file có ngày tháng
     const dateObj = new Date();
-    const dateStr = `${dateObj.getDate().toString().padStart(2, '0')}${(dateObj.getMonth() + 1).toString().padStart(2, '0')}${dateObj.getFullYear()}`;
+    const dateStr = `${dateObj.getDate().toString().padStart(2, '0')}${(dateObj.getMonth()+1).toString().padStart(2, '0')}${dateObj.getFullYear()}`;
     const filename = `B2B_Damage_Report_${dateStr}.xlsx`;
-
+    
     XLSX.writeFile(wb, filename);
 });
 
@@ -1063,7 +1013,7 @@ document.getElementById('btn-export-report').addEventListener('click', () => {
 loadStateFromDB().then(savedState => {
     if (savedState && savedState.filesLoaded) {
         Object.assign(AppState, savedState);
-
+        
         // Khôi phục UI import
         ['db', 'kw', 'gxt'].forEach(type => {
             if (AppState.filesLoaded[type]) {
@@ -1076,17 +1026,17 @@ loadStateFromDB().then(savedState => {
                 if (box) box.classList.add('success');
             }
         });
-
+        
         checkAllFilesLoaded();
-
+        
         // Nếu đã từng mapping và xem dashboard
         if (AppState.mappedData && AppState.mappedData.length > 0) {
             document.getElementById('nav-dashboard').style.display = 'flex';
             document.getElementById('nav-report').style.display = 'flex';
-
+            
             buildDashboard();
             generateReport(true);
-
+            
             // Tự động chuyển qua trang Dashboard
             navItems[1].click();
         }

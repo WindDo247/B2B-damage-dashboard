@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Org Chart — B2B Operations Management (v2)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f8fafc;--surface:#ffffff;--card:#ffffff;--border:#e2e8f0;
+  --text:#1e293b;--text2:#64748b;--accent:#6366f1;--accent2:#4f46e5;
+  --green:#10b981;--blue:#3b82f6;--amber:#f59e0b;--rose:#f43f5e;--cyan:#06b6d4;
+  --purple:#a855f7;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:auto}
+.header{text-align:center;padding:40px 20px 20px}
+.header h1{font-size:28px;font-weight:800;background:linear-gradient(135deg,var(--accent2),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.header p{color:var(--text2);font-size:14px}
+.org{display:flex;flex-direction:column;align-items:center;padding:20px 30px 60px;min-width:1500px}
+.vline{width:2px;height:28px;background:linear-gradient(180deg,var(--accent),#cbd5e1);margin:0 auto}
+.hgroup{display:flex;align-items:flex-start;justify-content:center;position:relative;width:100%}
+.hgroup::before{content:'';position:absolute;top:0;height:2px;background:var(--border);left:12.5%;right:12.5%}
+.branch{display:flex;flex-direction:column;align-items:center;flex:1;padding:0 6px}
+.branch .vline{height:20px}
+
+.card{border-radius:14px;padding:16px;text-align:center;transition:all .3s ease;cursor:default}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.08)}
+.card-head{background:linear-gradient(135deg,#eef2ff,#e0e7ff);border:1px solid var(--accent);min-width:300px;box-shadow:0 4px 16px rgba(99,102,241,.1)}
+.card-team{background:var(--card);border:1px solid var(--border);box-shadow:0 2px 6px rgba(0,0,0,.05)}
+.card .icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:17px}
+.card .title{font-weight:700;font-size:13px;margin-bottom:3px}
+.card .subtitle{font-size:11px;color:var(--text2);margin-bottom:4px}
+.card .badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:600}
+.t1 .icon{background:rgba(244,63,94,.12)}.t1 .badge{background:rgba(244,63,94,.12);color:var(--rose)}
+.t2 .icon{background:rgba(6,182,212,.12)}.t2 .badge{background:rgba(6,182,212,.12);color:var(--cyan)}
+.t3 .icon{background:rgba(59,130,246,.12)}.t3 .badge{background:rgba(59,130,246,.12);color:var(--blue)}
+.t4 .icon{background:rgba(168,85,247,.12)}.t4 .badge{background:rgba(168,85,247,.12);color:var(--purple)}
+
+/* Horizontal sub layout */
+.sub-hline{display:flex;position:relative;justify-content:center;gap:0}
+.sub-hline::before{content:'';position:absolute;top:0;height:2px;background:var(--border)}
+.sub-hline-2::before{left:25%;right:25%}
+.sub-hline-3::before{left:16%;right:16%}
+.sub-item{display:flex;flex-direction:column;align-items:center;flex:1;min-width:200px;max-width:250px;padding:0 4px}
+.sub-item .vline{height:16px}
+
+/* Job card */
+.jc{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;width:100%;box-shadow:0 1px 3px rgba(0,0,0,.04);text-align:left}
+.jc .jt{font-size:12px;font-weight:700;text-align:center;margin-bottom:3px}
+.jc .js{font-size:10px;text-align:center;margin-bottom:4px;font-weight:600}
+.jc .hc{font-size:10px;color:var(--green);font-weight:600;text-align:center;margin-bottom:6px}
+.jc .jl{font-size:9px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--text2);margin-bottom:4px;padding-bottom:3px;border-bottom:1px solid var(--border)}
+.jc ul{list-style:none;padding:0;margin:0}
+.jc li{font-size:10px;color:var(--text);line-height:1.55;padding:2px 0 2px 12px;position:relative}
+.jc li::before{content:'•';position:absolute;left:1px;color:var(--accent);font-weight:bold}
+.jc .note{font-size:9px;color:var(--purple);font-weight:600;margin-top:6px;padding-top:5px;border-top:1px dashed var(--border);text-align:center;line-height:1.5}
+
+.fade{animation:fadeUp .5s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.25s}.d4{animation-delay:.3s}
+
+.legend{display:flex;gap:18px;justify-content:center;margin-top:36px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
+.legend-dot{width:9px;height:9px;border-radius:50%}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>🏢 B2B Operations — Org Chart</h1>
+  <p>Cấu trúc tổ chức Quản lý Vận hành & Tối ưu Vận hành</p>
+</div>
+
+<div class="org">
+  <!-- HEAD -->
+  <div class="card card-head fade">
+    <div class="icon" style="background:linear-gradient(135deg,var(--accent),var(--cyan));font-size:20px">👤</div>
+    <div class="title" style="font-size:16px">Operations & Operational Excellence Manager</div>
+    <div class="subtitle">Quản lý Vận hành & Tối ưu Vận hành</div>
+    <div class="badge" style="background:rgba(99,102,241,.15);color:var(--accent2)">Head of Department</div>
+  </div>
+  <div class="vline"></div>
+
+  <!-- 4 BRANCHES -->
+  <div class="hgroup">
+
+    <!-- ===== TEAM 1: Document Management ===== -->
+    <div class="branch fade d1">
+      <div class="vline"></div>
+      <div class="card card-team t1">
+        <div class="icon">📄</div>
+        <div class="title">Document Management Team Leader</div>
+        <div class="subtitle">Quản lý Chứng từ B2B</div>
+        <div class="badge">Team 1</div>
+      </div>
+      <div class="vline" style="height:12px"></div>
+      <!-- 2 sub horizontal -->
+      <div class="sub-hline sub-hline-2">
+        <div class="sub-item">
+          <div class="vline"></div>
+          <div class="jc">
+            <div class="jt">Document Recovery Team</div>
+            <div class="js">Đội Xử lý Sự vụ Chứng từ</div>
+            <div class="hc">2 HC</div>
+            <div class="jl">Nội dung công việc</div>
+            <ul>
+              <li>Xử lý tất cả sự vụ liên quan đến chứng từ: thiếu, sai, hư hỏng, thất lạc</li>
+              <li>Phối hợp tài xế, kho, khách hàng để thu hồi chứng từ</li>
+              <li>Theo dõi tình trạng chứng từ của từng đơn hàng</li>
+              <li>Đảm bảo chứng từ đầy đủ và sẵn sàng bàn giao cho team Processing</li>
+              <li>Báo cáo tỉ lệ thu hồi chứng từ định kỳ</li>
+            </ul>
+          </div>
+        </div>
+        <div class="sub-item">
+          <div class="vline"></div>
+          <div class="jc">
+            <div class="jt">Document Processing Team</div>
+            <div class="js">Đội Xử lý Chứng từ</div>
+            <div class="hc">2 HC</div>
+            <div class="jl">Nội dung công việc</div>
+            <ul>
+              <li>Kiểm tra tính chính xác nội dung chứng từ</li>
+              <li>Scan và upload lên hệ thống từng khách hàng</li>
+              <li>Phân loại và sắp xếp chứng từ bản cứng</li>
+              <li>Bàn giao bản cứng cho đội trả chứng từ</li>
+              <li>Đảm bảo đúng format theo yêu cầu từng khách</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TEAM 2: B2B Sorting Hub ===== -->
+    <div class="branch fade d2" style="max-width:260px">
+      <div class="vline"></div>
+      <div class="card card-team t2">
+        <div class="icon">🏭</div>
+        <div class="title">B2B Sorting Hub Team Leader</div>
+        <div class="subtitle">Vận hành Kho Chia chọn B2B</div>
+        <div class="badge">Team 2</div>
+      </div>
+      <div class="vline" style="height:12px"></div>
+      <div style="padding:0 4px;width:100%">
+        <div class="jc">
+          <div class="jt">B2B Sorting Staff</div>
+          <div class="js">Nhân viên Xử lý Kho B2B</div>
+          <div class="hc">Vận hành trực tiếp</div>
+          <div class="jl">Nội dung công việc</div>
+          <ul>
+            <li>Nhận hàng từ nhà cung cấp / khách hàng</li>
+            <li>Chia chọn hàng theo đơn hàng và tuyến giao</li>
+            <li>Dán chứng từ lên hàng hóa</li>
+            <li>Xuất kho theo route và timeline đã lên lịch</li>
+            <li>Kiểm đếm và đối soát hàng hóa hàng ngày</li>
+            <li>Đảm bảo KPI: tỉ lệ luân chuyển đúng hạn, năng suất, tỉ lệ bể vỡ hư hỏng</li>
+            <li>Kiểm soát công cụ dụng cụ</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TEAM 3: Client Operations ===== -->
+    <div class="branch fade d3">
+      <div class="vline"></div>
+      <div class="card card-team t3">
+        <div class="icon">🤝</div>
+        <div class="title">Client Operations Team Leader</div>
+        <div class="subtitle">Quản lý Vận hành Khách hàng</div>
+        <div class="badge">Team 3</div>
+      </div>
+      <div class="vline" style="height:12px"></div>
+      <!-- 3 sub horizontal -->
+      <div class="sub-hline sub-hline-3">
+        <div class="sub-item">
+          <div class="vline"></div>
+          <div class="jc">
+            <div class="jt">Client Ops Specialist</div>
+            <div class="js" style="color:var(--text2)">Chuyên viên Vận hành Khách hàng</div>
+            <div class="js" style="color:var(--amber)">🛒 Siêu thị & Thực phẩm</div>
+            <div class="hc">1 HC · 7-8 khách hàng</div>
+            <div class="jl">Nội dung công việc</div>
+            <ul>
+              <li>Theo dõi KPI vận hành hàng ngày từng khách</li>
+              <li>Xử lý sự cố giữa khách và team giao-lấy</li>
+              <li>Báo cáo hiệu suất định kỳ cho khách hàng</li>
+              <li>Cảnh báo khi có bất thường chất lượng</li>
+              <li>Phối hợp nội bộ để giải quyết vấn đề</li>
+            </ul>
+          </div>
+        </div>
+        <div class="sub-item">
+          <div class="vline"></div>
+          <div class="jc">
+            <div class="jt">Client Ops Specialist</div>
+            <div class="js" style="color:var(--text2)">Chuyên viên Vận hành Khách hàng</div>
+            <div class="js" style="color:var(--cyan)">📺 Điện máy</div>
+            <div class="hc">1 HC · 6 khách hàng</div>
+            <div class="jl">Nội dung công việc</div>
+            <ul>
+              <li>Theo dõi KPI vận hành hàng ngày từng khách</li>
+              <li>Xử lý sự cố giữa khách và team giao-lấy</li>
+              <li>Báo cáo hiệu suất định kỳ cho khách hàng</li>
+              <li>Cảnh báo khi có bất thường chất lượng</li>
+              <li>Phối hợp nội bộ để giải quyết vấn đề</li>
+            </ul>
+          </div>
+        </div>
+        <div class="sub-item">
+          <div class="vline"></div>
+          <div class="jc">
+            <div class="jt">Client Ops Specialist</div>
+            <div class="js" style="color:var(--text2)">Chuyên viên Vận hành Khách hàng</div>
+            <div class="js" style="color:var(--green)">📦 Ngành hàng chung</div>
+            <div class="hc">1 HC · 3-4 khách hàng</div>
+            <div class="jl">Nội dung công việc</div>
+            <ul>
+              <li>Theo dõi KPI vận hành hàng ngày từng khách</li>
+              <li>Xử lý sự cố giữa khách và team giao-lấy</li>
+              <li>Báo cáo hiệu suất định kỳ cho khách hàng</li>
+              <li>Cảnh báo khi có bất thường chất lượng</li>
+              <li>Phối hợp nội bộ để giải quyết vấn đề</li>
+              <li>Chia sẻ một phần khách hàng với mảng Siêu thị Thực phẩm và Điện máy</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TEAM 4: Operational Excellence (without Ops Systems) ===== -->
+    <div class="branch fade d4">
+      <div class="vline"></div>
+      <div class="card card-team t4">
+        <div class="icon">⚡</div>
+        <div class="title">Operational Excellence</div>
+        <div class="subtitle">Tối ưu Vận hành · Báo cáo trực tiếp cho Head</div>
+        <div class="badge">Team 4</div>
+      </div>
+      <div class="vline" style="height:12px"></div>
+      <!-- 2 sub horizontal -->
+      <div class="sub-hline sub-hline-2">
+        <div class="sub-item">
+          <div class="vline"></div>
+          <div class="jc">
+            <div class="jt">Operations Planning & Performance Analyst</div>
+            <div class="js">Chuyên viên Phân tích, Kế hoạch & Hiệu suất</div>
+            <div class="hc">1 HC</div>
+            <div class="jl">Nội dung công việc</div>
+            <ul>
+              <li>Xây dựng dashboard theo dõi chất lượng vận hành nội bộ các team (VD: tỷ lệ luân chuyển ontime, tỷ lệ bể vỡ, năng suất nhân viên...)</li>
+              <li>Theo dõi chỉ số chất lượng quy trình: tỉ lệ lỗi, thời gian xử lý, mức tuân thủ SOP</li>
+              <li>Phân tích dữ liệu để phát hiện điểm nghẽn, lãng phí</li>
+              <li>Thiết lập mục tiêu và chuẩn đánh giá cho từng team</li>
+              <li>Đưa ra nhận định và đề xuất cải tiến từ dữ liệu</li>
+              <li>Dự báo volume, lập kế hoạch nguồn lực và đề xuất headcount planning</li>
+              <li>Lập kế hoạch vận hành theo tuần/tháng/quý dựa trên dữ liệu</li>
+              <li>Tổng hợp báo cáo chất lượng vận hành cho quản lý</li>
+              <li>Đo lường hiệu quả trước/sau khi triển khai cải tiến</li>
+            </ul>
+            <div class="note">≠ CI: CI xây metric dự án từ SD, quản lý network, review PnL. Vị trí này tập trung planning, chất lượng vận hành nội bộ & hiệu suất team</div>
+          </div>
+        </div>
+        <div class="sub-item">
+          <div class="vline"></div>
+          <div class="jc">
+            <div class="jt">Process Excellence Specialist</div>
+            <div class="js">Chuyên viên Chuẩn hóa & Tối ưu Quy trình</div>
+            <div class="hc">2 HC</div>
+            <div class="jl">Nội dung công việc</div>
+            <ul>
+              <li>Viết mới quy trình cho các mảng chưa có</li>
+              <li>Rà soát và cập nhật quy trình hiện tại</li>
+              <li>Tối ưu: giảm thời gian, giảm lỗi, tăng hiệu quả</li>
+              <li>Thiết lập tiêu chuẩn đo lường cho từng quy trình</li>
+              <li>Triển khai và quản lý dự án mới</li>
+              <li>Kiểm soát chất lượng: audit tuân thủ SOP tại kho, chứng từ, giao-lấy</li>
+              <li>Đào tạo nhân sự mới và đào tạo lại khi SOP thay đổi</li>
+              <li>Phối hợp với các team liên quan để triển khai cải tiến/quy trình/dự án mới</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend fade d4">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--rose)"></div>Document Management</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--cyan)"></div>B2B Sorting Hub</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>Client Operations</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div>Operational Excellence</div>
+  </div>
+</div>
+</body>
+</html>

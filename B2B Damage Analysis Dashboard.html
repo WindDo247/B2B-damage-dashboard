@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<!-- saved from url=(0069)file:///F:/Wind/ai-dashboard/B2B%20Damage%20Analysis%20Dashboard.html -->
+<html lang="vi"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B2B Damage Analysis Dashboard</title>
+    <!-- Google Fonts -->
+    <link href="./B2B Damage Analysis Dashboard_files/css2" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="./B2B Damage Analysis Dashboard_files/chart.js.download"></script>
+    <script src="./B2B Damage Analysis Dashboard_files/chartjs-plugin-datalabels@2.0.0"></script>
+    <!-- SheetJS (xlsx) for parsing Excel/CSV -->
+    <script src="./B2B Damage Analysis Dashboard_files/xlsx.full.min.js.download"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="./B2B Damage Analysis Dashboard_files/dashboard.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar / Navigation -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon"></div>
+                <h1>B2B Analytics</h1>
+            </div>
+            <nav class="nav-menu">
+                <a href="file:///F:/Wind/ai-dashboard/dashboard.html#" class="nav-item" data-target="upload-section">
+                    <span class="nav-icon">📁</span>
+                    Import Data
+                </a>
+                <a href="file:///F:/Wind/ai-dashboard/dashboard.html#" class="nav-item" data-target="dashboard-section" id="nav-dashboard" style="display: flex;">
+                    <span class="nav-icon">📊</span>
+                    Dashboard
+                </a>
+                <a href="file:///F:/Wind/ai-dashboard/dashboard.html#" class="nav-item active" data-target="report-section" id="nav-report" style="display: flex;">
+                    <span class="nav-icon">📝</span>
+                    Detailed Report
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <h2>Phân Tích Hư Hỏng Hàng Điện Máy</h2>
+                <div class="user-profile">
+                    <span>Quản lý Vận hành</span>
+                    <div class="avatar">OM</div>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <!-- Upload Section -->
+                <section id="upload-section" class="section">
+                    <div class="glass-card upload-container">
+                        <h3>Import Dữ Liệu</h3>
+                        <p class="subtitle">Vui lòng tải lên các file cần thiết để hệ thống phân tích và tạo dashboard.</p>
+                        
+                        <div class="upload-grid">
+                            <!-- Database Upload -->
+                            <div class="upload-box success" id="drop-db">
+                                <div class="upload-icon">📊</div>
+                                <h4>1. File Database</h4>
+                                <p class="fields-info">Yêu cầu: order_code, damage_details, pickup_week, warehouse_giao...</p>
+                                
+                                <div class="import-tabs">
+                                    <button class="import-tab" data-type="file" data-target="db">Tải File</button>
+                                    <button class="import-tab active" data-type="link" data-target="db">Nhập Link</button>
+                                </div>
+                                
+                                <div class="import-content" id="content-file-db">
+                                    <input type="file" id="file-db" accept=".csv, .xlsx, .xls" class="file-input">
+                                    <button class="btn-upload" onclick="document.getElementById(&#39;file-db&#39;).click()">Chọn File</button>
+                                </div>
+                                
+                                <div class="import-content active" id="content-link-db">
+                                    <input type="text" id="link-db" class="link-input" placeholder="Nhập URL (CSV/Excel)">
+                                    <button class="btn-upload btn-fetch" data-target="db">Tải Link</button>
+                                </div>
+                                
+                                <div class="file-status" id="status-db" style="color: var(--accent-success);">Google Sheets (459 dòng)</div>
+                            </div>
+
+                            <!-- Keyword Upload -->
+                            <div class="upload-box success" id="drop-kw">
+                                <div class="upload-icon">🏷️</div>
+                                <h4>2. File Keyword</h4>
+                                <p class="fields-info">Yêu cầu: Cột keyword và label (hoặc tương đương)</p>
+                                
+                                <div class="import-tabs">
+                                    <button class="import-tab" data-type="file" data-target="kw">Tải File</button>
+                                    <button class="import-tab active" data-type="link" data-target="kw">Nhập Link</button>
+                                </div>
+                                
+                                <div class="import-content" id="content-file-kw">
+                                    <input type="file" id="file-kw" accept=".csv, .xlsx, .xls" class="file-input">
+                                    <button class="btn-upload" onclick="document.getElementById(&#39;file-kw&#39;).click()">Chọn File</button>
+                                </div>
+                                
+                                <div class="import-content active" id="content-link-kw">
+                                    <input type="text" id="link-kw" class="link-input" placeholder="Nhập URL (CSV/Excel)">
+                                    <button class="btn-upload btn-fetch" data-target="kw">Tải Link</button>
+                                </div>
+                                
+                                <div class="file-status" id="status-kw" style="color: var(--accent-success);">Google Sheets (19 dòng)</div>
+                            </div>
+
+                            <!-- GXT_KTC Upload -->
+                            <div class="upload-box success" id="drop-gxt">
+                                <div class="upload-icon">🏢</div>
+                                <h4>3. File Danh Sách Kho</h4>
+                                <p class="fields-info">Yêu cầu: Kho GXT, KTC/KCT liền kề trước</p>
+                                
+                                <div class="import-tabs">
+                                    <button class="import-tab" data-type="file" data-target="gxt">Tải File</button>
+                                    <button class="import-tab active" data-type="link" data-target="gxt">Nhập Link</button>
+                                </div>
+                                
+                                <div class="import-content" id="content-file-gxt">
+                                    <input type="file" id="file-gxt" accept=".csv, .xlsx, .xls" class="file-input">
+                                    <button class="btn-upload" onclick="document.getElementById(&#39;file-gxt&#39;).click()">Chọn File</button>
+                                </div>
+                                
+                                <div class="import-content active" id="content-link-gxt">
+                                    <input type="text" id="link-gxt" class="link-input" placeholder="Nhập URL (CSV/Excel)">
+                                    <button class="btn-upload btn-fetch" data-target="gxt">Tải Link</button>
+                                </div>
+                                
+                                <div class="file-status" id="status-gxt" style="color: var(--accent-success);">Google Sheets (84 dòng)</div>
+                            </div>
+                        </div>
+
+                        <div class="action-bar">
+                            <button id="btn-process" class="btn-primary">Xử Lý Dữ Liệu</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Dashboard Section -->
+                <section id="dashboard-section" class="section">
+                    <div class="dashboard-grid">
+                        <!-- Trend Chart -->
+                        <div class="glass-card chart-card full-width">
+                            <div class="card-header">
+                                <h3>Xu Hướng Hư Hỏng Theo Tuần</h3>
+                                <div class="card-actions">
+                                    <button class="icon-btn">⋮</button>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="trendChart" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Top KTC Chart -->
+                        <div class="glass-card chart-card">
+                            <div class="card-header">
+                                <h3>Top KTC/KCT Có Nhiều Đơn Hư Hỏng Nhất</h3>
+                                <select id="week-filter-ktc" class="filter-select"><option value="all">Tất cả các tuần</option><option value="Date(2026,1,23)">Date(2026,1,23)</option><option value="Date(2026,1,9)">Date(2026,1,9)</option><option value="Date(2026,2,16)">Date(2026,2,16)</option><option value="Date(2026,2,2)">Date(2026,2,2)</option><option value="Date(2026,2,23)">Date(2026,2,23)</option><option value="Date(2026,2,30)">Date(2026,2,30)</option><option value="Date(2026,2,9)">Date(2026,2,9)</option><option value="Date(2026,3,13)">Date(2026,3,13)</option><option value="Date(2026,3,20)">Date(2026,3,20)</option><option value="Date(2026,3,27)">Date(2026,3,27)</option><option value="Date(2026,3,6)">Date(2026,3,6)</option><option value="Date(2026,4,11)">Date(2026,4,11)</option><option value="Date(2026,4,4)">Date(2026,4,4)</option></select>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="ktcChart" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Top GXT Chart -->
+                        <div class="glass-card chart-card">
+                            <div class="card-header">
+                                <h3>Top Kho GXT Có Nhiều Đơn Hư Hỏng Nhất</h3>
+                                <select id="week-filter-gxt" class="filter-select"><option value="all">Tất cả các tuần</option><option value="Date(2026,1,23)">Date(2026,1,23)</option><option value="Date(2026,1,9)">Date(2026,1,9)</option><option value="Date(2026,2,16)">Date(2026,2,16)</option><option value="Date(2026,2,2)">Date(2026,2,2)</option><option value="Date(2026,2,23)">Date(2026,2,23)</option><option value="Date(2026,2,30)">Date(2026,2,30)</option><option value="Date(2026,2,9)">Date(2026,2,9)</option><option value="Date(2026,3,13)">Date(2026,3,13)</option><option value="Date(2026,3,20)">Date(2026,3,20)</option><option value="Date(2026,3,27)">Date(2026,3,27)</option><option value="Date(2026,3,6)">Date(2026,3,6)</option><option value="Date(2026,4,11)">Date(2026,4,11)</option><option value="Date(2026,4,4)">Date(2026,4,4)</option></select>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="gxtChart" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Damage Type Breakdown -->
+                        <div class="glass-card chart-card">
+                            <div class="card-header">
+                                <h3>Phân Bổ Loại Hư Hỏng (Labels)</h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="labelChart" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- Client Breakdown -->
+                        <div class="glass-card chart-card">
+                            <div class="card-header">
+                                <h3>Khách Hàng Ảnh Hưởng Nhiều Nhất</h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="clientChart" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Report Section -->
+                <section id="report-section" class="section active">
+                    <div class="glass-card report-card">
+                        <div class="report-header">
+                            <h3>Báo Cáo Chi Tiết Hư Hỏng B2B</h3>
+                            <button id="btn-export-report" class="btn-secondary">Xuất Báo Cáo</button>
+                        </div>
+                        <div class="report-content" id="report-content">
+        <div class="highlight-box">
+            <strong>Tổng quan:</strong> Hệ thống đã ghi nhận tổng cộng <strong>459</strong> đơn hàng có vấn đề về ngoại quan/bể vỡ trong toàn bộ thời gian.
+            Xu hướng hiện tại: <span style="color: var(--accent-danger)">Tăng 587.5%</span> so với tuần trước.
+        </div>
+        
+        <h4>1. Điểm nóng KTC/KCT</h4>
+        <p>Kho trung chuyển ghi nhận nhiều hàng lỗi xuất phát nhất là <strong>HCM01</strong> với <strong>80</strong> trường hợp. Cần ưu tiên kiểm tra quy trình chất xếp hàng điện máy tại khu vực xuất/nhập của kho KTC này.</p>
+        
+        <h4>2. Điểm nóng Kho Giao (GXT)</h4>
+        <p>Kho giao cuối cùng ghi nhận số lượng từ chối/phát hiện lỗi nhiều nhất là <strong>Kho Giao Hàng Nặng - Tân Tạo - HCM</strong> với <strong>24</strong> đơn hàng. Quản lý vận hành cần lưu ý thêm về điều kiện đường xá và cách thao tác hạ hàng tại bưu cục này.</p>
+        
+        <h4>3. Khuyến nghị B2B Operations</h4>
+        <ul>
+            <li>Rà soát lại quy trình đào tạo và phổ biến tài liệu "Hướng dẫn chất xếp hàng điện máy" cho nhân viên bốc xếp tại HCM01.</li>
+            <li>Theo dõi diễn biến biểu đồ Tuần tới để đánh giá tính hiệu quả của các biện pháp can thiệp.</li>
+            <li>Tăng cường kiểm tra ngẫu nhiên (audit) ngoại quan thùng xe trước khi rời kho B2B đối với các tuyến chạy thẳng về HCM01.</li>
+        </ul>
+    
+        <div style="margin-top:30px; padding:15px; background:var(--bg-secondary); border-radius:5px; font-size:12px; color:var(--text-muted); border: 1px dashed var(--accent-danger);">
+            <strong>🔍 BẢNG GỠ LỖI (DEBUG LOG):</strong><br><br>
+            - <strong>Số lượng từ khóa đọc được từ Link Keyword:</strong> <span style="color:var(--text-main);">19</span> từ.<br>
+            - <strong>10 Từ khóa đầu tiên:</strong> <span style="color:var(--text-main);">[hư -&gt; damage], [hỏng -&gt; damage], [hư hỏng -&gt; damage], [bể -&gt; damage], [vỡ -&gt; damage], [bể vỡ -&gt; damage], [móp -&gt; damage], [méo -&gt; damage], [móp méo -&gt; damage], [xước -&gt; damage]</span><br><br>
+            - <strong>Danh sách Tên Cột Data gốc (Keys):</strong> <span style="color:var(--accent-warning);">order_code | damage_type | damage_details | pickup_time | pickup_week | from_province_name | to_province_name | warehouse_giao | client_name | client_id | nganh_hang | map_phan_loai</span><br>
+            - <strong>Danh sách Dữ Liệu Dòng 1 (Values):</strong> <span style="color:var(--accent-warning);">GYWXVKBA | c4 | Ngoại quan rách thùng không nguyên vẹn | Date(2026,4,4) | Date(2026,4,4) | Đồng Nai | Hồ Chí Minh | Kho Giao Hàng Nặng - Thủ Đức - HCM | LG LTL | 5167163 | DM | damage</span><br><br>
+            - <strong>Web nhận diện cột Mã Đơn là:</strong> <span style="color:var(--accent-success);">order_code</span><br>
+            - <strong>Web nhận diện cột Loại Lỗi là:</strong> <span style="color:var(--accent-success);">damage_type</span><br>
+            - <strong>Web nhận diện cột Chi Tiết Lỗi là:</strong> <span style="color:var(--accent-danger);">damage_details</span>
+        </div>
+    </div>
+                        
+                        <div class="data-table-container">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <h4>Dữ Liệu Đã Mapping</h4>
+                                <button id="btn-clear-filter" class="btn-secondary" style="padding: 4px 12px; font-size: 0.8rem;">Xóa bộ lọc</button>
+                            </div>
+                            
+                            <div class="table-wrapper">
+                                <table id="mapped-data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Mã Đơn<br><input type="text" id="col-filter-order" class="column-filter" placeholder="Tìm..."></th>
+                                            <th>Tuần<br><select id="col-filter-week" class="column-filter"><option value="all">Tất cả</option><option value="Date(2026,1,23)">Date(2026,1,23)</option><option value="Date(2026,1,9)">Date(2026,1,9)</option><option value="Date(2026,2,16)">Date(2026,2,16)</option><option value="Date(2026,2,2)">Date(2026,2,2)</option><option value="Date(2026,2,23)">Date(2026,2,23)</option><option value="Date(2026,2,30)">Date(2026,2,30)</option><option value="Date(2026,2,9)">Date(2026,2,9)</option><option value="Date(2026,3,13)">Date(2026,3,13)</option><option value="Date(2026,3,20)">Date(2026,3,20)</option><option value="Date(2026,3,27)">Date(2026,3,27)</option><option value="Date(2026,3,6)">Date(2026,3,6)</option><option value="Date(2026,4,11)">Date(2026,4,11)</option><option value="Date(2026,4,4)">Date(2026,4,4)</option></select></th>
+                                            <th>Loại Hư Hỏng<br><select id="col-filter-type" class="column-filter"><option value="all">Tất cả</option><option value="10154270">10154270</option><option value="3705000">3705000</option><option value="N/A">N/A</option><option value="Tủ lạnh Móp khung trái tủ">Tủ lạnh Móp khung trái tủ</option><option value="Tủ lạnh Rách thùng">Tủ lạnh Rách thùng</option><option value="bể vỡ">bể vỡ</option><option value="c1">c1</option><option value="c4">c4</option><option value="hư">hư</option><option value="móp">móp</option><option value="ngoại quan">ngoại quan</option></select></th>
+                                            <th>Kho Giao (GXT)<br><select id="col-filter-gxt" class="column-filter"><option value="all">Tất cả</option><option value="Bưu Cục 305 QL14-Bù Đăng-Bình Phước">Bưu Cục 305 QL14-Bù Đăng-Bình Phước</option><option value="Bưu Cục 322 Trần Phú-Xuân Lộc-Đồng Nai">Bưu Cục 322 Trần Phú-Xuân Lộc-Đồng Nai</option><option value="Bưu Cục Agtex Long Bình-Biên Hoà-Đồng Nai">Bưu Cục Agtex Long Bình-Biên Hoà-Đồng Nai</option><option value="Bưu Cục Cần Giờ-HCM">Bưu Cục Cần Giờ-HCM</option><option value="Bưu Cục KDC Giồng Ao-Cần Giờ-HCM">Bưu Cục KDC Giồng Ao-Cần Giờ-HCM</option><option value="Bưu Cục KP2 Tân Hiệp-Định Quán Đồng Nai">Bưu Cục KP2 Tân Hiệp-Định Quán Đồng Nai</option><option value="Bưu Cục Long Phước-Long Thành-Đồng Nai">Bưu Cục Long Phước-Long Thành-Đồng Nai</option><option value="Bưu Cục Tân Phú-Đồng Nai">Bưu Cục Tân Phú-Đồng Nai</option><option value="Bưu Cục Tổ 2 Ấp 5 Xuân Tâm-Xuân Lộc-Đồng Nai">Bưu Cục Tổ 2 Ấp 5 Xuân Tâm-Xuân Lộc-Đồng Nai</option><option value="Bưu Cục Ấp Việt Kiều QL1A-Xuân Lộc-Đồng Nai">Bưu Cục Ấp Việt Kiều QL1A-Xuân Lộc-Đồng Nai</option><option value="Key Account Warehouse Ho Chi Minh">Key Account Warehouse Ho Chi Minh</option><option value="Kho Giao Hàng Nặng - Buôn Ma Thuột - Đắk Lắk">Kho Giao Hàng Nặng - Buôn Ma Thuột - Đắk Lắk</option><option value="Kho Giao Hàng Nặng - Bình Long - Bình Phước">Kho Giao Hàng Nặng - Bình Long - Bình Phước</option><option value="Kho Giao Hàng Nặng - Bình Thủy - Cần Thơ">Kho Giao Hàng Nặng - Bình Thủy - Cần Thơ</option><option value="Kho Giao Hàng Nặng - Bến Cát - Bình Dương">Kho Giao Hàng Nặng - Bến Cát - Bình Dương</option><option value="Kho Giao Hàng Nặng - Cam Ranh - Khánh Hoà">Kho Giao Hàng Nặng - Cam Ranh - Khánh Hoà</option><option value="Kho Giao Hàng Nặng - Dĩ An - Bình Dương">Kho Giao Hàng Nặng - Dĩ An - Bình Dương</option><option value="Kho Giao Hàng Nặng - Hoà Xuân - Đà Nẵng">Kho Giao Hàng Nặng - Hoà Xuân - Đà Nẵng</option><option value="Kho Giao Hàng Nặng - Hoài Đức - Hà Nội">Kho Giao Hàng Nặng - Hoài Đức - Hà Nội</option><option value="Kho Giao Hàng Nặng - Hồ Chí Minh">Kho Giao Hàng Nặng - Hồ Chí Minh</option><option value="Kho Giao Hàng Nặng - La Gi - Bình Thuận">Kho Giao Hàng Nặng - La Gi - Bình Thuận</option><option value="Kho Giao Hàng Nặng - Liên Chiểu - Đà Nẵng">Kho Giao Hàng Nặng - Liên Chiểu - Đà Nẵng</option><option value="Kho Giao Hàng Nặng - Long Thành - Đồng Nai">Kho Giao Hàng Nặng - Long Thành - Đồng Nai</option><option value="Kho Giao Hàng Nặng - Nha Trang - Khánh Hoà">Kho Giao Hàng Nặng - Nha Trang - Khánh Hoà</option><option value="Kho Giao Hàng Nặng - Nhà Bè - HCM">Kho Giao Hàng Nặng - Nhà Bè - HCM</option><option value="Kho Giao Hàng Nặng - Phan Rang - Ninh Thuận">Kho Giao Hàng Nặng - Phan Rang - Ninh Thuận</option><option value="Kho Giao Hàng Nặng - Phan Thiết - Bình Thuận">Kho Giao Hàng Nặng - Phan Thiết - Bình Thuận</option><option value="Kho Giao Hàng Nặng - Quy Nhơn - Bình Định">Kho Giao Hàng Nặng - Quy Nhơn - Bình Định</option><option value="Kho Giao Hàng Nặng - TP Biên Hoà - Đồng Nai">Kho Giao Hàng Nặng - TP Biên Hoà - Đồng Nai</option><option value="Kho Giao Hàng Nặng - TP Bà Rịa - BRVT">Kho Giao Hàng Nặng - TP Bà Rịa - BRVT</option><option value="Kho Giao Hàng Nặng - TP Bạc Liêu - Bạc Liêu">Kho Giao Hàng Nặng - TP Bạc Liêu - Bạc Liêu</option><option value="Kho Giao Hàng Nặng - TP Bảo Lộc - Lâm Đồng">Kho Giao Hàng Nặng - TP Bảo Lộc - Lâm Đồng</option><option value="Kho Giao Hàng Nặng - TP Bến Tre - Bến Tre">Kho Giao Hàng Nặng - TP Bến Tre - Bến Tre</option><option value="Kho Giao Hàng Nặng - TP Cao Lãnh - Đồng Tháp">Kho Giao Hàng Nặng - TP Cao Lãnh - Đồng Tháp</option><option value="Kho Giao Hàng Nặng - TP Châu Đốc - An Giang">Kho Giao Hàng Nặng - TP Châu Đốc - An Giang</option><option value="Kho Giao Hàng Nặng - TP Rạch Giá - Kiên Giang">Kho Giao Hàng Nặng - TP Rạch Giá - Kiên Giang</option><option value="Kho Giao Hàng Nặng - TP Sóc Trăng - Sóc Trăng">Kho Giao Hàng Nặng - TP Sóc Trăng - Sóc Trăng</option><option value="Kho Giao Hàng Nặng - TP Thái Nguyên - Thái Nguyên">Kho Giao Hàng Nặng - TP Thái Nguyên - Thái Nguyên</option><option value="Kho Giao Hàng Nặng - TP Tân An - Long An">Kho Giao Hàng Nặng - TP Tân An - Long An</option><option value="Kho Giao Hàng Nặng - TP Tây Ninh - Tây Ninh">Kho Giao Hàng Nặng - TP Tây Ninh - Tây Ninh</option><option value="Kho Giao Hàng Nặng - TP Vũng Tàu - BRVT">Kho Giao Hàng Nặng - TP Vũng Tàu - BRVT</option><option value="Kho Giao Hàng Nặng - TP Đồng Xoài - Bình Phước">Kho Giao Hàng Nặng - TP Đồng Xoài - Bình Phước</option><option value="Kho Giao Hàng Nặng - TX Cai Lậy - Tiền Giang">Kho Giao Hàng Nặng - TX Cai Lậy - Tiền Giang</option><option value="Kho Giao Hàng Nặng - Thanh Oai - Hà Nội">Kho Giao Hàng Nặng - Thanh Oai - Hà Nội</option><option value="Kho Giao Hàng Nặng - Thanh Trì - Hà Nội">Kho Giao Hàng Nặng - Thanh Trì - Hà Nội</option><option value="Kho Giao Hàng Nặng - Thuận An - Bình Dương">Kho Giao Hàng Nặng - Thuận An - Bình Dương</option><option value="Kho Giao Hàng Nặng - Thủ Dầu Một - Bình Dương">Kho Giao Hàng Nặng - Thủ Dầu Một - Bình Dương</option><option value="Kho Giao Hàng Nặng - Thủ Đức - HCM">Kho Giao Hàng Nặng - Thủ Đức - HCM</option><option value="Kho Giao Hàng Nặng - Trảng Bom - Đồng Nai">Kho Giao Hàng Nặng - Trảng Bom - Đồng Nai</option><option value="Kho Giao Hàng Nặng - Tuy Hoà - Phú Yên">Kho Giao Hàng Nặng - Tuy Hoà - Phú Yên</option><option value="Kho Giao Hàng Nặng - Tuy Phong - Bình Thuận">Kho Giao Hàng Nặng - Tuy Phong - Bình Thuận</option><option value="Kho Giao Hàng Nặng - Tân Bình - HCM">Kho Giao Hàng Nặng - Tân Bình - HCM</option><option value="Kho Giao Hàng Nặng - Tân Tạo - HCM">Kho Giao Hàng Nặng - Tân Tạo - HCM</option><option value="Kho Giao Hàng Nặng - Vinh - Nghệ An">Kho Giao Hàng Nặng - Vinh - Nghệ An</option><option value="Kho Giao Hàng Nặng - Việt Yên - Bắc Giang">Kho Giao Hàng Nặng - Việt Yên - Bắc Giang</option><option value="Kho Giao Hàng Nặng - Đông Hà - Quảng Trị">Kho Giao Hàng Nặng - Đông Hà - Quảng Trị</option><option value="Kho Giao Hàng Nặng - Đông Thọ - Thanh Hoá">Kho Giao Hàng Nặng - Đông Thọ - Thanh Hoá</option><option value="Kho Giao Hàng Nặng - Đức Hòa - Long An">Kho Giao Hàng Nặng - Đức Hòa - Long An</option></select></th>
+                                            <th>Kho Trung Chuyển (KTC)<br><select id="col-filter-ktc" class="column-filter"><option value="all">Tất cả</option><option value="Chưa xác định">Chưa xác định</option><option value="HCM01">HCM01</option><option value="HCM20">HCM20</option><option value="KCT Bình Phước">KCT Bình Phước</option><option value="KCT Bình Thuận">KCT Bình Thuận</option><option value="KCT Đồng Nai">KCT Đồng Nai</option><option value="KTC Bình Định">KTC Bình Định</option><option value="KTC Cần Thơ">KTC Cần Thơ</option><option value="KTC Dương Xá">KTC Dương Xá</option><option value="KTC Hà Nội">KTC Hà Nội</option><option value="KTC Khánh Hòa">KTC Khánh Hòa</option><option value="KTC Nghệ An">KTC Nghệ An</option><option value="KTC Quảng Bình">KTC Quảng Bình</option><option value="KTC Đà Nẵng">KTC Đà Nẵng</option><option value="KTC Đắk Lắk">KTC Đắk Lắk</option></select></th>
+                                            <th>Khách Hàng<br><select id="col-filter-client" class="column-filter"><option value="all">Tất cả</option><option value="Aqua B2C">Aqua B2C</option><option value="Casper">Casper</option><option value="LG LTL">LG LTL</option><option value="LG Pantos">LG Pantos</option></select></th>
+                                            <th>Chi Tiết Lỗi<br><input type="text" id="col-filter-detail" class="column-filter" placeholder="Tìm..."></th>
+                                            <th>Label<br><select id="col-filter-label" class="column-filter"><option value="all">Tất cả</option><option value="Khác">Khác</option><option value="damage">damage</option></select></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="table-body"><tr>
+            <td>GYWXVKBA</td>
+            <td>Date(2026,4,4)</td>
+            <td>c4</td>
+            <td>Kho Giao Hàng Nặng - Thủ Đức - HCM</td>
+            <td>HCM01</td>
+            <td>LG LTL</td>
+            <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="Ngoại quan rách thùng không nguyên vẹn">
+                Ngoại quan rách thùng không nguyên vẹn
+            </td>
+            <td>
+                <select class="label-select" data-index="0" title="Thay đổi nhãn">
+                    <option value="damage">damage</option><option value="Khác" selected="">Khác</option>
+                </select>
+            </td>
+        </tr><tr>
+            <td>GY38HR8A</td>
+            <td>Date(2026,1,23)</td>
+            <td>bể vỡ</td>
+            <td>Kho Giao Hàng Nặng - TP Đồng Xoài - Bình Phước</td>
+            <td>KCT Bình Phước</td>
+            <td>LG LTL</td>
+            <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="Rách thùng, sản phẩm móp nhiều vị trí =&gt; Unit damage lỗi vận tải">
+                Rách thùng, sản phẩm móp nhiều vị trí =&gt; Unit damage lỗi vận tải
+            </td>
+            <td>
+                <select class="label-select" data-index="1" title="Thay đổi nhãn">
+                    <option value="damage" selected="">damage</option><option value="Khác">Khác</option>
+                </select>
+            </td>
+        </tr><tr>
+            <td>GYWBATYQ</td>
+            <td>Date(2026,3,27)</td>
+            <td>c4</td>
+            <td>Kho Giao Hàng Nặng - TP Đồng Xoài - Bình Phước</td>
+            <td>KCT Bình Phước</td>
+            <td>LG LTL</td>
+            <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="Kiện bị cấn móp , rách thùng carton trầy xước sản phẩm bên trong">
+                Kiện bị cấn móp , rách thùng carton trầy xước sản phẩm bên trong
+            </td>
+            <td>
+                <select class="label-select" data-index="2" title="Thay đổi nhãn">
+                    <option value="damage" selected="">damage</option><option value="Khác">Khác</option>
+                </select>
+            </td>
+        </tr><tr>
+            <td>GY38HRY3</td>
+            <td>Date(2026,1,23)</td>
+            <td>bể vỡ</td>
+            <td>Bưu Cục Agtex Long Bình-Biên Hoà-Đồng Nai</td>
+            <td>Chưa xác định</td>
+            <td>LG LTL</td>
+            <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="Rách thùng, sản phẩm móp=&gt; Unitdamage lỗi vận tải">
+                Rách thùng, sản phẩm móp=&gt; Unitdamage lỗi vận tải
+            </td>
+            <td>
+                <select class="label-select" data-index="3" title="Thay đổi nhãn">
+                    <option value="damage" selected="">damage</option><option value="Khác">Khác</option>
+                </select>
+            </td>
+        </tr><tr>
+            <td>GY388H9C</td>
+            <td>Date(2026,1,23)</td>
+            <td>bể vỡ</td>
+            <td>Kho Giao Hàng Nặng - Nhà Bè - HCM</td>
+            <td>HCM01</td>
+            <td>LG LTL</td>
+            <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="Rách thùng, sản phẩm hỏng chân đế, trầy xước =&gt; Unit damage lỗi vận tải">
+                Rách thùng, sản phẩm hỏng chân đế, trầy xước =&gt; Unit damage lỗi vận tải
+            </td>
+            <td>
+                <select class="label-select" data-index="4" title="Thay đổi nhãn">
+                    <option value="damage" selected="">damage</option><option value="Khác">Khác</option>
+                </select>
+            </td>
+        </tr><tr>
+            <td>GY3MQE8W</td>
+            <td>Date(2026,2,2)</td>
+            <td>ngoại quan</td>
+            <td>Kho Giao Hàng Nặng - Thủ Đức - HCM</td>
+            <td>HCM01</td>
+            <td>LG LTL</td>
+            <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="Rách thùng, lỗi vận tải">
+                Rách thùng, lỗi vận tải
+            </td>
+            <td>
+                <select class="label-select" data-index="5" title="Thay đổi nhãn">
+                    <option value="damage">damage</option><option value="Khác" selected="">Khác</option>
+                </select>
+            </td>
+        </tr><tr>
+            <td>GYWG73TH</td>
+            <td>Date(2026,3,13)</td>
+            <td>hư</td>
+            <td>Kho Giao Hàng Nặng - Thủ Đức - HCM</td>
+            <td>HCM01</td>
+            <td>LG LTL</td>
+            <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="Các thùng hàng bên ngoài móp méo, lủng thùng, nghi ngờ hư hỏng.">
+                Các thùng hàng bên ngoài móp méo, lủng thùng, nghi ngờ hư hỏng.
+            </td>
+            <td>
+                <select class="label-select" data-index="6" title="Thay đổi nhãn">
+                    <option value="damage" selected="">damage</option><option value="Khác">Khác</option>
+                </select>
+            </td>
+        </tr><tr>
+            <td>GYWRWTQP</td>
+            <td>Date(2026,4,4)</td>
+            <td>c4</td>
+            <td>Kho Giao Hàng Nặng - Thủ Đức - HCM</td>
+            <td>HCM01</td>
+            <td>LG LTL</td>
+            <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="Sai ttin địa chỉ">
+                Sai ttin địa chỉ
+            </td>
+            <td>
+                <select class="label-select" data-index="7" title="Thay đổi nhãn">
+                    <option value="damage">damage</option><option value="Khác" selected="">Khác</option>
+                </select>
+            </td>
+        </tr><tr>
+            <td>GYWL8AEM</td>
+            <td>Date(2026,3,13)</td>
+            <td>c4</td>
+            <td>Bưu Cục Tân Phú-Đồng Nai</td>
+            <td>Chưa xác định</td>
+            <td>LG LTL</td>
+            <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="GHN trễ leadtime, hết hạn PO, buộc hoàn">
+                GHN trễ leadtime, hết hạn PO, buộc hoàn
+            </td>
+            <td>
+                <select class="label-select" data-index="8" title="Thay đổi nhãn">
+                    <option value="damage">damage</option><option value="Khác" selected="">Khác</option>
+                </select>
+            </td>
+        </tr><tr>
+            <td>GYWMXYBT</td>
+            <td>Date(2026,4,4)</td>
+            <td>c4</td>
+            <td>Kho Giao Hàng Nặng - Tân Bình - HCM</td>
+            <td>HCM20</td>
+            <td>LG LTL</td>
+            <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="Hàng hư hỏng, khách từ chối nhận">
+                Hàng hư hỏng, khách từ chối nhận
+            </td>
+            <td>
+                <select class="label-select" data-index="9" title="Thay đổi nhãn">
+                    <option value="damage" selected="">damage</option><option value="Khác">Khác</option>
+                </select>
+            </td>
+        </tr><tr>
+            <td>GYWY6FDE</td>
+            <td>Date(2026,4,4)</td>
+            <td>c4</td>
+            <td>Kho Giao Hàng Nặng - TP Bà Rịa - BRVT</td>
+            <td>KCT Đồng Nai</td>
+            <td>LG LTL</td>
+            <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="Hàng hư hỏng, khách từ chối nhận">
+                Hàng hư hỏng, khách từ chối nhận
+            </td>
+            <td>
+                <select class="label-select" data-index="10" title="Thay đổi nhãn">
+                    <option value="damage" selected="">damage</option><option value="Khác">Khác</option>
+                </select>
+            </td>
+        </tr><tr>
+            <td>GY4PNQAM</td>
+            <td>Date(2026,2,9)</td>
+            <td>ngoại quan</td>
+            <td>Kho Giao Hàng Nặng - Nha Trang - Khánh Hoà</td>
+            <td>Chưa xác định</td>
+            <td>LG LTL</td>
+            <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="Rách thùng, lỗi vận tải">
+                Rách thùng, lỗi vận tải
+            </td>
+            <td>
+                <select class="label-select" data-index="11" title="Thay đổi nhãn">
+                    <option value="damage">damage</option><option value="Khác" selected="">Khác</option>
+                </select>
+            </td>
+        </tr><tr>
+            <td>GY3XBHUH</td>
+            <td>Date(2026,1,23)</td>
+            <td>ngoại quan</td>
+            <td>Kho Giao Hàng Nặng - Long Thành - Đồng Nai</td>
+            <td>KCT Đồng Nai</td>
+            <td>LG LTL</td>
+            <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="Rách thùng, lỗi vận tải">
+                Rách thùng, lỗi vận tải
+            </td>
+            <td>
+                <select class="label-select" data-index="12" title="Thay đổi nhãn">
+                    <option value="damage">damage</option><option value="Khác" selected="">Khác</option>
+                </select>
+            </td>
+        </tr><tr>
+            <td>GY388H9Q</td>
+            <td>Date(2026,1,23)</td>
+            <td>ngoại quan</td>
+            <td>Kho Giao Hàng Nặng - Tân Tạo - HCM</td>
+            <td>HCM01</td>
+            <td>LG LTL</td>
+            <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="Rách thùng, lỗi vận tải">
+                Rách thùng, lỗi vận tải
+            </td>
+            <td>
+                <select class="label-select" data-index="13" title="Thay đổi nhãn">
+                    <option value="damage">damage</option><option value="Khác" selected="">Khác</option>
+                </select>
+            </td>
+        </tr><tr>
+            <td>GY388HCM</td>
+            <td>Date(2026,1,23)</td>
+            <td>bể vỡ</td>
+            <td>Kho Giao Hàng Nặng - Nhà Bè - HCM</td>
+            <td>HCM01</td>
+            <td>LG LTL</td>
+            <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="Rách thùng, sản phẩm mất chân đế, trầy xước=&gt; lỗi vận tải">
+                Rách thùng, sản phẩm mất chân đế, trầy xước=&gt; lỗi vận tải
+            </td>
+            <td>
+                <select class="label-select" data-index="14" title="Thay đổi nhãn">
+                    <option value="damage" selected="">damage</option><option value="Khác">Khác</option>
+                </select>
+            </td>
+        </tr></tbody>
+                                </table>
+                            </div>
+                            <div class="pagination">
+                                <button id="prev-page" class="btn-sm">Trước</button>
+                                <span id="page-info">Trang 1 / 31</span>
+                                <button id="next-page" class="btn-sm">Sau</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="overlay">
+        <div class="spinner"></div>
+        <p>Đang xử lý dữ liệu...</p>
+    </div>
+
+    <script src="./B2B Damage Analysis Dashboard_files/dashboard.js"></script>
+
+
+</body></html>

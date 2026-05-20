@@ -1496,3 +1496,23 @@ if (autoSyncCheckbox) {
         autoSyncInterval = setInterval(doAutoSync, 30 * 60 * 1000);
     }
 }
+
+// --- EXPORT MAPPED DATA ---
+document.getElementById('btn-export-data').addEventListener('click', () => {
+    let dataToExport = AppState.filteredData && AppState.filteredData.length > 0 
+        ? AppState.filteredData 
+        : AppState.mappedData;
+        
+    if (!dataToExport || dataToExport.length === 0) {
+        alert('Không có d? li?u d? t?i xu?ng!');
+        return;
+    }
+
+    // Convert object array to array of arrays for better headers if needed, 
+    // or just use json_to_sheet which auto-generates headers from keys.
+    const ws = XLSX.utils.json_to_sheet(dataToExport);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'MappedData');
+    XLSX.writeFile(wb, 'B2B_Damage_Mapped_Data.xlsx');
+});
+

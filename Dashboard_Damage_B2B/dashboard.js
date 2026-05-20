@@ -958,6 +958,7 @@ function createChart(id, type, data, options = {}) {
     Chart.defaults.font.family = "'Inter', sans-serif";
 
     const baseOptions = {
+        layout: { padding: { top: 35 } },
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
@@ -996,8 +997,9 @@ function createChart(id, type, data, options = {}) {
             },
             textAlign: 'center',
             align: type === 'line' ? 'top' : (type === 'bar' && !options.indexAxis ? 'end' : 'center'),
-            anchor: type === 'line' ? 'end' : (type === 'bar' && !options.indexAxis ? 'end' : 'center'),
-            offset: type === 'line' ? 8 : (type === 'bar' && !options.indexAxis ? 4 : 0),
+            anchor: type === 'line' ? 'center' : (type === 'bar' && !options.indexAxis ? 'end' : 'center'),
+            offset: type === 'line' ? 12 : (type === 'bar' && !options.indexAxis ? 4 : 0),
+            clip: false,
             formatter: (value, ctx) => {
                 let sum = 0;
                 let dataArr = ctx.chart.data.datasets[0].data;

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,6 +15,7 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="dashboard.css?v=5">
 </head>
+
 <body>
     <div class="app-container">
         <!-- Sidebar / Navigation -->
@@ -42,9 +44,17 @@
         <main class="main-content">
             <header class="top-header">
                 <h2>Phân Tích Hư Hỏng Hàng Điện Máy</h2>
-                <div class="user-profile">
-                    <span>Quản lý Vận hành</span>
-                    <div class="avatar">OM</div>
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <label
+                        style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer;"
+                        title="Tự động đồng bộ với Google Sheets API mỗi 30 phút">
+                        <input type="checkbox" id="auto-sync-checkbox" style="accent-color: var(--accent-primary);">
+                        Tự động đồng bộ (30p)
+                    </label>
+                    <div class="user-profile">
+                        <span>Quản lý Vận hành</span>
+                        <div class="avatar">OM</div>
+                    </div>
                 </div>
             </header>
 
@@ -53,30 +63,35 @@
                 <section id="upload-section" class="section active">
                     <div class="glass-card upload-container">
                         <h3>Import Dữ Liệu</h3>
-                        <p class="subtitle">Vui lòng tải lên các file cần thiết để hệ thống phân tích và tạo dashboard.</p>
-                        
+                        <p class="subtitle">Vui lòng tải lên các file cần thiết để hệ thống phân tích và tạo dashboard.
+                        </p>
+
                         <div class="upload-grid">
                             <!-- Database Upload -->
                             <div class="upload-box" id="drop-db">
                                 <div class="upload-icon">📊</div>
                                 <h4>1. File Database</h4>
-                                <p class="fields-info">Yêu cầu: order_code, damage_details, pickup_week, warehouse_giao...</p>
-                                
+                                <p class="fields-info">Yêu cầu: order_code, damage_details, pickup_week,
+                                    warehouse_giao...</p>
+
                                 <div class="import-tabs">
-                                    <button class="import-tab active" data-type="file" data-target="db">Tải File</button>
+                                    <button class="import-tab active" data-type="file" data-target="db">Tải
+                                        File</button>
                                     <button class="import-tab" data-type="link" data-target="db">Nhập Link</button>
                                 </div>
-                                
+
                                 <div class="import-content active" id="content-file-db">
                                     <input type="file" id="file-db" accept=".csv, .xlsx, .xls" class="file-input">
-                                    <button class="btn-upload" onclick="document.getElementById('file-db').click()">Chọn File</button>
+                                    <button class="btn-upload" onclick="document.getElementById('file-db').click()">Chọn
+                                        File</button>
                                 </div>
-                                
+
                                 <div class="import-content" id="content-link-db">
-                                    <input type="text" id="link-db" class="link-input" placeholder="Nhập URL (CSV/Excel)">
+                                    <input type="text" id="link-db" class="link-input"
+                                        placeholder="Nhập URL (CSV/Excel)">
                                     <button class="btn-upload btn-fetch" data-target="db">Tải Link</button>
                                 </div>
-                                
+
                                 <div class="file-status" id="status-db">Chưa có dữ liệu</div>
                             </div>
 
@@ -85,22 +100,25 @@
                                 <div class="upload-icon">🏷️</div>
                                 <h4>2. File Keyword</h4>
                                 <p class="fields-info">Yêu cầu: Cột keyword và label (hoặc tương đương)</p>
-                                
+
                                 <div class="import-tabs">
-                                    <button class="import-tab active" data-type="file" data-target="kw">Tải File</button>
+                                    <button class="import-tab active" data-type="file" data-target="kw">Tải
+                                        File</button>
                                     <button class="import-tab" data-type="link" data-target="kw">Nhập Link</button>
                                 </div>
-                                
+
                                 <div class="import-content active" id="content-file-kw">
                                     <input type="file" id="file-kw" accept=".csv, .xlsx, .xls" class="file-input">
-                                    <button class="btn-upload" onclick="document.getElementById('file-kw').click()">Chọn File</button>
+                                    <button class="btn-upload" onclick="document.getElementById('file-kw').click()">Chọn
+                                        File</button>
                                 </div>
-                                
+
                                 <div class="import-content" id="content-link-kw">
-                                    <input type="text" id="link-kw" class="link-input" placeholder="Nhập URL (CSV/Excel)">
+                                    <input type="text" id="link-kw" class="link-input"
+                                        placeholder="Nhập URL (CSV/Excel)">
                                     <button class="btn-upload btn-fetch" data-target="kw">Tải Link</button>
                                 </div>
-                                
+
                                 <div class="file-status" id="status-kw">Chưa có dữ liệu</div>
                             </div>
 
@@ -109,22 +127,25 @@
                                 <div class="upload-icon">🏢</div>
                                 <h4>3. File Danh Sách Kho</h4>
                                 <p class="fields-info">Yêu cầu: Kho GXT, KTC/KCT liền kề trước</p>
-                                
+
                                 <div class="import-tabs">
-                                    <button class="import-tab active" data-type="file" data-target="gxt">Tải File</button>
+                                    <button class="import-tab active" data-type="file" data-target="gxt">Tải
+                                        File</button>
                                     <button class="import-tab" data-type="link" data-target="gxt">Nhập Link</button>
                                 </div>
-                                
+
                                 <div class="import-content active" id="content-file-gxt">
                                     <input type="file" id="file-gxt" accept=".csv, .xlsx, .xls" class="file-input">
-                                    <button class="btn-upload" onclick="document.getElementById('file-gxt').click()">Chọn File</button>
+                                    <button class="btn-upload"
+                                        onclick="document.getElementById('file-gxt').click()">Chọn File</button>
                                 </div>
-                                
+
                                 <div class="import-content" id="content-link-gxt">
-                                    <input type="text" id="link-gxt" class="link-input" placeholder="Nhập URL (CSV/Excel)">
+                                    <input type="text" id="link-gxt" class="link-input"
+                                        placeholder="Nhập URL (CSV/Excel)">
                                     <button class="btn-upload btn-fetch" data-target="gxt">Tải Link</button>
                                 </div>
-                                
+
                                 <div class="file-status" id="status-gxt">Chưa có dữ liệu</div>
                             </div>
                         </div>
@@ -182,7 +203,7 @@
                                 <canvas id="labelChart"></canvas>
                             </div>
                         </div>
-                        
+
                         <!-- Client Breakdown -->
                         <div class="glass-card chart-card">
                             <div class="card-header">
@@ -205,25 +226,42 @@
                         <div class="report-content" id="report-content">
                             <!-- Report content will be generated here -->
                         </div>
-                        
+
                         <div class="data-table-container">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                                 <h4>Dữ Liệu Đã Mapping</h4>
-                                <button id="btn-clear-filter" class="btn-secondary" style="padding: 4px 12px; font-size: 0.8rem;">Xóa bộ lọc</button>
+                                <button id="btn-clear-filter" class="btn-secondary"
+                                    style="padding: 4px 12px; font-size: 0.8rem;">Xóa bộ lọc</button>
                             </div>
-                            
+
                             <div class="table-wrapper">
                                 <table id="mapped-data-table">
                                     <thead>
                                         <tr>
-                                            <th>Mã Đơn<br><input type="text" id="col-filter-order" class="column-filter" placeholder="Tìm..."></th>
-                                            <th>Tuần<br><select id="col-filter-week" class="column-filter"><option value="all">Tất cả</option></select></th>
-                                            <th>Loại Hư Hỏng<br><select id="col-filter-type" class="column-filter"><option value="all">Tất cả</option></select></th>
-                                            <th>Kho Giao (GXT)<br><select id="col-filter-gxt" class="column-filter"><option value="all">Tất cả</option></select></th>
-                                            <th>Kho Trung Chuyển (KTC)<br><select id="col-filter-ktc" class="column-filter"><option value="all">Tất cả</option></select></th>
-                                            <th>Khách Hàng<br><select id="col-filter-client" class="column-filter"><option value="all">Tất cả</option></select></th>
-                                            <th>Chi Tiết Lỗi<br><input type="text" id="col-filter-detail" class="column-filter" placeholder="Tìm..."></th>
-                                            <th>Label<br><select id="col-filter-label" class="column-filter"><option value="all">Tất cả</option></select></th>
+                                            <th>Mã Đơn<br><input type="text" id="col-filter-order" class="column-filter"
+                                                    placeholder="Tìm..."></th>
+                                            <th>Tuần<br><select id="col-filter-week" class="column-filter">
+                                                    <option value="all">Tất cả</option>
+                                                </select></th>
+                                            <th>Loại Hư Hỏng<br><select id="col-filter-type" class="column-filter">
+                                                    <option value="all">Tất cả</option>
+                                                </select></th>
+                                            <th>Kho Giao (GXT)<br><select id="col-filter-gxt" class="column-filter">
+                                                    <option value="all">Tất cả</option>
+                                                </select></th>
+                                            <th>Kho Trung Chuyển (KTC)<br><select id="col-filter-ktc"
+                                                    class="column-filter">
+                                                    <option value="all">Tất cả</option>
+                                                </select></th>
+                                            <th>Khách Hàng<br><select id="col-filter-client" class="column-filter">
+                                                    <option value="all">Tất cả</option>
+                                                </select></th>
+                                            <th>Chi Tiết Lỗi<br><input type="text" id="col-filter-detail"
+                                                    class="column-filter" placeholder="Tìm..."></th>
+                                            <th>Label<br><select id="col-filter-label" class="column-filter">
+                                                    <option value="all">Tất cả</option>
+                                                </select></th>
                                         </tr>
                                     </thead>
                                     <tbody id="table-body">
@@ -249,6 +287,7 @@
         <p>Đang xử lý dữ liệu...</p>
     </div>
 
-    <script src="dashboard.js?v=16"></script>
+    <script src="dashboard.js?v=17"></script>
 </body>
+
 </html>

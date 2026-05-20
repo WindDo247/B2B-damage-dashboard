@@ -230,6 +230,31 @@ document.querySelectorAll('.btn-fetch').forEach(btn => {
                     fetchUrl = `https://drive.google.com/uc?export=download&id=${gId}`;
                 }
             }
+            // Xử lý link API từ Google Apps Script
+            else if (url.includes('script.google.com/macros/s/')) {
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error("Lỗi khi kết nối đến Google Apps Script API");
+                    const jsonArray = await response.json();
+
+                    if (jsonArray.error) throw new Error(jsonArray.error);
+
+                    if (target === 'db') AppState.dbData = jsonArray;
+                    if (target === 'kw') AppState.kwData = jsonArray;
+                    if (target === 'gxt') AppState.gxtData = jsonArray;
+
+                    AppState.filesLoaded[target] = true;
+                    statuses[target].textContent = `Google API (${jsonArray.length} dòng)`;
+                    statuses[target].style.color = 'var(--accent-success)';
+                    dropBoxes[target].classList.add('success');
+
+                    checkAllFilesLoaded();
+                    saveStateToDB();
+                    return; // Thoát sớm vì đã xử lý xong
+                } catch (e) {
+                    throw new Error("Lỗi đọc API: " + e.message);
+                }
+            }
 
             if (isGoogleSheet) {
                 // Tận dụng kỹ thuật JSONP riêng của Google Sheets (bỏ qua mọi rào cản CORS & Origin null)
@@ -425,33 +450,56 @@ function processData() {
         const kwKeyField = dualScanFindKey(AppState.kwData, ['key', 'từ khóa', 'word', 'lỗi', 'mô tả', 'chi tiết']) || kwKeys[0];
         const labelKeyField = dualScanFindKey(AppState.kwData, ['label', 'nhãn', 'loại', 'nhóm', 'phân']) || kwKeys[1];
 
-        // Phục hồi dòng đầu tiên nếu người dùng không đặt Header (ví dụ: dòng đầu tiên là "rách" -> "damage")
-        const isKwHeader = ['key', 'từ khóa', 'word', 'lỗi', 'mô tả', 'chi tiết', 'cột_'].some(w => String(kwKeyField).toLowerCase().includes(w));
-        if (!isKwHeader) {
-            let normKw = normalizeStr(kwKeyField);
-            if (normKw.length > 0 && labelKeyField) {
-                keywordMap.push({
-                    keyword: normKw,
-                    label: String(labelKeyField).trim()
+        // Phát hiện xem cái field này có phải là header thật sự không
+        const isTrueHeader = ['key', 'từ khóa', 'word', 'lỗi', 'mô tả', 'chi tiết'].some(w => String(kwKeyField).toLowerCase().includes(w));
+        const isGenericColumn = String(kwKeyField).toLowerCase().includes('cột_');
+
+        // Khôi phục tiêu đề nếu người dùng lấy Dữ Liệu làm Tiêu Đề (Excel tải file lên)
+        // Lưu ý: Tách từ khóa bằng dấu phẩy luôn cho tiêu đề
+        if (!isTrueHeader && !isGenericColumn) {
+            let normKwField = normalizeStr(kwKeyField);
+            if (normKwField.length > 0 && labelKeyField) {
+                normKwField.split(',').forEach(kw => {
+                    let nk = normalizeStr(kw);
+                    if (nk.length > 0) {
+                        keywordMap.push({
+                            keyword: nk,
+                            label: String(labelKeyField).trim()
+                        });
+                    }
                 });
             }
         }
 
         AppState.kwData.forEach((row, index) => {
-            // Bỏ qua dòng tiêu đề nếu vô tình lọt vào data
-            if (index === 0 && isKwHeader) return;
+            // CHỈ bỏ qua dòng đầu tiên nếu dòng đó là dòng Tiêu Đề thật sự bị lọt vào Data (VD: 'Từ khóa', 'Label')
+            // Nếu là cột tự phát sinh (Cột_0) thì dòng đầu tiên chính là Dữ Liệu (rách -> damage), tuyệt đối KHÔNG bỏ qua!
+            if (index === 0) {
+                const firstCell = String(row[kwKeyField] || '').toLowerCase();
+                const firstCellIsHeader = ['key', 'từ khóa', 'word', 'lỗi', 'mô tả'].some(w => firstCell.includes(w));
+                if (firstCellIsHeader) return;
+            }
 
-            let kw = row[kwKeyField];
-            let label = row[labelKeyField];
+            let kwStr = String(row[kwKeyField] || '');
+            let label = String(row[labelKeyField] || '');
 
-            let normKw = normalizeStr(kw);
-            if (normKw.length > 0 && label) {
-                keywordMap.push({
-                    keyword: normKw,
-                    label: String(label).trim() // Keep label original case for display
+            if (kwStr && label) {
+                // Tách từ khóa bằng dấu phẩy nếu 1 ô có nhiều từ (VD: "rách, lủng, móp")
+                kwStr.split(',').forEach(kw => {
+                    let normKw = normalizeStr(kw);
+                    if (normKw.length > 0) {
+                        keywordMap.push({
+                            keyword: normKw,
+                            label: label.trim()
+                        });
+                    }
                 });
             }
         });
+
+        // Debug info để biết tool đang đọc lộn cột nào không
+        AppState.debugKwKey = kwKeyField;
+        AppState.debugLabelKey = labelKeyField;
     }
 
     // Ưu tiên so khớp các từ khóa DÀI TRƯỚC (cụm từ cụ thể) để tránh bị từ khóa ngắn (ví dụ: "rách" vs "rách tem") bắt nhầm
@@ -473,14 +521,22 @@ function processData() {
         const gxtField = dualScanFindKey(AppState.gxtData, ['giao', 'gxt', 'kho']) || gxtKeys[0];
         const ktcField = dualScanFindKey(AppState.gxtData, ['ktc', 'kct', 'trước']) || gxtKeys[1];
 
+        // Phát hiện xem cái field này có phải là header thật sự không
+        const isTrueGxtHeader = ['giao', 'gxt', 'kho'].some(w => String(gxtField).toLowerCase().includes(w));
+        const isGenericGxtColumn = String(gxtField).toLowerCase().includes('cột_');
+
         // Phục hồi dòng đầu tiên nếu người dùng không đặt Header
-        const isGxtHeader = ['giao', 'gxt', 'kho', 'cột_'].some(w => String(gxtField).toLowerCase().includes(w));
-        if (!isGxtHeader) {
+        if (!isTrueGxtHeader && !isGenericGxtColumn) {
             gxtMap[String(gxtField).toLowerCase().trim()] = String(ktcField).trim();
         }
 
         AppState.gxtData.forEach((row, index) => {
-            if (index === 0 && isGxtHeader) return;
+            if (index === 0) {
+                const firstCell = String(row[gxtField] || '').toLowerCase();
+                const firstCellIsHeader = ['giao', 'gxt', 'kho'].some(w => firstCell.includes(w));
+                if (firstCellIsHeader) return;
+            }
+
             let gxt = row[gxtField];
             let ktc = row[ktcField];
             if (gxt) {
@@ -839,15 +895,17 @@ function generateReport(keepPage = false) {
     html += `
         <div style="margin-top:30px; padding:15px; background:var(--bg-secondary); border-radius:5px; font-size:12px; color:var(--text-muted); border: 1px dashed var(--accent-danger);">
             <strong>🔍 BẢNG GỠ LỖI (DEBUG LOG):</strong><br/><br/>
+            - <strong>Cột Từ Khóa được đọc:</strong> <span style="color:var(--accent-warning);">${AppState.debugKwKey || 'N/A'}</span><br/>
+            - <strong>Cột Nhãn được đọc:</strong> <span style="color:var(--accent-warning);">${AppState.debugLabelKey || 'N/A'}</span><br/>
             - <strong>Số lượng từ khóa:</strong> <span style="color:var(--text-main);">${kwMap.length}</span> từ.<br/>
             - <strong>Toàn bộ từ khóa đã nhận diện:</strong> <span style="color:var(--text-main);">${kwPreview}</span><br/>
             <hr style="border-top:1px dashed #ccc; margin:10px 0;"/>
             <strong>TRACE 5 ĐƠN HÀNG ĐẦU TIÊN:</strong><br/>
             ${traceHtml}
             <hr style="border-top:1px dashed #ccc; margin:10px 0;"/>
-            - <strong>Cột Mã Đơn:</strong> <span style="color:var(--accent-success);">${dk.orderKey}</span><br/>
-            - <strong>Cột Loại Lỗi:</strong> <span style="color:var(--accent-success);">${dk.typeKey}</span><br/>
-            - <strong>Cột Chi Tiết Lỗi:</strong> <span style="color:var(--accent-danger);">${dk.detailKey}</span>
+            - <strong>Cột Mã Đơn (DB):</strong> <span style="color:var(--accent-success);">${dk.orderKey}</span><br/>
+            - <strong>Cột Loại Lỗi (DB):</strong> <span style="color:var(--accent-success);">${dk.typeKey}</span><br/>
+            - <strong>Cột Chi Tiết Lỗi (DB):</strong> <span style="color:var(--accent-danger);">${dk.detailKey}</span>
         </div>
     `;
 
@@ -1092,3 +1150,60 @@ loadStateFromDB().then(savedState => {
         }
     }
 }).catch(e => console.error("Không thể khôi phục state:", e));
+
+// --- AUTO SYNC LOGIC ---
+async function doAutoSync() {
+    const urls = ['db', 'kw', 'gxt'].map(t => ({ target: t, url: localStorage.getItem(`saved_url_${t}`) }));
+    const validUrls = urls.filter(u => u.url && u.url.includes('script.google.com/macros/s/'));
+    if (validUrls.length === 0) return;
+
+    let updated = false;
+    for (let { target, url } of validUrls) {
+        try {
+            const response = await fetch(url);
+            if (response.ok) {
+                const jsonArray = await response.json();
+                if (!jsonArray.error && jsonArray.length > 0) {
+                    if (target === 'db') AppState.dbData = jsonArray;
+                    if (target === 'kw') AppState.kwData = jsonArray;
+                    if (target === 'gxt') AppState.gxtData = jsonArray;
+
+                    const status = document.getElementById(`status-${target}`);
+                    if (status) {
+                        status.textContent = `Auto-synced (${jsonArray.length} dòng) lúc ${new Date().toLocaleTimeString('vi-VN')}`;
+                        status.style.color = 'var(--accent-success)';
+                    }
+                    updated = true;
+                }
+            }
+        } catch (e) { console.error("Auto-sync failed", e); }
+    }
+
+    if (updated && AppState.dbData.length > 0) {
+        try {
+            processData();
+            buildDashboard();
+            generateReport(true);
+            saveStateToDB();
+        } catch (e) { }
+    }
+}
+
+let autoSyncInterval = null;
+const autoSyncCheckbox = document.getElementById('auto-sync-checkbox');
+if (autoSyncCheckbox) {
+    autoSyncCheckbox.checked = localStorage.getItem('autoSyncStatus') === 'true';
+    autoSyncCheckbox.addEventListener('change', (e) => {
+        localStorage.setItem('autoSyncStatus', e.target.checked);
+        if (e.target.checked) {
+            doAutoSync();
+            if (autoSyncInterval) clearInterval(autoSyncInterval);
+            autoSyncInterval = setInterval(doAutoSync, 30 * 60 * 1000);
+        } else {
+            clearInterval(autoSyncInterval);
+        }
+    });
+    if (autoSyncCheckbox.checked) {
+        autoSyncInterval = setInterval(doAutoSync, 30 * 60 * 1000);
+    }
+}

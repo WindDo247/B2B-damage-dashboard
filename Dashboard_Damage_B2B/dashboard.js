@@ -699,6 +699,10 @@ function processData() {
 
     AppState.mappedData = AppState.dbData.map((row, index) => {
         if (isFirstRowHeader && index === 0) return null; // Bỏ qua dòng tiêu đề nếu bị lọt vào data
+        
+        // BỎ QUA NGAY CÁC DÒNG TRỐNG (Không có mã vận đơn)
+        if (!row[orderKey] || String(row[orderKey]).trim() === '') return null;
+
         // Gom chung text của Loại lỗi và Chi tiết lỗi để đối chiếu Keyword (tăng độ chính xác)
         const typeText = String(row[typeKey] || '');
         const detailText = String(row[detailKey] || '');

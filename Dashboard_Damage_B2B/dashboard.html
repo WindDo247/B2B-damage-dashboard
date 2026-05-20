@@ -12,11 +12,46 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <!-- SheetJS (xlsx) for parsing Excel/CSV -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="dashboard.css?v=5">
 </head>
 
 <body>
+    <!-- Login Overlay -->
+    <div id="login-overlay" class="login-overlay">
+        <div class="glass-card login-card">
+            <div class="logo" style="justify-content: center; padding-bottom: 20px;">
+                <div class="logo-icon"></div>
+                <h1>B2B Analytics</h1>
+            </div>
+            <h3 style="text-align: center; margin-bottom: 10px;">Đăng nhập nội bộ</h3>
+            <p style="text-align: center; color: var(--text-secondary); margin-bottom: 30px; font-size: 0.9rem;">
+                Vui lòng sử dụng email <strong>@ghn.vn</strong> để truy cập hệ thống phân tích B2B.
+            </p>
+            <div class="login-form" style="display: flex; flex-direction: column; align-items: center;">
+                <div id="g_id_onload"
+                     data-client_id="410006887580-s0r1sfgdjn2csfuvepqjfnfah9arupuj.apps.googleusercontent.com"
+                     data-context="signin"
+                     data-ux_mode="popup"
+                     data-callback="handleCredentialResponse"
+                     data-auto_prompt="false">
+                </div>
+                <div class="g_id_signin"
+                     data-type="standard"
+                     data-shape="rectangular"
+                     data-theme="outline"
+                     data-text="signin_with"
+                     data-size="large"
+                     data-logo_alignment="left"
+                     data-width="300">
+                </div>
+                <p id="login-error" style="color: var(--accent-danger); font-size: 0.85rem; margin-top: 15px; text-align: center; display: none;">Tài khoản không có quyền truy cập. Vui lòng dùng đuôi @ghn.vn</p>
+            </div>
+        </div>
+    </div>
+
     <div class="app-container">
         <!-- Sidebar / Navigation -->
         <aside class="sidebar">
@@ -52,8 +87,11 @@
                         Tự động đồng bộ (30p)
                     </label>
                     <div class="user-profile">
-                        <span>Quản lý Vận hành</span>
-                        <div class="avatar">OM</div>
+                        <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                            <span id="user-email-display" style="font-weight: 500;">Chưa đăng nhập</span>
+                            <span id="btn-logout" style="font-size: 0.75rem; color: var(--accent-danger); cursor: pointer; text-decoration: underline;">Đăng xuất</span>
+                        </div>
+                        <div class="avatar">GHN</div>
                     </div>
                 </div>
             </header>

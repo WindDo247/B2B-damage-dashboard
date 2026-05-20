@@ -10,6 +10,68 @@ const AppState = {
     charts: {}
 };
 
+// --- LOGIN LOGIC ---
+// Google Sign-In Callback
+window.handleCredentialResponse = function(response) {
+    try {
+        // Giải mã JWT Token từ Google
+        const base64Url = response.credential.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        
+        const payload = JSON.parse(jsonPayload);
+        const email = payload.email.toLowerCase();
+        
+        const loginError = document.getElementById('login-error');
+        const loginOverlay = document.getElementById('login-overlay');
+        const emailDisplay = document.getElementById('user-email-display');
+        
+        if (email.endsWith('@ghn.vn')) {
+            localStorage.setItem('ghn_user_email', email);
+            if (emailDisplay) emailDisplay.textContent = email;
+            if (loginOverlay) loginOverlay.classList.add('hidden');
+            if (loginError) loginError.style.display = 'none';
+        } else {
+            // Hiển thị lỗi nếu không phải email GHN
+            if (loginError) {
+                loginError.textContent = `Tài khoản ${email} không được phép truy cập. Chỉ hỗ trợ email @ghn.vn!`;
+                loginError.style.display = 'block';
+            }
+            
+            // Đăng xuất khỏi Google identity để người dùng có thể thử tài khoản khác dễ dàng
+            if (window.google && google.accounts) {
+                google.accounts.id.revoke(email, done => {
+                    console.log('Revoked Google access for non-GHN email.');
+                });
+            }
+        }
+    } catch (e) {
+        console.error("Lỗi giải mã token xác thực:", e);
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const savedEmail = localStorage.getItem('ghn_user_email');
+    const loginOverlay = document.getElementById('login-overlay');
+    const emailDisplay = document.getElementById('user-email-display');
+
+    // Kiểm tra xem đã từng đăng nhập hợp lệ chưa
+    if (savedEmail && savedEmail.endsWith('@ghn.vn')) {
+        if (loginOverlay) loginOverlay.classList.add('hidden');
+        if (emailDisplay) emailDisplay.textContent = savedEmail;
+    }
+
+    const btnLogout = document.getElementById('btn-logout');
+    if (btnLogout) {
+        btnLogout.addEventListener('click', () => {
+            localStorage.removeItem('ghn_user_email');
+            if (loginOverlay) loginOverlay.classList.remove('hidden');
+        });
+    }
+});
+
 // --- STATE PERSISTENCE (INDEXEDDB) ---
 const DB_NAME = 'B2BDashboardDB';
 const STORE_NAME = 'AppStateStore';

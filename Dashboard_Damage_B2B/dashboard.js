@@ -10,6 +10,72 @@ const AppState = {
     charts: {}
 };
 
+// --- DEFAULT API LINKS (HARDCODED) ---
+const DEFAULT_API = {
+    db: "https://script.google.com/macros/s/AKfycbwnBwEObKKhJ1R3rEh7ypuW2OaPxFR5KxCbUm5D1Yw2vQWFXkcmrbFxnlBC0OTI_F1G/exec",
+    kw: "https://script.google.com/macros/s/AKfycbwT_ZuYX8RN84QgWWJT8J2P57wVreYj7lEi7qOvyHYp1MhkVCRfWRJn8C4_7L4cqyyP/exec",
+    gxt: "https://script.google.com/macros/s/AKfycbynJP4pfNr3thl0Ff63xZ-IEnkwSdIrO5YOXZTCqEW61zsbqPhkD69k8PjHC0IgZeoZXg/exec"
+};
+
+// Hàm tự động tải API mặc định
+async function loadDefaultApis() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) overlay.classList.add('active');
+    
+    let promises = [];
+    ['db', 'kw', 'gxt'].forEach(target => {
+        const url = DEFAULT_API[target] || localStorage.getItem(`saved_url_${target}`);
+        
+        // Cập nhật lại UI ô input cho đẹp
+        const input = document.getElementById(`link-${target}`);
+        if (input && url) input.value = url;
+        
+        if (url && url.includes('script.google.com/macros/s/')) {
+            promises.push(
+                fetch(url).then(res => res.json()).then(jsonArray => {
+                    if (Array.isArray(jsonArray) && jsonArray.length > 0) {
+                        if (target === 'db') AppState.dbData = jsonArray;
+                        if (target === 'kw') AppState.kwData = jsonArray;
+                        if (target === 'gxt') AppState.gxtData = jsonArray;
+                        
+                        AppState.filesLoaded[target] = true;
+                        
+                        // Update UI
+                        const statusEl = document.getElementById(`status-${target}`);
+                        const dropBox = document.getElementById(`drop-${target}`);
+                        if (statusEl) {
+                            statusEl.textContent = `API Mặc định (${jsonArray.length} dòng)`;
+                            statusEl.style.color = 'var(--accent-success)';
+                        }
+                        if (dropBox) dropBox.classList.add('success');
+                    }
+                }).catch(e => console.error(`Lỗi tải API mặc định ${target}:`, e))
+            );
+        }
+    });
+
+    if (promises.length > 0) {
+        await Promise.all(promises);
+        checkAllFilesLoaded();
+        
+        // Nếu đủ cả 3 file (hoặc DB + 2 file đã có sẵn trong IndexedDB), tự động chạy luôn!
+        if (AppState.filesLoaded.db && AppState.filesLoaded.kw && AppState.filesLoaded.gxt) {
+            try {
+                processData();
+                buildDashboard();
+                generateReport();
+                document.getElementById('nav-dashboard').style.display = 'flex';
+                document.getElementById('nav-report').style.display = 'flex';
+                document.querySelectorAll('.nav-item')[1].click(); // Chuyển sang Dashboard
+                saveStateToDB();
+            } catch (error) {
+                console.error("Lỗi khi tự động xử lý dữ liệu:", error);
+            }
+        }
+    }
+    if (overlay) overlay.classList.remove('active');
+}
+
 // --- LOGIN LOGIC ---
 // Google Sign-In Callback
 window.handleCredentialResponse = function (response) {
@@ -33,6 +99,9 @@ window.handleCredentialResponse = function (response) {
             if (emailDisplay) emailDisplay.textContent = email;
             if (loginOverlay) loginOverlay.classList.add('hidden');
             if (loginError) loginError.style.display = 'none';
+            
+            // Tự động kéo API sau khi đăng nhập thành công
+            loadDefaultApis();
         } else {
             // Hiển thị lỗi nếu không phải email GHN
             if (loginError) {
@@ -1209,6 +1278,21 @@ loadStateFromDB().then(savedState => {
 
             // Tự động chuyển qua trang Dashboard
             navItems[1].click();
+            
+            // Vẫn gọi loadDefaultApis ngầm để làm mới dữ liệu
+            loadDefaultApis();
+        } else {
+            // Nếu chưa có mappedData nhưng đăng nhập rồi thì auto load API
+            const savedEmail = localStorage.getItem('ghn_user_email');
+            if (savedEmail && savedEmail.endsWith('@ghn.vn')) {
+                loadDefaultApis();
+            }
+        }
+    } else {
+        // Trường hợp phiên đầu tiên hoàn toàn, check email rồi load
+        const savedEmail = localStorage.getItem('ghn_user_email');
+        if (savedEmail && savedEmail.endsWith('@ghn.vn')) {
+            loadDefaultApis();
         }
     }
 }).catch(e => console.error("Không thể khôi phục state:", e));

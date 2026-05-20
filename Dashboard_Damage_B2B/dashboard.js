@@ -64,9 +64,10 @@ async function loadDefaultApis() {
                 processData();
                 buildDashboard();
                 generateReport();
+                document.getElementById('nav-mapping').style.display = 'flex';
                 document.getElementById('nav-dashboard').style.display = 'flex';
                 document.getElementById('nav-report').style.display = 'flex';
-                document.querySelectorAll('.nav-item')[1].click(); // Chuyển sang Dashboard
+                document.querySelectorAll('.nav-item')[2].click(); // Chuyển sang Dashboard
                 saveStateToDB();
             } catch (error) {
                 console.error("Lỗi khi tự động xử lý dữ liệu:", error);
@@ -531,9 +532,10 @@ btnProcess.addEventListener('click', () => {
             generateReport();
 
             // Enable navigation and switch to dashboard
+            document.getElementById('nav-mapping').style.display = 'flex';
             document.getElementById('nav-dashboard').style.display = 'flex';
             document.getElementById('nav-report').style.display = 'flex';
-            navItems[1].click(); // Click dashboard
+            navItems[2].click(); // Click dashboard
 
             // Lưu toàn bộ trạng thái vào DB
             saveStateToDB();
@@ -1064,25 +1066,49 @@ function generateReport(keepPage = false) {
     const topKtc = Object.entries(ktcGroups).sort((a, b) => b[1] - a[1])[0] || ["N/A", 0];
     const topGxt = Object.entries(gxtGroups).sort((a, b) => b[1] - a[1])[0] || ["N/A", 0];
 
-    // Build HTML Report
+    // Build HTML Report with new UI
     let html = `
-        <div class="highlight-box">
-            <strong>Tổng quan:</strong> Hệ thống đã ghi nhận tổng cộng <strong>${totalIssues}</strong> đơn hàng có vấn đề về ngoại quan/bể vỡ trong toàn bộ thời gian.
-            Xu hướng hiện tại: ${trendText}
+        <div class="insight-container">
+            <!-- Tổng quan -->
+            <div class="alert-card info">
+                <div class="alert-icon">📊</div>
+                <div class="alert-content">
+                    <h4>Tổng quan Hư hỏng</h4>
+                    <p>Hệ thống ghi nhận tổng cộng <strong>${totalIssues}</strong> đơn hàng có vấn đề. ${trendText}</p>
+                </div>
+            </div>
+            
+            <!-- Điểm nóng KTC -->
+            <div class="alert-card danger">
+                <div class="alert-icon">⚠️</div>
+                <div class="alert-content">
+                    <h4>Điểm nóng KTC/KCT: ${topKtc[0]}</h4>
+                    <p>Kho trung chuyển này ghi nhận xuất phát nhiều hàng lỗi nhất với <strong>${topKtc[1]}</strong> trường hợp. Cần ưu tiên kiểm tra quy trình chất xếp hàng điện máy tại khu vực xuất/nhập.</p>
+                </div>
+            </div>
+            
+            <!-- Điểm nóng GXT -->
+            <div class="alert-card warning">
+                <div class="alert-icon">🏢</div>
+                <div class="alert-content">
+                    <h4>Điểm nóng Kho Giao (GXT): ${topGxt[0]}</h4>
+                    <p>Bưu cục giao hàng cuối cùng ghi nhận số lượng phát hiện lỗi nhiều nhất với <strong>${topGxt[1]}</strong> đơn hàng. Quản lý vận hành cần lưu ý điều kiện đường xá và thao tác hạ hàng.</p>
+                </div>
+            </div>
+            
+            <!-- Khuyến nghị -->
+            <div class="alert-card success">
+                <div class="alert-icon">💡</div>
+                <div class="alert-content">
+                    <h4>Khuyến nghị Hành động (Actionable Insights)</h4>
+                    <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+                        <li>Rà soát lại quy trình đào tạo và phổ biến tài liệu "Hướng dẫn chất xếp hàng" cho nhân viên tại <strong>${topKtc[0]}</strong>.</li>
+                        <li>Tăng cường kiểm tra ngẫu nhiên (audit) ngoại quan thùng xe trước khi rời kho B2B đối với các tuyến chạy về <strong>${topKtc[0]}</strong>.</li>
+                        <li>Theo dõi diễn biến biểu đồ Tuần tới trên Dashboard để đánh giá tính hiệu quả của các biện pháp can thiệp.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
-        
-        <h4>1. Điểm nóng KTC/KCT</h4>
-        <p>Kho trung chuyển ghi nhận nhiều hàng lỗi xuất phát nhất là <strong>${topKtc[0]}</strong> với <strong>${topKtc[1]}</strong> trường hợp. Cần ưu tiên kiểm tra quy trình chất xếp hàng điện máy tại khu vực xuất/nhập của kho KTC này.</p>
-        
-        <h4>2. Điểm nóng Kho Giao (GXT)</h4>
-        <p>Kho giao cuối cùng ghi nhận số lượng từ chối/phát hiện lỗi nhiều nhất là <strong>${topGxt[0]}</strong> với <strong>${topGxt[1]}</strong> đơn hàng. Quản lý vận hành cần lưu ý thêm về điều kiện đường xá và cách thao tác hạ hàng tại bưu cục này.</p>
-        
-        <h4>3. Khuyến nghị B2B Operations</h4>
-        <ul>
-            <li>Rà soát lại quy trình đào tạo và phổ biến tài liệu "Hướng dẫn chất xếp hàng điện máy" cho nhân viên bốc xếp tại ${topKtc[0]}.</li>
-            <li>Theo dõi diễn biến biểu đồ Tuần tới để đánh giá tính hiệu quả của các biện pháp can thiệp.</li>
-            <li>Tăng cường kiểm tra ngẫu nhiên (audit) ngoại quan thùng xe trước khi rời kho B2B đối với các tuyến chạy thẳng về ${topKtc[0]}.</li>
-        </ul>
     `;
 
     // DEBUG INFO
@@ -1356,6 +1382,7 @@ loadStateFromDB().then(savedState => {
 
         // Nếu đã từng mapping và xem dashboard
         if (AppState.mappedData && AppState.mappedData.length > 0) {
+            document.getElementById('nav-mapping').style.display = 'flex';
             document.getElementById('nav-dashboard').style.display = 'flex';
             document.getElementById('nav-report').style.display = 'flex';
 
@@ -1363,7 +1390,7 @@ loadStateFromDB().then(savedState => {
             generateReport(true);
 
             // Tự động chuyển qua trang Dashboard
-            navItems[1].click();
+            navItems[2].click();
             
             // Vẫn gọi loadDefaultApis ngầm để làm mới dữ liệu
             loadDefaultApis();

@@ -15,7 +15,7 @@
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="dashboard.css?v=3">
+    <link rel="stylesheet" href="dashboard.css?v=4">
 </head>
 
 <body>
@@ -55,16 +55,20 @@
             </div>
             <nav class="nav-menu">
                 <a href="#" class="nav-item active" data-target="upload-section">
-                    <span class="nav-icon">📁</span>
-                    Import Data
+                    <span class="nav-icon">📡</span>
+                    Collect Data
+                </a>
+                <a href="#" class="nav-item" data-target="mapping-section" id="nav-mapping" style="display: none;">
+                    <span class="nav-icon">🔀</span>
+                    Mapping Table
                 </a>
                 <a href="#" class="nav-item" data-target="dashboard-section" id="nav-dashboard" style="display: none;">
                     <span class="nav-icon">📊</span>
                     Dashboard
                 </a>
                 <a href="#" class="nav-item" data-target="report-section" id="nav-report" style="display: none;">
-                    <span class="nav-icon">📝</span>
-                    Detailed Report
+                    <span class="nav-icon">💡</span>
+                    Insights & Alerts
                 </a>
             </nav>
         </aside>
@@ -259,21 +263,13 @@
                     </div>
                 </section>
 
-                <!-- Report Section -->
-                <section id="report-section" class="section">
+                <!-- Mapping Section -->
+                <section id="mapping-section" class="section">
                     <div class="glass-card report-card">
-                        <div class="report-header">
-                            <h3>Báo Cáo Chi Tiết Hư Hỏng B2B</h3>
-                            <button id="btn-export-report" class="btn-secondary">Xuất Báo Cáo</button>
-                        </div>
-                        <div class="report-content" id="report-content">
-                            <!-- Report content will be generated here -->
-                        </div>
-
                         <div class="data-table-container">
                             <div
                                 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                                <h4>Dữ Liệu Đã Mapping</h4>
+                                <h3>Data Mapping & Validation</h3>
                                 <button id="btn-clear-filter" class="btn-secondary"
                                     style="padding: 4px 12px; font-size: 0.8rem;">Xóa bộ lọc</button>
                             </div>
@@ -320,6 +316,19 @@
                         </div>
                     </div>
                 </section>
+
+                <!-- Report Section -->
+                <section id="report-section" class="section">
+                    <div class="glass-card report-card">
+                        <div class="report-header">
+                            <h3>Báo Cáo Phân Tích & Cảnh Báo (AI Insights)</h3>
+                            <button id="btn-export-report" class="btn-secondary">Xuất Báo Cáo PDF</button>
+                        </div>
+                        <div class="report-content" id="report-content">
+                            <!-- Report content will be generated here -->
+                        </div>
+                    </div>
+                </section>
             </div>
         </main>
     </div>
@@ -330,7 +339,7 @@
         <p>Đang xử lý dữ liệu...</p>
     </div>
 
-    <script src="dashboard.js?v=5"></script>
+    <script src="dashboard.js?v=6"></script>
 </body>
 
 </html>

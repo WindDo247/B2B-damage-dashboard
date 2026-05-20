@@ -78,8 +78,10 @@ async function loadDefaultApis() {
 }
 
 // --- LOGIN LOGIC ---
+const WHITELIST_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQjjadgDIBES0IW1WZ6_YTxJJM2RnL0Ww7sAOrdQAA2FoQUfUgZx-LV_ZNkhP-_F2qReZUgVNabLyba/pub?gid=782405001&single=true&output=csv";
+
 // Google Sign-In Callback
-window.handleCredentialResponse = function (response) {
+window.handleCredentialResponse = async function (response) {
     try {
         // Giải mã JWT Token từ Google
         const base64Url = response.credential.split('.')[1];
@@ -95,7 +97,34 @@ window.handleCredentialResponse = function (response) {
         const loginOverlay = document.getElementById('login-overlay');
         const emailDisplay = document.getElementById('user-email-display');
 
-        if (email.endsWith('@ghn.vn')) {
+        // Hiển thị trạng thái đang kiểm tra quyền
+        if (loginError) {
+            loginError.textContent = "Đang kiểm tra quyền truy cập...";
+            loginError.style.color = "var(--text-secondary)";
+            loginError.style.display = 'block';
+        }
+
+        // Tải danh sách Whitelist từ Google Sheets CSV
+        let allowedEmails = [];
+        try {
+            const res = await fetch(WHITELIST_CSV_URL);
+            if (!res.ok) throw new Error("Không thể tải danh sách phân quyền");
+            const csvText = await res.text();
+            // Tách theo dòng, lấy cột đầu tiên, bỏ trống, đưa về in thường
+            allowedEmails = csvText.split('\n')
+                                   .map(line => line.split(',')[0].trim().toLowerCase())
+                                   .filter(e => e && e.includes('@'));
+        } catch (fetchErr) {
+            console.error("Lỗi tải Whitelist:", fetchErr);
+            if (loginError) {
+                loginError.textContent = "Lỗi kết nối máy chủ phân quyền. Vui lòng thử lại sau.";
+                loginError.style.color = "var(--accent-danger)";
+            }
+            return; // Dừng đăng nhập
+        }
+
+        // Kiểm tra quyền (phải có trong danh sách VÀ ưu tiên đuôi @ghn.vn nếu cần)
+        if (allowedEmails.includes(email)) {
             localStorage.setItem('ghn_user_email', email);
             if (emailDisplay) emailDisplay.textContent = email;
             if (loginOverlay) loginOverlay.classList.add('hidden');
@@ -104,9 +133,10 @@ window.handleCredentialResponse = function (response) {
             // Tự động kéo API sau khi đăng nhập thành công
             loadDefaultApis();
         } else {
-            // Hiển thị lỗi nếu không phải email GHN
+            // Hiển thị lỗi nếu không có quyền
             if (loginError) {
-                loginError.textContent = `Tài khoản ${email} không được phép truy cập. Chỉ hỗ trợ email @ghn.vn!`;
+                loginError.textContent = `Tài khoản ${email} chưa được cấp quyền truy cập. Vui lòng liên hệ Admin!`;
+                loginError.style.color = "var(--accent-danger)";
                 loginError.style.display = 'block';
             }
 

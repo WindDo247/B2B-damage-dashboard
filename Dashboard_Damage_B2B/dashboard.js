@@ -912,7 +912,7 @@ function updateKtcChart(week) {
     createChart('ktcChart', 'bar', {
         labels: sortedKtc.map(k => k[0]),
         datasets: [{
-            label: 'Số lượng lỗi',
+            label: 'Đơn hư hỏng',
             data: sortedKtc.map(k => k[1]),
             backgroundColor: '#f59e0b',
             borderRadius: 4
@@ -939,7 +939,7 @@ function updateGxtChart(week) {
     createChart('gxtChart', 'bar', {
         labels: sortedGxt.map(k => k[0]),
         datasets: [{
-            label: 'Số lượng lỗi',
+            label: 'Đơn hư hỏng',
             data: sortedGxt.map(k => k[1]),
             backgroundColor: '#ef4444',
             borderRadius: 4

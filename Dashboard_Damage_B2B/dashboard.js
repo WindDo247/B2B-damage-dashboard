@@ -12,22 +12,22 @@ const AppState = {
 
 // --- LOGIN LOGIC ---
 // Google Sign-In Callback
-window.handleCredentialResponse = function(response) {
+window.handleCredentialResponse = function (response) {
     try {
         // Giải mã JWT Token từ Google
         const base64Url = response.credential.split('.')[1];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
             return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
         }).join(''));
-        
+
         const payload = JSON.parse(jsonPayload);
         const email = payload.email.toLowerCase();
-        
+
         const loginError = document.getElementById('login-error');
         const loginOverlay = document.getElementById('login-overlay');
         const emailDisplay = document.getElementById('user-email-display');
-        
+
         if (email.endsWith('@ghn.vn')) {
             localStorage.setItem('ghn_user_email', email);
             if (emailDisplay) emailDisplay.textContent = email;
@@ -39,7 +39,7 @@ window.handleCredentialResponse = function(response) {
                 loginError.textContent = `Tài khoản ${email} không được phép truy cập. Chỉ hỗ trợ email @ghn.vn!`;
                 loginError.style.display = 'block';
             }
-            
+
             // Đăng xuất khỏi Google identity để người dùng có thể thử tài khoản khác dễ dàng
             if (window.google && google.accounts) {
                 google.accounts.id.revoke(email, done => {

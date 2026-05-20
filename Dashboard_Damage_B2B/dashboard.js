@@ -751,8 +751,66 @@ function processData() {
 }
 
 // Dashboard Building
+function updateKPICards(data) {
+    const kpiContainer = document.getElementById('kpi-container');
+    if (!kpiContainer) return;
+
+    if (!data || data.length === 0) {
+        kpiContainer.innerHTML = '';
+        return;
+    }
+
+    const totalDamages = data.length;
+
+    // Lỗi phổ biến nhất
+    const labelCounts = {};
+    data.forEach(d => {
+        labelCounts[d.mapped_label] = (labelCounts[d.mapped_label] || 0) + 1;
+    });
+    const topLabel = Object.keys(labelCounts).reduce((a, b) => labelCounts[a] > labelCounts[b] ? a : b, "N/A");
+
+    // Kho có nhiều lỗi nhất
+    const gxtCounts = {};
+    data.forEach(d => {
+        gxtCounts[d.clean_gxt] = (gxtCounts[d.clean_gxt] || 0) + 1;
+    });
+    const topGxt = Object.keys(gxtCounts).reduce((a, b) => gxtCounts[a] > gxtCounts[b] ? a : b, "N/A");
+
+    kpiContainer.innerHTML = `
+        <div class="kpi-card danger">
+            <div class="kpi-icon">📦</div>
+            <div class="kpi-content">
+                <div class="kpi-title">Tổng Đơn Hư Hỏng</div>
+                <div class="kpi-value">${totalDamages.toLocaleString()}</div>
+            </div>
+        </div>
+        <div class="kpi-card warning">
+            <div class="kpi-icon">⚠️</div>
+            <div class="kpi-content">
+                <div class="kpi-title">Loại Lỗi Phổ Biến Nhất</div>
+                <div class="kpi-value" style="font-size: 18px; line-height: 28px">${topLabel}</div>
+            </div>
+        </div>
+        <div class="kpi-card primary">
+            <div class="kpi-icon">🏢</div>
+            <div class="kpi-content">
+                <div class="kpi-title">Kho Phát Sinh Lỗi Nhìu Nhất</div>
+                <div class="kpi-value" style="font-size: 14px; line-height: 28px" title="${topGxt}">${topGxt.length > 25 ? topGxt.substring(0, 25) + '...' : topGxt}</div>
+            </div>
+        </div>
+        <div class="kpi-card success" style="opacity: 0.7">
+            <div class="kpi-icon">📈</div>
+            <div class="kpi-content">
+                <div class="kpi-title">Tỷ lệ Damage Rate %</div>
+                <div class="kpi-value" style="font-size: 14px; color: var(--text-secondary)">Đang chờ Data Tổng Đơn</div>
+            </div>
+        </div>
+    `;
+}
+
 function buildDashboard() {
     const data = AppState.mappedData;
+    updateKPICards(data);
 
     // Grouping Helpers
     const groupBy = (array, key) => {
@@ -936,6 +994,10 @@ function createChart(id, type, data, options = {}) {
                 weight: 'bold',
                 size: 11
             },
+            textAlign: 'center',
+            align: type === 'line' ? 'top' : (type === 'bar' && !options.indexAxis ? 'end' : 'center'),
+            anchor: type === 'line' ? 'end' : (type === 'bar' && !options.indexAxis ? 'end' : 'center'),
+            offset: type === 'line' ? 8 : (type === 'bar' && !options.indexAxis ? 4 : 0),
             formatter: (value, ctx) => {
                 let sum = 0;
                 let dataArr = ctx.chart.data.datasets[0].data;
@@ -944,7 +1006,8 @@ function createChart(id, type, data, options = {}) {
                 });
                 if (sum === 0 || value === 0) return value;
                 let percentage = (value * 100 / sum).toFixed(1) + "%";
-                return `${value} (${percentage})`;
+                // Trả về 2 dòng bằng cách dùng dấu \n
+                return `${value}\n(${percentage})`;
             }
         };
     }
@@ -1187,6 +1250,16 @@ function renderTable(page) {
             optionsHtml += `<option value="${row.mapped_label}" selected>${row.mapped_label}</option>`;
         }
 
+        const getBadgeClass = (label) => {
+            const l = label.toLowerCase();
+            if (l.includes('bể') || l.includes('hư') || l.includes('mất') || l.includes('thất lạc') || l.includes('damage')) return 'badge-danger';
+            if (l.includes('móp') || l.includes('rách') || l.includes('cấn') || l.includes('ngoại quan')) return 'badge-warning';
+            if (l.includes('khác') || l.includes('n/a')) return 'badge-neutral';
+            return 'badge-success';
+        };
+
+        const badgeClass = getBadgeClass(row.mapped_label);
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${row.clean_order}</td>
@@ -1199,7 +1272,7 @@ function renderTable(page) {
                 ${row.clean_detail || ''}
             </td>
             <td>
-                <select class="label-select" data-index="${globalIndex}" title="${row.keyword_hit ? 'Bắt được từ: ' + row.keyword_hit : 'Không bắt được từ khóa nào'}">
+                <select class="label-select badge ${badgeClass}" data-index="${globalIndex}" title="${row.keyword_hit ? 'Bắt được từ: ' + row.keyword_hit : 'Không bắt được từ khóa nào'}">
                     ${optionsHtml}
                 </select>
             </td>

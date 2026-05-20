@@ -794,7 +794,7 @@ function updateKPICards(data) {
         <div class="kpi-card primary">
             <div class="kpi-icon">🏢</div>
             <div class="kpi-content">
-                <div class="kpi-title">Kho Phát Sinh Lỗi Nhìu Nhất</div>
+                <div class="kpi-title">Kho Phát Sinh Lỗi Nhiều Nhất</div>
                 <div class="kpi-value" style="font-size: 14px; line-height: 28px" title="${topGxt}">${topGxt.length > 25 ? topGxt.substring(0, 25) + '...' : topGxt}</div>
             </div>
         </div>

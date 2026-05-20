@@ -192,6 +192,14 @@
 
                 <!-- Dashboard Section -->
                 <section id="dashboard-section" class="section">
+                    <div class="global-filters" style="display: flex; gap: 15px; margin-bottom: 20px;">
+                        <select id="global-week-filter" class="filter-select">
+                            <option value="all">Tất cả các tuần</option>
+                        </select>
+                        <select id="global-client-filter" class="filter-select">
+                            <option value="all">Tất cả khách hàng</option>
+                        </select>
+                    </div>
                     <div class="kpi-container" id="kpi-container">
                         <!-- KPI Cards will be injected here by JS -->
                     </div>
@@ -213,7 +221,6 @@
                         <div class="glass-card chart-card">
                             <div class="card-header">
                                 <h3>Top KTC/KCT Có Nhiều Đơn Hư Hỏng Nhất</h3>
-                                <select id="week-filter-ktc" class="filter-select"></select>
                             </div>
                             <div class="chart-container">
                                 <canvas id="ktcChart"></canvas>
@@ -224,7 +231,6 @@
                         <div class="glass-card chart-card">
                             <div class="card-header">
                                 <h3>Top Kho GXT Có Nhiều Đơn Hư Hỏng Nhất</h3>
-                                <select id="week-filter-gxt" class="filter-select"></select>
                             </div>
                             <div class="chart-container">
                                 <canvas id="gxtChart"></canvas>

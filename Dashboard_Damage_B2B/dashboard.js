@@ -808,9 +808,23 @@ function updateKPICards(data) {
     `;
 }
 
-function buildDashboard() {
-    const data = AppState.mappedData;
-    updateKPICards(data);
+// Hàm render toàn bộ Dashboard dựa trên bộ lọc
+function renderDashboardCharts() {
+    let filteredData = AppState.mappedData;
+    
+    // Lấy giá trị từ bộ lọc
+    const weekFilterVal = document.getElementById('global-week-filter')?.value || 'all';
+    const clientFilterVal = document.getElementById('global-client-filter')?.value || 'all';
+
+    if (weekFilterVal !== 'all') {
+        filteredData = filteredData.filter(d => d.clean_week === weekFilterVal);
+    }
+    if (clientFilterVal !== 'all') {
+        filteredData = filteredData.filter(d => d.clean_client === clientFilterVal);
+    }
+
+    // 0. Update KPIs
+    updateKPICards(filteredData);
 
     // Grouping Helpers
     const groupBy = (array, key) => {
@@ -821,7 +835,7 @@ function buildDashboard() {
     };
 
     // 1. Trend Chart
-    const weekGroups = groupBy(data, 'clean_week');
+    const weekGroups = groupBy(filteredData, 'clean_week');
     const weeks = Object.keys(weekGroups).sort();
     const trendData = weeks.map(w => weekGroups[w].length);
 
@@ -841,27 +855,41 @@ function buildDashboard() {
         }]
     });
 
-    // Populate Filters
-    const weekFilterKtc = document.getElementById('week-filter-ktc');
-    const weekFilterGxt = document.getElementById('week-filter-gxt');
-    weekFilterKtc.innerHTML = '<option value="all">Tất cả các tuần</option>';
-    weekFilterGxt.innerHTML = '<option value="all">Tất cả các tuần</option>';
-
-    weeks.forEach(w => {
-        weekFilterKtc.innerHTML += `<option value="${w}">${w}</option>`;
-        weekFilterGxt.innerHTML += `<option value="${w}">${w}</option>`;
+    // 2. KTC Chart (Top 10)
+    const damageData = filteredData.filter(d => d.mapped_label.toLowerCase().includes('damage'));
+    const ktcMap = {};
+    damageData.forEach(d => {
+        ktcMap[d.mapped_ktc] = (ktcMap[d.mapped_ktc] || 0) + 1;
+    });
+    const sortedKtc = Object.entries(ktcMap).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    createChart('ktcChart', 'bar', {
+        labels: sortedKtc.map(k => k[0]),
+        datasets: [{
+            label: 'Đơn hư hỏng',
+            data: sortedKtc.map(k => k[1]),
+            backgroundColor: '#f59e0b',
+            borderRadius: 4
+        }]
     });
 
-    // 2. KTC Chart & GXT Chart (Initial build)
-    updateKtcChart('all');
-    updateGxtChart('all');
+    // 3. GXT Chart (Top 10)
+    const gxtMap = {};
+    damageData.forEach(d => {
+        gxtMap[d.clean_gxt] = (gxtMap[d.clean_gxt] || 0) + 1;
+    });
+    const sortedGxt = Object.entries(gxtMap).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    createChart('gxtChart', 'bar', {
+        labels: sortedGxt.map(k => k[0]),
+        datasets: [{
+            label: 'Đơn hư hỏng',
+            data: sortedGxt.map(k => k[1]),
+            backgroundColor: '#ef4444',
+            borderRadius: 4
+        }]
+    });
 
-    // Filter listeners
-    weekFilterKtc.addEventListener('change', (e) => updateKtcChart(e.target.value));
-    weekFilterGxt.addEventListener('change', (e) => updateGxtChart(e.target.value));
-
-    // 3. Label Breakdown (Pie Chart)
-    const labelGroups = groupBy(data, 'mapped_label');
+    // 4. Label Breakdown (Pie Chart)
+    const labelGroups = groupBy(filteredData, 'mapped_label');
     const labels = Object.keys(labelGroups).sort((a, b) => labelGroups[b].length - labelGroups[a].length);
     const labelData = labels.map(l => labelGroups[l].length);
 
@@ -877,8 +905,8 @@ function buildDashboard() {
         }]
     }, { cutout: '65%' });
 
-    // 4. Client Chart
-    const clientGroups = groupBy(data, 'clean_client');
+    // 5. Client Chart
+    const clientGroups = groupBy(filteredData, 'clean_client');
     const clients = Object.keys(clientGroups).sort((a, b) => clientGroups[b].length - clientGroups[a].length).slice(0, 5);
     const clientData = clients.map(c => clientGroups[c].length);
 
@@ -887,64 +915,43 @@ function buildDashboard() {
         datasets: [{
             label: 'Đơn hư hỏng',
             data: clientData,
-            backgroundColor: '#8b5cf6',
-            borderRadius: 6
+            backgroundColor: '#10b981',
+            borderRadius: 4
         }]
     }, { indexAxis: 'y' });
 }
 
-function updateKtcChart(week) {
-    let targetData = AppState.mappedData;
-    if (week !== 'all') {
-        targetData = targetData.filter(d => d.clean_week === week);
+function buildDashboard() {
+    const data = AppState.mappedData;
+    
+    // Populate Global Filters only once or when data changes
+    const weekFilter = document.getElementById('global-week-filter');
+    const clientFilter = document.getElementById('global-client-filter');
+
+    if (weekFilter && clientFilter) {
+        // Build unique weeks
+        const uniqueWeeks = [...new Set(data.map(d => d.clean_week).filter(Boolean))].sort();
+        weekFilter.innerHTML = '<option value="all">Tất cả các tuần</option>';
+        uniqueWeeks.forEach(w => {
+            weekFilter.innerHTML += `<option value="${w}">${w}</option>`;
+        });
+
+        // Build unique clients
+        const uniqueClients = [...new Set(data.map(d => d.clean_client).filter(Boolean))].sort();
+        clientFilter.innerHTML = '<option value="all">Tất cả khách hàng</option>';
+        uniqueClients.forEach(c => {
+            clientFilter.innerHTML += `<option value="${c}">${c}</option>`;
+        });
+
+        // Add event listeners (remove first to avoid duplicates)
+        weekFilter.removeEventListener('change', renderDashboardCharts);
+        weekFilter.addEventListener('change', renderDashboardCharts);
+        
+        clientFilter.removeEventListener('change', renderDashboardCharts);
+        clientFilter.addEventListener('change', renderDashboardCharts);
     }
 
-    // Chỉ quan tâm lỗi 'damage'
-    targetData = targetData.filter(d => d.mapped_label.toLowerCase().includes('damage'));
-
-    const ktcMap = {};
-    targetData.forEach(d => {
-        ktcMap[d.mapped_ktc] = (ktcMap[d.mapped_ktc] || 0) + 1;
-    });
-
-    const sortedKtc = Object.entries(ktcMap).sort((a, b) => b[1] - a[1]).slice(0, 10); // Top 10
-
-    createChart('ktcChart', 'bar', {
-        labels: sortedKtc.map(k => k[0]),
-        datasets: [{
-            label: 'Đơn hư hỏng',
-            data: sortedKtc.map(k => k[1]),
-            backgroundColor: '#f59e0b',
-            borderRadius: 4
-        }]
-    });
-}
-
-function updateGxtChart(week) {
-    let targetData = AppState.mappedData;
-    if (week !== 'all') {
-        targetData = targetData.filter(d => d.clean_week === week);
-    }
-
-    // Chỉ quan tâm lỗi 'damage'
-    targetData = targetData.filter(d => d.mapped_label.toLowerCase().includes('damage'));
-
-    const gxtMap = {};
-    targetData.forEach(d => {
-        gxtMap[d.clean_gxt] = (gxtMap[d.clean_gxt] || 0) + 1;
-    });
-
-    const sortedGxt = Object.entries(gxtMap).sort((a, b) => b[1] - a[1]).slice(0, 10); // Top 10
-
-    createChart('gxtChart', 'bar', {
-        labels: sortedGxt.map(k => k[0]),
-        datasets: [{
-            label: 'Đơn hư hỏng',
-            data: sortedGxt.map(k => k[1]),
-            backgroundColor: '#ef4444',
-            borderRadius: 4
-        }]
-    });
+    renderDashboardCharts();
 }
 
 function createChart(id, type, data, options = {}) {

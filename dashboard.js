@@ -878,9 +878,7 @@ function renderDashboardCharts() {
 
     // Helper to normalize client names
     const normClient = (c) => {
-        let s = String(c || '').trim();
-        if (s.toLowerCase() === 'lg pantos') return 'LG LTL';
-        return s;
+        return String(c || '').trim();
     };
 
     const weekContainer = document.querySelector('#ms-week .ms-options');

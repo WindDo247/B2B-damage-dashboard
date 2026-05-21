@@ -830,8 +830,8 @@ function updateKPICards(data, totalPickup, damageRate) {
     });
     const topGxt = Object.keys(gxtCounts).reduce((a, b) => gxtCounts[a] > gxtCounts[b] ? a : b, "N/A");
 
-    const rateClass = damageRate > 5 ? 'danger' : damageRate > 2 ? 'warning' : 'success';
-    const rateColor = damageRate > 5 ? 'var(--accent-danger)' : damageRate > 2 ? 'var(--accent-warning)' : 'var(--accent-success)';
+    const rateClass = damageRate > 1 ? 'danger' : damageRate >= 0.5 ? 'warning' : 'success';
+    const rateColor = damageRate > 1 ? 'var(--accent-danger)' : damageRate >= 0.5 ? 'var(--accent-warning)' : 'var(--accent-success)';
 
     kpiContainer.innerHTML = `
         <div class="kpi-card primary">

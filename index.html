@@ -15,7 +15,7 @@
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="dashboard.css?v=4">
+    <link rel="stylesheet" href="dashboard.css?v=5">
 </head>
 
 <body>
@@ -196,13 +196,52 @@
 
                 <!-- Dashboard Section -->
                 <section id="dashboard-section" class="section">
-                    <div class="global-filters" style="display: flex; gap: 15px; margin-bottom: 20px;">
-                        <select id="global-week-filter" class="filter-select">
-                            <option value="all">Tất cả các tuần</option>
-                        </select>
-                        <select id="global-client-filter" class="filter-select">
-                            <option value="all">Tất cả khách hàng</option>
-                        </select>
+                    <div class="global-filters" style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+                        <!-- Multi-Select: Week -->
+                        <div class="multi-select" id="ms-week">
+                            <button class="ms-toggle" type="button">
+                                <span class="ms-label">Tất cả các tuần</span>
+                                <span class="ms-arrow">▾</span>
+                            </button>
+                            <div class="ms-dropdown">
+                                <div class="ms-search-box">
+                                    <input type="text" class="ms-search" placeholder="Tìm tuần...">
+                                </div>
+                                <div class="ms-actions">
+                                    <button type="button" class="ms-select-all">Chọn tất cả</button>
+                                    <button type="button" class="ms-deselect-all">Bỏ chọn</button>
+                                </div>
+                                <div class="ms-options">
+                                    <!-- Options injected by JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Multi-Select: Client -->
+                        <div class="multi-select" id="ms-client">
+                            <button class="ms-toggle" type="button">
+                                <span class="ms-label">Tất cả khách hàng</span>
+                                <span class="ms-arrow">▾</span>
+                            </button>
+                            <div class="ms-dropdown">
+                                <div class="ms-search-box">
+                                    <input type="text" class="ms-search" placeholder="Tìm khách hàng...">
+                                </div>
+                                <div class="ms-actions">
+                                    <button type="button" class="ms-select-all">Chọn tất cả</button>
+                                    <button type="button" class="ms-deselect-all">Bỏ chọn</button>
+                                </div>
+                                <div class="ms-options">
+                                    <!-- Options injected by JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sync status indicator -->
+                        <div id="sync-status" style="display: none; align-items: center; gap: 6px; font-size: 0.85rem; padding: 6px 14px; border-radius: 8px; background: var(--bg-secondary); border: 1px solid var(--glass-border);">
+                            <span id="sync-icon">⏳</span>
+                            <span id="sync-text">Đang đồng bộ...</span>
+                        </div>
                     </div>
                     <div class="kpi-container" id="kpi-container">
                         <!-- KPI Cards will be injected here by JS -->
@@ -343,7 +382,7 @@
         <p>Đang xử lý dữ liệu...</p>
     </div>
 
-    <script src="dashboard.js?v=8"></script>
+    <script src="dashboard.js?v=9"></script>
 </body>
 
 </html>

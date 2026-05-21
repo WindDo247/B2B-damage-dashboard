@@ -64,6 +64,7 @@ async function loadDefaultApis() {
                 processData();
                 buildDashboard();
                 generateReport();
+                pushMappedDataToSheet();
                 document.getElementById('nav-mapping').style.display = 'flex';
                 document.getElementById('nav-dashboard').style.display = 'flex';
                 document.getElementById('nav-report').style.display = 'flex';
@@ -844,15 +845,23 @@ function updateKPICards(data) {
 function renderDashboardCharts() {
     let filteredData = AppState.mappedData;
     
-    // Lấy giá trị từ bộ lọc
-    const weekFilterVal = document.getElementById('global-week-filter')?.value || 'all';
-    const clientFilterVal = document.getElementById('global-client-filter')?.value || 'all';
+    // L?y gi? tr? t? Multi-Select checkboxes
+    const weekContainer = document.querySelector('#ms-week .ms-options');
+    const clientContainer = document.querySelector('#ms-client .ms-options');
 
-    if (weekFilterVal !== 'all') {
-        filteredData = filteredData.filter(d => d.clean_week === weekFilterVal);
+    if (weekContainer) {
+        const checkedWeeks = [...weekContainer.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value);
+        const allWeeks = [...weekContainer.querySelectorAll('input[type="checkbox"]')];
+        if (checkedWeeks.length > 0 && checkedWeeks.length < allWeeks.length) {
+            filteredData = filteredData.filter(d => checkedWeeks.includes(d.clean_week));
+        }
     }
-    if (clientFilterVal !== 'all') {
-        filteredData = filteredData.filter(d => d.clean_client === clientFilterVal);
+    if (clientContainer) {
+        const checkedClients = [...clientContainer.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value);
+        const allClients = [...clientContainer.querySelectorAll('input[type="checkbox"]')];
+        if (checkedClients.length > 0 && checkedClients.length < allClients.length) {
+            filteredData = filteredData.filter(d => checkedClients.includes(d.clean_client));
+        }
     }
 
     // 0. Update KPIs
@@ -955,33 +964,84 @@ function renderDashboardCharts() {
 
 function buildDashboard() {
     const data = AppState.mappedData;
-    
-    // Populate Global Filters only once or when data changes
-    const weekFilter = document.getElementById('global-week-filter');
-    const clientFilter = document.getElementById('global-client-filter');
 
-    if (weekFilter && clientFilter) {
-        // Build unique weeks
-        const uniqueWeeks = [...new Set(data.map(d => d.clean_week).filter(Boolean))].sort();
-        weekFilter.innerHTML = '<option value="all">Tất cả các tuần</option>';
-        uniqueWeeks.forEach(w => {
-            weekFilter.innerHTML += `<option value="${w}">${w}</option>`;
-        });
+    // --- Multi-Select Utility ---
+    function initMultiSelect(containerId, values, defaultLabel, onChange) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
 
-        // Build unique clients
-        const uniqueClients = [...new Set(data.map(d => d.clean_client).filter(Boolean))].sort();
-        clientFilter.innerHTML = '<option value="all">Tất cả khách hàng</option>';
-        uniqueClients.forEach(c => {
-            clientFilter.innerHTML += `<option value="${c}">${c}</option>`;
-        });
+        const toggle = container.querySelector('.ms-toggle');
+        const labelEl = container.querySelector('.ms-label');
+        const dropdown = container.querySelector('.ms-dropdown');
+        const optionsDiv = container.querySelector('.ms-options');
+        const searchInput = container.querySelector('.ms-search');
+        const selectAllBtn = container.querySelector('.ms-select-all');
+        const deselectAllBtn = container.querySelector('.ms-deselect-all');
 
-        // Add event listeners (remove first to avoid duplicates)
-        weekFilter.removeEventListener('change', renderDashboardCharts);
-        weekFilter.addEventListener('change', renderDashboardCharts);
-        
-        clientFilter.removeEventListener('change', renderDashboardCharts);
-        clientFilter.addEventListener('change', renderDashboardCharts);
+        // Populate checkboxes
+        optionsDiv.innerHTML = values.map(val => 
+            '<label class="ms-option"><input type="checkbox" value="' + val + '" checked> <span>' + val + '</span></label>'
+        ).join('');
+
+        function updateLabel() {
+            const checked = [...optionsDiv.querySelectorAll('input:checked')];
+            const total = optionsDiv.querySelectorAll('input[type="checkbox"]').length;
+            if (checked.length === 0 || checked.length === total) {
+                labelEl.innerHTML = defaultLabel;
+            } else if (checked.length === 1) {
+                labelEl.innerHTML = checked[0].value;
+            } else {
+                labelEl.innerHTML = checked.length + ' ' + defaultLabel.replace(/[^\s]+\s/, '').toLowerCase() + ' <span class="ms-badge">' + checked.length + '</span>';
+            }
+        }
+        updateLabel();
+
+        // Toggle dropdown
+        toggle.onclick = (e) => {
+            e.stopPropagation();
+            document.querySelectorAll('.multi-select.open').forEach(ms => { if (ms !== container) ms.classList.remove('open'); });
+            container.classList.toggle('open');
+            if (container.classList.contains('open')) {
+                setTimeout(() => searchInput.focus(), 50);
+            }
+        };
+
+        // Search
+        searchInput.oninput = () => {
+            const query = searchInput.value.toLowerCase();
+            optionsDiv.querySelectorAll('.ms-option').forEach(opt => {
+                const text = opt.querySelector('span').textContent.toLowerCase();
+                opt.classList.toggle('hidden', !text.includes(query));
+            });
+        };
+
+        // Select All / Deselect All
+        selectAllBtn.onclick = () => {
+            optionsDiv.querySelectorAll('.ms-option:not(.hidden) input').forEach(cb => cb.checked = true);
+            updateLabel(); onChange();
+        };
+        deselectAllBtn.onclick = () => {
+            optionsDiv.querySelectorAll('.ms-option:not(.hidden) input').forEach(cb => cb.checked = false);
+            updateLabel(); onChange();
+        };
+
+        // Checkbox change
+        optionsDiv.addEventListener('change', () => { updateLabel(); onChange(); });
     }
+
+    // Close all dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.multi-select')) {
+            document.querySelectorAll('.multi-select.open').forEach(ms => ms.classList.remove('open'));
+        }
+    });
+
+    // Build unique values
+    const uniqueWeeks = [...new Set(data.map(d => d.clean_week).filter(Boolean))].sort();
+    const uniqueClients = [...new Set(data.map(d => d.clean_client).filter(Boolean))].sort();
+
+    initMultiSelect('ms-week', uniqueWeeks, 'Tất cả các tuần', renderDashboardCharts);
+    initMultiSelect('ms-client', uniqueClients, 'Tất cả khách hàng', renderDashboardCharts);
 
     renderDashboardCharts();
 }
@@ -1363,6 +1423,7 @@ document.getElementById('table-body').addEventListener('change', (e) => {
             // Xây dựng lại biểu đồ và báo cáo mà KHÔNG reset lại trang table hiện tại
             buildDashboard();
             generateReport(true);
+            pushMappedDataToSheet();
 
             // Lưu lại state để không mất khi F5
             saveStateToDB();
@@ -1418,6 +1479,7 @@ loadStateFromDB().then(savedState => {
 
             buildDashboard();
             generateReport(true);
+            pushMappedDataToSheet();
 
             // Tự động chuyển qua trang Dashboard
             navItems[2].click();
@@ -1473,6 +1535,7 @@ async function doAutoSync() {
             processData();
             buildDashboard();
             generateReport(true);
+            pushMappedDataToSheet();
             saveStateToDB();
         } catch (e) { }
     }
@@ -1504,7 +1567,7 @@ document.getElementById('btn-export-data').addEventListener('click', () => {
         : AppState.mappedData;
         
     if (!dataToExport || dataToExport.length === 0) {
-        alert('Kh�ng c� d? li?u d? t?i xu?ng!');
+        alert('Kh�ng c� d? li?u d? t?i xu?ng!');
         return;
     }
 
@@ -1516,3 +1579,50 @@ document.getElementById('btn-export-data').addEventListener('click', () => {
     XLSX.writeFile(wb, 'B2B_Damage_Mapped_Data.xlsx');
 });
 
+// --- AUTO-PUSH MAPPED DATA TO GOOGLE SHEETS ---
+const MAPPED_SHEET_PUSH_URL = "PENDING_USER_URL";
+
+async function pushMappedDataToSheet() {
+    if (MAPPED_SHEET_PUSH_URL === "PENDING_USER_URL") {
+        console.log("Push URL chua duoc cau hinh, bo qua auto-push.");
+        return;
+    }
+
+    const data = AppState.mappedData;
+    if (!data || data.length === 0) return;
+
+    const syncStatus = document.getElementById('sync-status');
+    const syncIcon = document.getElementById('sync-icon');
+    const syncText = document.getElementById('sync-text');
+
+    if (syncStatus) {
+        syncStatus.style.display = 'flex';
+        syncIcon.textContent = '⏳';
+        syncText.textContent = 'Đang đồng bộ dữ liệu...';
+        syncText.style.color = 'var(--text-secondary)';
+    }
+
+    try {
+        const response = await fetch(MAPPED_SHEET_PUSH_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: data })
+        });
+
+        if (syncStatus) {
+            syncIcon.textContent = '✅';
+            syncText.textContent = 'Đồng bộ thành công (' + data.length + ' dòng)';
+            syncText.style.color = 'var(--accent-success)';
+            setTimeout(() => { syncStatus.style.display = 'none'; }, 5000);
+        }
+    } catch (error) {
+        console.error('Lỗi đồng bộ:', error);
+        if (syncStatus) {
+            syncIcon.textContent = '❌';
+            syncText.textContent = 'Lỗi đồng bộ. Thử lại sau.';
+            syncText.style.color = 'var(--accent-danger)';
+            setTimeout(() => { syncStatus.style.display = 'none'; }, 8000);
+        }
+    }
+}

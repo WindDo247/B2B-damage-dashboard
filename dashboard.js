@@ -1000,7 +1000,7 @@ function renderDashboardCharts() {
             backgroundColor: '#f59e0b',
             borderRadius: 4
         }]
-    });
+    }, { _pickupMap: pickupByKtc });
 
     // 3. GXT Chart (Top 10)
     const gxtMap = {};
@@ -1016,7 +1016,7 @@ function renderDashboardCharts() {
             backgroundColor: '#ef4444',
             borderRadius: 4
         }]
-    });
+    }, { _pickupMap: pickupByGxt });
 
     // 4. Label Breakdown (Pie Chart)
     const labelGroups = groupBy(filteredData, 'mapped_label');
@@ -1035,8 +1035,8 @@ function renderDashboardCharts() {
         }]
     }, { cutout: '65%' });
 
-    // 5. Client Chart
-    const clientGroups = groupBy(filteredData, 'clean_client');
+    // 5. Client Chart (damage only)
+    const clientGroups = groupBy(damageData, 'clean_client');
     const clients = Object.keys(clientGroups).sort((a, b) => clientGroups[b].length - clientGroups[a].length).slice(0, 5);
     const clientData = clients.map(c => clientGroups[c].length);
 
@@ -1048,7 +1048,7 @@ function renderDashboardCharts() {
             backgroundColor: '#10b981',
             borderRadius: 4
         }]
-    }, { indexAxis: 'y' });
+    }, { indexAxis: 'y', _pickupMap: pickupByClient });
 }
 
 function buildDashboard() {

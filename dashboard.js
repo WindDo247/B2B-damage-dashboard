@@ -7,6 +7,7 @@ const AppState = {
     filteredData: [],
     uniqueLabels: [],
     filesLoaded: { db: false, kw: false, gxt: false },
+    pickupData: [],
     charts: {}
 };
 
@@ -14,7 +15,8 @@ const AppState = {
 const DEFAULT_API = {
     db: "https://script.google.com/macros/s/AKfycbwnBwEObKKhJ1R3rEh7ypuW2OaPxFR5KxCbUm5D1Yw2vQWFXkcmrbFxnlBC0OTI_F1G/exec",
     kw: "https://script.google.com/macros/s/AKfycbwT_ZuYX8RN84QgWWJT8J2P57wVreYj7lEi7qOvyHYp1MhkVCRfWRJn8C4_7L4cqyyP/exec",
-    gxt: "https://script.google.com/macros/s/AKfycbynJP4pfNr3thl0Ff63xZ-IEnkwSdIrO5YOXZTCqEW61zsbqPhkD69k8PjHC0IgZeoZXg/exec"
+    gxt: "https://script.google.com/macros/s/AKfycbynJP4pfNr3thl0Ff63xZ-IEnkwSdIrO5YOXZTCqEW61zsbqPhkD69k8PjHC0IgZeoZXg/exec",
+    pickup: "https://script.google.com/macros/s/AKfycbzyYQqaXN3tey2FH8slerYSmx4aHreoYVAKE9duSkVnK6AMM-6MJvJVs4vJz_6IiZ8L/exec?sheet=Pick%20Up"
 };
 
 // Hàm tự động tải API mặc định
@@ -23,7 +25,7 @@ async function loadDefaultApis() {
     if (overlay) overlay.classList.add('active');
     
     let promises = [];
-    ['db', 'kw', 'gxt'].forEach(target => {
+    ['db', 'kw', 'gxt', 'pickup'].forEach(target => {
         const url = DEFAULT_API[target] || localStorage.getItem(`saved_url_${target}`);
         
         // Cập nhật lại UI ô input cho đẹp
@@ -37,6 +39,7 @@ async function loadDefaultApis() {
                         if (target === 'db') AppState.dbData = jsonArray;
                         if (target === 'kw') AppState.kwData = jsonArray;
                         if (target === 'gxt') AppState.gxtData = jsonArray;
+                        if (target === 'pickup') AppState.pickupData = jsonArray;
                         
                         AppState.filesLoaded[target] = true;
                         
@@ -780,12 +783,29 @@ function processData() {
 
     AppState.debugTrace = debugTrace;
 
+    // Enrich mappedData with nganh_hang from pickupData
+    if (AppState.pickupData && AppState.pickupData.length > 0) {
+        const pickupLookup = {};
+        AppState.pickupData.forEach(p => {
+            const code = String(p.order_code || p['order_code'] || '').trim();
+            if (code) pickupLookup[code] = {
+                nganh_hang: String(p.nganh_hang || p['nganh_hang'] || '').trim(),
+                service_type: String(p.service_type || p['service type'] || p['service_type'] || '').trim()
+            };
+        });
+        AppState.mappedData.forEach(d => {
+            const info = pickupLookup[d.clean_order] || {};
+            d.nganh_hang = info.nganh_hang || 'Khác';
+            d.service_type = info.service_type || '';
+        });
+    }
+
     // Reset filter
     AppState.filteredData = AppState.mappedData;
 }
 
 // Dashboard Building
-function updateKPICards(data, totalRecords) {
+function updateKPICards(data, totalPickup, damageRate) {
     const kpiContainer = document.getElementById('kpi-container');
     if (!kpiContainer) return;
 
@@ -796,51 +816,52 @@ function updateKPICards(data, totalRecords) {
 
     const totalDamages = data.length;
 
-    // Lỗi phổ biến nhất
     const labelCounts = {};
     data.forEach(d => {
         labelCounts[d.mapped_label] = (labelCounts[d.mapped_label] || 0) + 1;
     });
     const topLabel = Object.keys(labelCounts).reduce((a, b) => labelCounts[a] > labelCounts[b] ? a : b, "N/A");
 
-    // Kho có nhiều lỗi nhất
     const gxtCounts = {};
     data.forEach(d => {
         gxtCounts[d.clean_gxt] = (gxtCounts[d.clean_gxt] || 0) + 1;
     });
     const topGxt = Object.keys(gxtCounts).reduce((a, b) => gxtCounts[a] > gxtCounts[b] ? a : b, "N/A");
 
+    const rateColor = damageRate > 5 ? 'var(--accent-danger)' : damageRate > 2 ? 'var(--accent-warning)' : 'var(--accent-success)';
+
     kpiContainer.innerHTML = `
+        <div class="kpi-card primary">
+            <div class="kpi-icon"></div>
+            <div class="kpi-content">
+                <div class="kpi-title">Tổng Đơn Lấy</div>
+                <div class="kpi-value">{totalPickup > 0 ? totalPickup.toLocaleString() : 'N/A'}</div>
+            </div>
+        </div>
         <div class="kpi-card danger">
-            <div class="kpi-icon">📦</div>
+            <div class="kpi-icon"></div>
             <div class="kpi-content">
                 <div class="kpi-title">Tổng Đơn Hư Hỏng</div>
-                <div class="kpi-value">${totalDamages.toLocaleString()}</div>
+                <div class="kpi-value">{totalDamages.toLocaleString()}</div>
+            </div>
+        </div>
+        <div class="kpi-card success">
+            <div class="kpi-icon"></div>
+            <div class="kpi-content">
+                <div class="kpi-title">Tỷ Lệ Damage Rate</div>
+                <div class="kpi-value" style="color: {rateColor}">{totalPickup > 0 ? damageRate + '%' : 'N/A'}</div>
             </div>
         </div>
         <div class="kpi-card warning">
-            <div class="kpi-icon">⚠️</div>
+            <div class="kpi-icon"></div>
             <div class="kpi-content">
                 <div class="kpi-title">Loại Lỗi Phổ Biến Nhất</div>
-                <div class="kpi-value" style="font-size: 18px; line-height: 28px">${topLabel}</div>
-            </div>
-        </div>
-        <div class="kpi-card primary">
-            <div class="kpi-icon">🏢</div>
-            <div class="kpi-content">
-                <div class="kpi-title">Kho Phát Sinh Lỗi Nhiều Nhất</div>
-                <div class="kpi-value" style="font-size: 14px; line-height: 28px" title="${topGxt}">${topGxt.length > 25 ? topGxt.substring(0, 25) + '...' : topGxt}</div>
-            </div>
-        </div>
-        <div class="kpi-card success" style="opacity: 0.7">
-            <div class="kpi-icon">📈</div>
-            <div class="kpi-content">
-                <div class="kpi-title">Tỷ lệ Damage Rate %</div>
-                <div class="kpi-value" style="font-size: 14px; color: var(--text-secondary)">Đang chờ Data Tổng Đơn</div>
+                <div class="kpi-value" style="font-size: 18px; line-height: 28px">{topLabel}</div>
             </div>
         </div>
     `;
 }
+
 
 // Hàm render toàn bộ Dashboard dựa trên bộ lọc
 function renderDashboardCharts() {
@@ -865,9 +886,34 @@ function renderDashboardCharts() {
         }
     }
 
-    // 0. Update KPIs (pass both total and damage-only data)
+    // 0. Filter pickupData with same conditions and calculate damage rate
+    let filteredPickup = AppState.pickupData || [];
+    if (weekContainer) {
+        const checkedWeeks = [...weekContainer.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value);
+        const allWeeks = [...weekContainer.querySelectorAll('input[type="checkbox"]')];
+        if (checkedWeeks.length > 0 && checkedWeeks.length < allWeeks.length) {
+            filteredPickup = filteredPickup.filter(p => checkedWeeks.includes(String(p.isoweek_pickup_time || '').trim()));
+        }
+    }
+    if (clientContainer) {
+        const checkedClients = [...clientContainer.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value);
+        const allClients = [...clientContainer.querySelectorAll('input[type="checkbox"]')];
+        if (checkedClients.length > 0 && checkedClients.length < allClients.length) {
+            filteredPickup = filteredPickup.filter(p => checkedClients.includes(String(p.client_name || '').trim()));
+        }
+    }
+    if (nganhContainer) {
+        const checkedNganh = [...nganhContainer.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value);
+        const allNganh = [...nganhContainer.querySelectorAll('input[type="checkbox"]')];
+        if (checkedNganh.length > 0 && checkedNganh.length < allNganh.length) {
+            filteredPickup = filteredPickup.filter(p => checkedNganh.includes(String(p.nganh_hang || 'Khác').trim()));
+        }
+    }
+
     const damageOnly = filteredData.filter(d => d.mapped_label.toLowerCase().includes('damage'));
-    updateKPICards(damageOnly, filteredData.length);
+    const totalPickup = filteredPickup.length;
+    const damageRate = totalPickup > 0 ? ((damageOnly.length / totalPickup) * 100).toFixed(2) : 0;
+    updateKPICards(damageOnly, totalPickup, damageRate);
 
     // Grouping Helpers
     const groupBy = (array, key) => {
@@ -880,15 +926,27 @@ function renderDashboardCharts() {
     // Filter only Damage records for all charts
     const damageData = filteredData.filter(d => d.mapped_label.toLowerCase().includes('damage'));
 
-    // 1. Trend Chart (only Damage)
+        // 1. Trend Chart (Dual axis: damage count + damage rate %)
     const weekGroups = groupBy(damageData, 'clean_week');
     const weeks = Object.keys(weekGroups).sort();
     const trendData = weeks.map(w => weekGroups[w].length);
 
+    // Calculate damage rate per week using pickupData
+    const pickupWeekGroups = {};
+    filteredPickup.forEach(p => {
+        const w = String(p.isoweek_pickup_time || '').trim();
+        if (w) pickupWeekGroups[w] = (pickupWeekGroups[w] || 0) + 1;
+    });
+    const trendRateData = weeks.map(w => {
+        const total = pickupWeekGroups[w] || 0;
+        const damaged = weekGroups[w] ? weekGroups[w].length : 0;
+        return total > 0 ? parseFloat(((damaged / total) * 100).toFixed(2)) : 0;
+    });
+
     createChart('trendChart', 'line', {
         labels: weeks,
         datasets: [{
-            label: 'Số đơn hư hỏng',
+            label: 'Số đơn damage',
             data: trendData,
             borderColor: '#3b82f6',
             backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -897,11 +955,29 @@ function renderDashboardCharts() {
             fill: true,
             pointBackgroundColor: '#3b82f6',
             pointBorderColor: '#fff',
-            pointRadius: 4
+            pointRadius: 4,
+            yAxisID: 'y'
+        }, {
+            label: 'Damage Rate %',
+            data: trendRateData,
+            borderColor: '#ef4444',
+            backgroundColor: 'rgba(239, 68, 68, 0.08)',
+            borderWidth: 2,
+            borderDash: [6, 3],
+            tension: 0.4,
+            fill: false,
+            pointBackgroundColor: '#ef4444',
+            pointBorderColor: '#fff',
+            pointRadius: 4,
+            yAxisID: 'y1'
         }]
+    }, {
+        scales: {
+            y: { position: 'left', title: { display: true, text: 'Số đơn damage' } },
+            y1: { position: 'right', title: { display: true, text: 'Damage Rate %' }, grid: { drawOnChartArea: false }, ticks: { callback: v => v + '%' } }
+        }
     });
-
-    // 2. KTC Chart (Top 10)
+// 2. KTC Chart (Top 10)
     const ktcMap = {};
     damageData.forEach(d => {
         ktcMap[d.mapped_ktc] = (ktcMap[d.mapped_ktc] || 0) + 1;
@@ -1046,6 +1122,10 @@ function buildDashboard() {
 
     initMultiSelect('ms-week', uniqueWeeks, 'Tất cả các tuần', renderDashboardCharts);
     initMultiSelect('ms-client', uniqueClients, 'Tất cả khách hàng', renderDashboardCharts);
+
+    // Build unique nganh_hang
+    const uniqueNganh = [...new Set(data.map(d => d.nganh_hang || '').filter(Boolean))].sort();
+    initMultiSelect('ms-nganh', uniqueNganh, 'Tất cả ngành hàng', renderDashboardCharts);
 
     renderDashboardCharts();
 }
@@ -1508,7 +1588,7 @@ loadStateFromDB().then(savedState => {
 
 // --- AUTO SYNC LOGIC ---
 async function doAutoSync() {
-    const urls = ['db', 'kw', 'gxt'].map(t => ({ target: t, url: localStorage.getItem(`saved_url_${t}`) }));
+    const urls = ['db', 'kw', 'gxt', 'pickup'].map(t => ({ target: t, url: localStorage.getItem(`saved_url_${t}`) }));
     const validUrls = urls.filter(u => u.url && u.url.includes('script.google.com/macros/s/'));
     if (validUrls.length === 0) return;
 
@@ -1522,6 +1602,7 @@ async function doAutoSync() {
                     if (target === 'db') AppState.dbData = jsonArray;
                     if (target === 'kw') AppState.kwData = jsonArray;
                     if (target === 'gxt') AppState.gxtData = jsonArray;
+                    if (target === 'pickup') AppState.pickupData = jsonArray;
 
                     const status = document.getElementById(`status-${target}`);
                     if (status) {

@@ -237,6 +237,26 @@
                             </div>
                         </div>
 
+                        <!-- Multi-Select: Ngành Hàng -->
+                        <div class="multi-select" id="ms-nganh">
+                            <button class="ms-toggle" type="button">
+                                <span class="ms-label">Tất cả ngành hàng</span>
+                                <span class="ms-arrow">▾</span>
+                            </button>
+                            <div class="ms-dropdown">
+                                <div class="ms-search-box">
+                                    <input type="text" class="ms-search" placeholder="Tìm ngành hàng...">
+                                </div>
+                                <div class="ms-actions">
+                                    <button type="button" class="ms-select-all">Chọn tất cả</button>
+                                    <button type="button" class="ms-deselect-all">Bỏ chọn</button>
+                                </div>
+                                <div class="ms-options">
+                                    <!-- Options injected by JS -->
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Sync status indicator -->
                         <div id="sync-status" style="display: none; align-items: center; gap: 6px; font-size: 0.85rem; padding: 6px 14px; border-radius: 8px; background: var(--bg-secondary); border: 1px solid var(--glass-border);">
                             <span id="sync-icon">⏳</span>
@@ -382,7 +402,7 @@
         <p>Đang xử lý dữ liệu...</p>
     </div>
 
-    <script src="dashboard.js?v=12"></script>
+    <script src="dashboard.js?v=13"></script>
 </body>
 
 </html>

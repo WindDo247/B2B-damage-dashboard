@@ -864,6 +864,25 @@ function renderDashboardCharts() {
     let filteredData = AppState.mappedData;
     let filteredPickup = AppState.pickupData || [];
     
+    // Helper to normalize dates like "4/13/2026" to "2026-04-13"
+    const normDate = (d) => {
+        let s = String(d || '').trim();
+        if (!s) return s;
+        let p = s.split(/[/\- T]/);
+        if (p.length >= 3) {
+            if (p[2].length === 4) return p[2] + '-' + p[0].padStart(2, '0') + '-' + p[1].padStart(2, '0');
+            if (p[0].length === 4) return p[0] + '-' + p[1].padStart(2, '0') + '-' + p[2].padStart(2, '0');
+        }
+        return s;
+    };
+
+    // Helper to normalize client names
+    const normClient = (c) => {
+        let s = String(c || '').trim();
+        if (s.toLowerCase() === 'lg pantos') return 'LG LTL';
+        return s;
+    };
+
     const weekContainer = document.querySelector('#ms-week .ms-options');
     const clientContainer = document.querySelector('#ms-client .ms-options');
     const nganhContainer = document.querySelector('#ms-nganh .ms-options');
@@ -873,7 +892,7 @@ function renderDashboardCharts() {
         const all = [...weekContainer.querySelectorAll('input[type="checkbox"]')];
         if (checked.length > 0 && checked.length < all.length) {
             filteredData = filteredData.filter(d => checked.includes(d.clean_week));
-            filteredPickup = filteredPickup.filter(p => checked.includes(String(p.isoweek_pickup_time || '').trim()));
+            filteredPickup = filteredPickup.filter(p => checked.includes(normDate(p.isoweek_pickup_time)));
         }
     }
     if (clientContainer) {
@@ -881,7 +900,7 @@ function renderDashboardCharts() {
         const all = [...clientContainer.querySelectorAll('input[type="checkbox"]')];
         if (checked.length > 0 && checked.length < all.length) {
             filteredData = filteredData.filter(d => checked.includes(d.clean_client));
-            filteredPickup = filteredPickup.filter(p => checked.includes(String(p.client_name || '').trim()));
+            filteredPickup = filteredPickup.filter(p => checked.includes(normClient(p.client_name)));
         }
     }
     if (nganhContainer) {
@@ -896,7 +915,7 @@ function renderDashboardCharts() {
     // ALL charts use damageData only
     const damageData = filteredData.filter(d => d.mapped_label.toLowerCase().includes('damage'));
     const totalPickup = filteredPickup.length;
-    const damageRate = totalPickup > 0 ? ((damageData.length / totalPickup) * 100).toFixed(2) : 0;
+    const damageRate = totalPickup > 0 ? parseFloat(((damageData.length / totalPickup) * 100).toFixed(2)) : 0;
     updateKPICards(damageData, totalPickup, damageRate);
 
     const groupBy = (array, key) => array.reduce((r, c) => ((r[c[key]] = r[c[key]] || []).push(c), r), {});
@@ -913,7 +932,7 @@ function renderDashboardCharts() {
     const pickupByClient = {};
 
     filteredPickup.forEach(p => {
-        const client = String(p.client_name || '').trim();
+        const client = normClient(p.client_name);
         const gxt = String(p.warehouse_giao || '').trim();
         
         if (client) pickupByClient[client] = (pickupByClient[client] || 0) + 1;
@@ -928,7 +947,7 @@ function renderDashboardCharts() {
     const weekGroups = groupBy(damageData, 'clean_week');
     const pickupWeekGroups = {};
     filteredPickup.forEach(p => {
-        const w = String(p.isoweek_pickup_time || '').trim();
+        const w = normDate(p.isoweek_pickup_time);
         if (w) pickupWeekGroups[w] = (pickupWeekGroups[w] || 0) + 1;
     });
     const allWeekSet = new Set([...Object.keys(weekGroups), ...Object.keys(pickupWeekGroups)]);

@@ -1174,7 +1174,8 @@ function createChart(id, type, data, options = {}) {
             baseOptions.plugins.datalabels.formatter = (v) => v === 0 ? '' : v + '%';
         }
     }
-    AppState.charts[id] = new Chart(ctx, { type, data, options: baseOptions }
+    AppState.charts[id] = new Chart(ctx, { type, data, options: baseOptions });
+}
 
 // Report Generation
 function generateReport(keepPage = false) {

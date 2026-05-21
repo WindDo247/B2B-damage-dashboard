@@ -947,18 +947,21 @@ function renderDashboardCharts() {
         cfUi.style.cssText = 'margin-bottom: 15px; padding: 10px 15px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; display: none; align-items: center; justify-content: space-between;';
         cfUi.innerHTML = `<span><i style="margin-right:8px">🔍</i> Đang lọc theo: <strong id="cf-text"></strong></span>
                           <button id="cf-clear" style="background:var(--accent-danger);color:#fff;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px;">Xóa bộ lọc</button>`;
-        const header = document.querySelector('.dashboard-header');
+        const header = document.querySelector('.top-header'); // Fix class name
         if (header && header.nextSibling) {
             header.parentNode.insertBefore(cfUi, header.nextSibling);
+        } else {
+            // Fallback to prepend to dashboard-content
+            document.getElementById('dashboard-content').prepend(cfUi);
         }
-        document.getElementById('cf-clear').addEventListener('click', () => {
+        cfUi.querySelector('#cf-clear').addEventListener('click', () => {
             AppState.activeCrossFilter = null;
             renderDashboardCharts();
         });
     }
     
     if (AppState.activeCrossFilter) {
-        document.getElementById('cf-text').textContent = AppState.activeCrossFilter.type + " = " + AppState.activeCrossFilter.value;
+        cfUi.querySelector('#cf-text').textContent = AppState.activeCrossFilter.type + " = " + AppState.activeCrossFilter.value;
         cfUi.style.display = 'flex';
     } else {
         if (cfUi) cfUi.style.display = 'none';

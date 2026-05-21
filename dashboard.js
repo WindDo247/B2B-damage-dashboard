@@ -1580,10 +1580,10 @@ document.getElementById('btn-export-data').addEventListener('click', () => {
 });
 
 // --- AUTO-PUSH MAPPED DATA TO GOOGLE SHEETS ---
-const MAPPED_SHEET_PUSH_URL = "PENDING_USER_URL";
+const MAPPED_SHEET_PUSH_URL = "https://script.google.com/macros/s/AKfycbzyYQqaXN3tey2FH8slerYSmx4aHreoYVAKE9duSkVnK6AMM-6MJvJVs4vJz_6IiZ8L/exec";
 
 async function pushMappedDataToSheet() {
-    if (MAPPED_SHEET_PUSH_URL === "PENDING_USER_URL") {
+    if (MAPPED_SHEET_PUSH_URL === "https://script.google.com/macros/s/AKfycbzyYQqaXN3tey2FH8slerYSmx4aHreoYVAKE9duSkVnK6AMM-6MJvJVs4vJz_6IiZ8L/exec") {
         console.log("Push URL chua duoc cau hinh, bo qua auto-push.");
         return;
     }

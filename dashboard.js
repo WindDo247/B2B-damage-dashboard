@@ -869,185 +869,147 @@ function updateKPICards(data, totalPickup, damageRate) {
 function renderDashboardCharts() {
     let filteredData = AppState.mappedData;
     
-    // L?y gi? tr? t? Multi-Select checkboxes
     const weekContainer = document.querySelector('#ms-week .ms-options');
     const clientContainer = document.querySelector('#ms-client .ms-options');
     const nganhContainer = document.querySelector('#ms-nganh .ms-options');
 
     if (weekContainer) {
-        const checkedWeeks = [...weekContainer.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value);
-        const allWeeks = [...weekContainer.querySelectorAll('input[type="checkbox"]')];
-        if (checkedWeeks.length > 0 && checkedWeeks.length < allWeeks.length) {
-            filteredData = filteredData.filter(d => checkedWeeks.includes(d.clean_week));
+        const checked = [...weekContainer.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value);
+        const all = [...weekContainer.querySelectorAll('input[type="checkbox"]')];
+        if (checked.length > 0 && checked.length < all.length) {
+            filteredData = filteredData.filter(d => checked.includes(d.clean_week));
         }
     }
     if (clientContainer) {
-        const checkedClients = [...clientContainer.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value);
-        const allClients = [...clientContainer.querySelectorAll('input[type="checkbox"]')];
-        if (checkedClients.length > 0 && checkedClients.length < allClients.length) {
-            filteredData = filteredData.filter(d => checkedClients.includes(d.clean_client));
+        const checked = [...clientContainer.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value);
+        const all = [...clientContainer.querySelectorAll('input[type="checkbox"]')];
+        if (checked.length > 0 && checked.length < all.length) {
+            filteredData = filteredData.filter(d => checked.includes(d.clean_client));
         }
     }
-
-    // Filter by Nganh Hang
     if (nganhContainer) {
-        const checkedNganh = [...nganhContainer.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value);
-        const allNganh = [...nganhContainer.querySelectorAll('input[type="checkbox"]')];
-        if (checkedNganh.length > 0 && checkedNganh.length < allNganh.length) {
-            filteredData = filteredData.filter(d => checkedNganh.includes(d.nganh_hang || 'Khác'));
+        const checked = [...nganhContainer.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value);
+        const all = [...nganhContainer.querySelectorAll('input[type="checkbox"]')];
+        if (checked.length > 0 && checked.length < all.length) {
+            filteredData = filteredData.filter(d => checked.includes(d.nganh_hang || 'Khác'));
         }
     }
 
-    // 0. Filter pickupData with same conditions and calculate damage rate
+    // Filter pickup data with same conditions
     let filteredPickup = AppState.pickupData || [];
     if (weekContainer) {
-        const checkedWeeks = [...weekContainer.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value);
-        const allWeeks = [...weekContainer.querySelectorAll('input[type="checkbox"]')];
-        if (checkedWeeks.length > 0 && checkedWeeks.length < allWeeks.length) {
-            filteredPickup = filteredPickup.filter(p => checkedWeeks.includes(String(p.isoweek_pickup_time || '').trim()));
+        const checked = [...weekContainer.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value);
+        const all = [...weekContainer.querySelectorAll('input[type="checkbox"]')];
+        if (checked.length > 0 && checked.length < all.length) {
+            filteredPickup = filteredPickup.filter(p => checked.includes(String(p.isoweek_pickup_time || '').trim()));
         }
     }
     if (clientContainer) {
-        const checkedClients = [...clientContainer.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value);
-        const allClients = [...clientContainer.querySelectorAll('input[type="checkbox"]')];
-        if (checkedClients.length > 0 && checkedClients.length < allClients.length) {
-            filteredPickup = filteredPickup.filter(p => checkedClients.includes(String(p.client_name || '').trim()));
+        const checked = [...clientContainer.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value);
+        const all = [...clientContainer.querySelectorAll('input[type="checkbox"]')];
+        if (checked.length > 0 && checked.length < all.length) {
+            filteredPickup = filteredPickup.filter(p => checked.includes(String(p.client_name || '').trim()));
         }
     }
     if (nganhContainer) {
-        const checkedNganh = [...nganhContainer.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value);
-        const allNganh = [...nganhContainer.querySelectorAll('input[type="checkbox"]')];
-        if (checkedNganh.length > 0 && checkedNganh.length < allNganh.length) {
-            filteredPickup = filteredPickup.filter(p => checkedNganh.includes(String(p.nganh_hang || 'Khác').trim()));
+        const checked = [...nganhContainer.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value);
+        const all = [...nganhContainer.querySelectorAll('input[type="checkbox"]')];
+        if (checked.length > 0 && checked.length < all.length) {
+            filteredPickup = filteredPickup.filter(p => checked.includes(String(p.nganh_hang || 'Khác').trim()));
         }
     }
 
-    const damageOnly = filteredData.filter(d => d.mapped_label.toLowerCase().includes('damage'));
+    // ALL charts use damageData only
+    const damageData = filteredData.filter(d => d.mapped_label.toLowerCase().includes('damage'));
     const totalPickup = filteredPickup.length;
-    const damageRate = totalPickup > 0 ? ((damageOnly.length / totalPickup) * 100).toFixed(2) : 0;
-    updateKPICards(damageOnly, totalPickup, damageRate);
+    const damageRate = totalPickup > 0 ? ((damageData.length / totalPickup) * 100).toFixed(2) : 0;
+    updateKPICards(damageData, totalPickup, damageRate);
 
-    // Grouping Helpers
     const groupBy = (array, key) => {
-        return array.reduce((result, currentValue) => {
-            (result[currentValue[key]] = result[currentValue[key]] || []).push(currentValue);
+        return array.reduce((result, cur) => {
+            (result[cur[key]] = result[cur[key]] || []).push(cur);
             return result;
         }, {});
     };
 
-    // Filter only Damage records for all charts
-    const damageData = filteredData.filter(d => d.mapped_label.toLowerCase().includes('damage'));
+    // Pickup groupings for damage rate % on charts
+    const pickupByKtc = {};
+    const pickupByGxt = {};
+    const pickupByClient = {};
+    filteredPickup.forEach(p => {
+        const gxt = String(p.warehouse_giao || '').trim();
+        const client = String(p.client_name || '').trim();
+        if (gxt) pickupByGxt[gxt] = (pickupByGxt[gxt] || 0) + 1;
+        if (client) pickupByClient[client] = (pickupByClient[client] || 0) + 1;
+    });
+    damageData.forEach(d => { if (d.mapped_ktc) pickupByKtc[d.mapped_ktc] = pickupByKtc[d.mapped_ktc] || 0; });
+    filteredPickup.forEach(p => {
+        const gxt = String(p.warehouse_giao || '').trim().toLowerCase();
+        const match = damageData.find(d => d.clean_gxt && d.clean_gxt.toLowerCase() === gxt);
+        if (match && match.mapped_ktc) pickupByKtc[match.mapped_ktc] = (pickupByKtc[match.mapped_ktc] || 0) + 1;
+    });
 
-            // 1. Trend Chart (Damage Rate % only)
+    // 1. Trend Chart (Damage Rate % only)
     const weekGroups = groupBy(damageData, 'clean_week');
     const pickupWeekGroups = {};
     filteredPickup.forEach(p => {
         const w = String(p.isoweek_pickup_time || '').trim();
         if (w) pickupWeekGroups[w] = (pickupWeekGroups[w] || 0) + 1;
     });
-
     const allWeekSet = new Set([...Object.keys(weekGroups), ...Object.keys(pickupWeekGroups)]);
     const weeks = [...allWeekSet].sort();
-
     const trendRateData = weeks.map(w => {
         const total = pickupWeekGroups[w] || 0;
         const damaged = weekGroups[w] ? weekGroups[w].length : 0;
         return total > 0 ? parseFloat(((damaged / total) * 100).toFixed(2)) : 0;
     });
-
     createChart('trendChart', 'line', {
         labels: weeks,
-        datasets: [{
-            label: 'Damage Rate %',
-            data: trendRateData,
-            borderColor: '#ef4444',
-            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-            borderWidth: 2.5,
-            tension: 0.4,
-            fill: true,
-            pointBackgroundColor: '#ef4444',
-            pointBorderColor: '#fff',
-            pointRadius: 5,
-            pointHoverRadius: 7
-        }]
+        datasets: [{ label: 'Damage Rate %', data: trendRateData, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', borderWidth: 2.5, tension: 0.4, fill: true, pointBackgroundColor: '#ef4444', pointBorderColor: '#fff', pointRadius: 5, pointHoverRadius: 7 }]
     }, {
         scales: { y: { beginAtZero: true, ticks: { callback: v => v + '%' } } },
-        plugins: {
-            tooltip: {
-                callbacks: {
-                    label: ctx => {
-                        const w = ctx.label;
-                        const damaged = weekGroups[w] ? weekGroups[w].length : 0;
-                        const total = pickupWeekGroups[w] || 0;
-                        return ['Damage Rate: ' + ctx.parsed.y + '%', 'Damaged: ' + damaged, 'Pickup: ' + total];
-                    }
-                }
-            }
-        }
+        plugins: { tooltip: { callbacks: { label: ctx => {
+            const w = ctx.label;
+            const damaged = weekGroups[w] ? weekGroups[w].length : 0;
+            const total = pickupWeekGroups[w] || 0;
+            return ['Damage Rate: ' + ctx.parsed.y + '%', 'Damaged: ' + damaged, 'Pickup: ' + total];
+        }}}}
     });
 
-// 2. KTC Chart (Top 10)
+    // 2. KTC Chart (Top 10 - damage only)
     const ktcMap = {};
-    damageData.forEach(d => {
-        ktcMap[d.mapped_ktc] = (ktcMap[d.mapped_ktc] || 0) + 1;
-    });
+    damageData.forEach(d => { ktcMap[d.mapped_ktc] = (ktcMap[d.mapped_ktc] || 0) + 1; });
     const sortedKtc = Object.entries(ktcMap).sort((a, b) => b[1] - a[1]).slice(0, 10);
     createChart('ktcChart', 'bar', {
         labels: sortedKtc.map(k => k[0]),
-        datasets: [{
-            label: 'Đơn hư hỏng',
-            data: sortedKtc.map(k => k[1]),
-            backgroundColor: '#f59e0b',
-            borderRadius: 4
-        }]
+        datasets: [{ label: 'Damaged', data: sortedKtc.map(k => k[1]), backgroundColor: '#f59e0b', borderRadius: 4 }]
     }, { _pickupMap: pickupByKtc });
 
-    // 3. GXT Chart (Top 10)
+    // 3. GXT Chart (Top 10 - damage only)
     const gxtMap = {};
-    damageData.forEach(d => {
-        gxtMap[d.clean_gxt] = (gxtMap[d.clean_gxt] || 0) + 1;
-    });
+    damageData.forEach(d => { gxtMap[d.clean_gxt] = (gxtMap[d.clean_gxt] || 0) + 1; });
     const sortedGxt = Object.entries(gxtMap).sort((a, b) => b[1] - a[1]).slice(0, 10);
     createChart('gxtChart', 'bar', {
         labels: sortedGxt.map(k => k[0]),
-        datasets: [{
-            label: 'Đơn hư hỏng',
-            data: sortedGxt.map(k => k[1]),
-            backgroundColor: '#ef4444',
-            borderRadius: 4
-        }]
+        datasets: [{ label: 'Damaged', data: sortedGxt.map(k => k[1]), backgroundColor: '#ef4444', borderRadius: 4 }]
     }, { _pickupMap: pickupByGxt });
 
-    // 4. Label Breakdown (Pie Chart)
-    const labelGroups = groupBy(filteredData, 'mapped_label');
-    const labels = Object.keys(labelGroups).sort((a, b) => labelGroups[b].length - labelGroups[a].length);
-    const labelData = labels.map(l => labelGroups[l].length);
-
+    // 4. Damage Type Breakdown (Pie - damage only)
+    const typeGroups = groupBy(damageData, 'clean_type');
+    const typeLabels = Object.keys(typeGroups).sort((a, b) => typeGroups[b].length - typeGroups[a].length);
+    const typeData = typeLabels.map(l => typeGroups[l].length);
     createChart('labelChart', 'doughnut', {
-        labels: labels,
-        datasets: [{
-            data: labelData,
-            backgroundColor: [
-                '#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#64748b'
-            ],
-            borderWidth: 0,
-            hoverOffset: 4
-        }]
+        labels: typeLabels,
+        datasets: [{ data: typeData, backgroundColor: ['#ef4444','#f59e0b','#10b981','#3b82f6','#8b5cf6','#ec4899','#64748b','#06b6d4','#84cc16','#f97316'], borderWidth: 0, hoverOffset: 4 }]
     }, { cutout: '65%' });
 
     // 5. Client Chart (damage only)
     const clientGroups = groupBy(damageData, 'clean_client');
     const clients = Object.keys(clientGroups).sort((a, b) => clientGroups[b].length - clientGroups[a].length).slice(0, 5);
     const clientData = clients.map(c => clientGroups[c].length);
-
     createChart('clientChart', 'bar', {
         labels: clients,
-        datasets: [{
-            label: 'Đơn hư hỏng',
-            data: clientData,
-            backgroundColor: '#10b981',
-            borderRadius: 4
-        }]
+        datasets: [{ label: 'Damaged', data: clientData, backgroundColor: '#10b981', borderRadius: 4 }]
     }, { indexAxis: 'y', _pickupMap: pickupByClient });
 }
 

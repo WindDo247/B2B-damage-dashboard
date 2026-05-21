@@ -969,23 +969,45 @@ function renderDashboardCharts() {
         }}}}
     });
 
-    // 4. KTC Chart (Top 10 - damage only)
+    // 4. KTC Chart (Absolute)
     const ktcMap = {};
     damageData.forEach(d => { ktcMap[d.mapped_ktc] = (ktcMap[d.mapped_ktc] || 0) + 1; });
-    const sortedKtc = Object.entries(ktcMap).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    const sortedKtcAbs = Object.entries(ktcMap).sort((a, b) => b[1] - a[1]).slice(0, 10);
     createChart('ktcChart', 'bar', {
-        labels: sortedKtc.map(k => k[0]),
-        datasets: [{ label: 'Đơn Damage', data: sortedKtc.map(k => k[1]), backgroundColor: '#f59e0b', borderRadius: 4 }]
-    }, { _pickupMap: pickupByKtc });
+        labels: sortedKtcAbs.map(k => k[0]),
+        datasets: [{ label: 'Đơn Damage', data: sortedKtcAbs.map(k => k[1]), backgroundColor: '#f59e0b', borderRadius: 4 }]
+    }, { forceAbsolute: true });
 
-    // 5. GXT Chart (Top 10 - damage only)
+    // 4b. KTC Chart (Rate)
+    const ktcRateList = Object.entries(ktcMap).map(k => {
+        const pk = pickupByKtc[k[0]] || 0;
+        return [k[0], pk > 0 ? parseFloat(((k[1] / pk) * 100).toFixed(2)) : 0];
+    });
+    const sortedKtcRate = ktcRateList.sort((a, b) => b[1] - a[1]).slice(0, 10);
+    createChart('ktcRateChart', 'bar', {
+        labels: sortedKtcRate.map(k => k[0]),
+        datasets: [{ label: 'Damage Rate %', data: sortedKtcRate.map(k => k[1]), backgroundColor: '#f59e0b', borderRadius: 4 }]
+    }, { forceRate: true, scales: { y: { ticks: { callback: v => v + '%' } } } });
+
+    // 5. GXT Chart (Absolute)
     const gxtMap = {};
     damageData.forEach(d => { gxtMap[d.clean_gxt] = (gxtMap[d.clean_gxt] || 0) + 1; });
-    const sortedGxt = Object.entries(gxtMap).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    const sortedGxtAbs = Object.entries(gxtMap).sort((a, b) => b[1] - a[1]).slice(0, 10);
     createChart('gxtChart', 'bar', {
-        labels: sortedGxt.map(k => k[0]),
-        datasets: [{ label: 'Đơn Damage', data: sortedGxt.map(k => k[1]), backgroundColor: '#ef4444', borderRadius: 4 }]
-    }, { _pickupMap: pickupByGxt });
+        labels: sortedGxtAbs.map(k => k[0]),
+        datasets: [{ label: 'Đơn Damage', data: sortedGxtAbs.map(k => k[1]), backgroundColor: '#ef4444', borderRadius: 4 }]
+    }, { forceAbsolute: true });
+
+    // 5b. GXT Chart (Rate)
+    const gxtRateList = Object.entries(gxtMap).map(k => {
+        const pk = pickupByGxt[k[0]] || 0;
+        return [k[0], pk > 0 ? parseFloat(((k[1] / pk) * 100).toFixed(2)) : 0];
+    });
+    const sortedGxtRate = gxtRateList.sort((a, b) => b[1] - a[1]).slice(0, 10);
+    createChart('gxtRateChart', 'bar', {
+        labels: sortedGxtRate.map(k => k[0]),
+        datasets: [{ label: 'Damage Rate %', data: sortedGxtRate.map(k => k[1]), backgroundColor: '#ef4444', borderRadius: 4 }]
+    }, { forceRate: true, scales: { y: { ticks: { callback: v => v + '%' } } } });
 
     // 6. Damage Type Breakdown (Pie - damage only)
     const typeGroups = groupBy(damageData, 'clean_type');
@@ -1003,7 +1025,7 @@ function renderDashboardCharts() {
     createChart('clientChart', 'bar', {
         labels: clients,
         datasets: [{ label: 'Đơn Damage', data: clientData, backgroundColor: '#10b981', borderRadius: 4 }]
-    }, { indexAxis: 'y', _pickupMap: pickupByClient });
+    }, { indexAxis: 'y', forceAbsolute: true, _pickupMap: pickupByClient });
 }
 
 function buildDashboard() {
@@ -1133,6 +1155,9 @@ function createChart(id, type, data, options = {}) {
             clip: false,
             formatter: (value, ctx) => {
                 if (value === 0) return '';
+                if (options.forceAbsolute) return value;
+                if (options.forceRate) return value + '%';
+                
                 const label = ctx.chart.data.labels[ctx.dataIndex];
                 const pMap = options._pickupMap || null;
                 if (pMap && label) {

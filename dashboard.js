@@ -910,9 +910,60 @@ function renderDashboardCharts() {
         }
     }
 
+    // 1. Build mapping for GXT -> KTC using all mapped data FIRST
+    const gxtToKtcMap = {};
+    AppState.mappedData.forEach(d => {
+        if (d.clean_gxt && d.mapped_ktc) gxtToKtcMap[d.clean_gxt.toLowerCase().trim()] = d.mapped_ktc;
+    });
+
+    if (AppState.activeCrossFilter) {
+        const type = AppState.activeCrossFilter.type;
+        const val = AppState.activeCrossFilter.value;
+        if (type === 'KTC') {
+            filteredData = filteredData.filter(d => d.mapped_ktc === val);
+            filteredPickup = filteredPickup.filter(p => {
+                const g = String(p.warehouse_giao || '').trim().toLowerCase();
+                return (gxtToKtcMap[g] || "Chưa xác định") === val;
+            });
+        } else if (type === 'GXT') {
+            filteredData = filteredData.filter(d => d.clean_gxt === val);
+            filteredPickup = filteredPickup.filter(p => String(p.warehouse_giao || '').trim() === val);
+        } else if (type === 'LABEL') {
+            filteredData = filteredData.filter(d => d.clean_type === val);
+            // Pickup doesn't have damage label, so don't filter pickup?
+            // Actually, if filtering by label, damageRate will just drop.
+        }
+    }
+
     // ALL charts use damageData only
     const damageData = filteredData.filter(d => d.mapped_label.toLowerCase().includes('damage'));
     const totalPickup = filteredPickup.length;
+
+    // Update Cross Filter UI
+    let cfUi = document.getElementById('cross-filter-ui');
+    if (!cfUi) {
+        cfUi = document.createElement('div');
+        cfUi.id = 'cross-filter-ui';
+        cfUi.style.cssText = 'margin-bottom: 15px; padding: 10px 15px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; display: none; align-items: center; justify-content: space-between;';
+        cfUi.innerHTML = `<span><i style="margin-right:8px">🔍</i> Đang lọc theo: <strong id="cf-text"></strong></span>
+                          <button id="cf-clear" style="background:var(--accent-danger);color:#fff;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px;">Xóa bộ lọc</button>`;
+        const header = document.querySelector('.dashboard-header');
+        if (header && header.nextSibling) {
+            header.parentNode.insertBefore(cfUi, header.nextSibling);
+        }
+        document.getElementById('cf-clear').addEventListener('click', () => {
+            AppState.activeCrossFilter = null;
+            renderDashboardCharts();
+        });
+    }
+    
+    if (AppState.activeCrossFilter) {
+        document.getElementById('cf-text').textContent = AppState.activeCrossFilter.type + " = " + AppState.activeCrossFilter.value;
+        cfUi.style.display = 'flex';
+    } else {
+        if (cfUi) cfUi.style.display = 'none';
+    }
+
     const damageRate = totalPickup > 0 ? parseFloat(((damageData.length / totalPickup) * 100).toFixed(2)) : 0;
     updateKPICards(damageData, totalPickup, damageRate);
 
@@ -976,7 +1027,7 @@ function renderDashboardCharts() {
     createChart('ktcChart', 'bar', {
         labels: sortedKtcAbs.map(k => k[0]),
         datasets: [{ label: 'Đơn Damage', data: sortedKtcAbs.map(k => k[1]), backgroundColor: '#f59e0b', borderRadius: 4 }]
-    }, { forceAbsolute: true });
+    }, { forceAbsolute: true, onChartClick: (label) => { AppState.activeCrossFilter = {type: 'KTC', value: label}; renderDashboardCharts(); } });
 
     // 4b. KTC Chart (Rate)
     const ktcRateList = Object.entries(ktcMap).map(k => {
@@ -987,7 +1038,7 @@ function renderDashboardCharts() {
     createChart('ktcRateChart', 'bar', {
         labels: sortedKtcRate.map(k => k[0]),
         datasets: [{ label: 'Damage Rate %', data: sortedKtcRate.map(k => k[1]), backgroundColor: '#f59e0b', borderRadius: 4 }]
-    }, { forceRate: true, scales: { y: { ticks: { callback: v => v + '%' } } } });
+    }, { forceRate: true, scales: { y: { ticks: { callback: v => v + '%' } } }, onChartClick: (label) => { AppState.activeCrossFilter = {type: 'KTC', value: label}; renderDashboardCharts(); } });
 
     // 5. GXT Chart (Absolute)
     const gxtMap = {};
@@ -996,7 +1047,7 @@ function renderDashboardCharts() {
     createChart('gxtChart', 'bar', {
         labels: sortedGxtAbs.map(k => k[0]),
         datasets: [{ label: 'Đơn Damage', data: sortedGxtAbs.map(k => k[1]), backgroundColor: '#ef4444', borderRadius: 4 }]
-    }, { forceAbsolute: true });
+    }, { forceAbsolute: true, onChartClick: (label) => { AppState.activeCrossFilter = {type: 'KTC', value: label}; renderDashboardCharts(); } });
 
     // 5b. GXT Chart (Rate)
     const gxtRateList = Object.entries(gxtMap).map(k => {
@@ -1007,7 +1058,7 @@ function renderDashboardCharts() {
     createChart('gxtRateChart', 'bar', {
         labels: sortedGxtRate.map(k => k[0]),
         datasets: [{ label: 'Damage Rate %', data: sortedGxtRate.map(k => k[1]), backgroundColor: '#ef4444', borderRadius: 4 }]
-    }, { forceRate: true, scales: { y: { ticks: { callback: v => v + '%' } } } });
+    }, { forceRate: true, scales: { y: { ticks: { callback: v => v + '%' } } }, onChartClick: (label) => { AppState.activeCrossFilter = {type: 'KTC', value: label}; renderDashboardCharts(); } });
 
     // 6. Damage Type Breakdown (Pie - damage only)
     const typeGroups = groupBy(damageData, 'clean_type');
@@ -1026,6 +1077,59 @@ function renderDashboardCharts() {
         labels: clients,
         datasets: [{ label: 'Đơn Damage', data: clientData, backgroundColor: '#10b981', borderRadius: 4 }]
     }, { indexAxis: 'y', forceAbsolute: true, _pickupMap: pickupByClient });
+
+    // 8. Render Sortable Data Table
+    window.dashboardTableData = [...damageData]; // Store globally for sorting/exporting
+    if (!window.dashboardTableSort) { window.dashboardTableSort = { field: 'order_code', direction: 'asc' }; }
+    
+    window.renderDashboardTable = function() {
+        const tbody = document.getElementById('dashboard-table-body');
+        if (!tbody) return;
+        
+        // Sort data
+        const { field, direction } = window.dashboardTableSort;
+        window.dashboardTableData.sort((a, b) => {
+            let valA = String(a[field] || '').toLowerCase();
+            let valB = String(b[field] || '').toLowerCase();
+            if (valA < valB) return direction === 'asc' ? -1 : 1;
+            if (valA > valB) return direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        // Render HTML
+        let html = '';
+        window.dashboardTableData.forEach(row => {
+            html += `
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <td style="padding: 8px 10px;">${row.order_code || '-'}</td>
+                    <td style="padding: 8px 10px;">${row.clean_week || '-'}</td>
+                    <td style="padding: 8px 10px;">${row.mapped_label || '-'}</td>
+                    <td style="padding: 8px 10px;">${row.clean_type || '-'}</td>
+                    <td style="padding: 8px 10px;">${row.clean_gxt || '-'}</td>
+                    <td style="padding: 8px 10px;">${row.mapped_ktc || '-'}</td>
+                    <td style="padding: 8px 10px;">${row.clean_client || '-'}</td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+        
+        // Update header arrows
+        document.querySelectorAll('#dashboard-detail-table th[data-sort]').forEach(th => {
+            const f = th.getAttribute('data-sort');
+            let text = th.innerText.replace(' ↑', '').replace(' ↓', '').replace(' ↕', '');
+            if (f === field) {
+                text += direction === 'asc' ? ' ↑' : ' ↓';
+                th.style.color = '#fff';
+            } else {
+                text += ' ↕';
+                th.style.color = 'var(--text-secondary)';
+            }
+            th.innerText = text;
+        });
+    };
+    
+    window.renderDashboardTable();
+
 }
 
 function buildDashboard() {
@@ -1127,6 +1231,13 @@ function createChart(id, type, data, options = {}) {
         maintainAspectRatio: false,
         plugins: {
             legend: { position: type === 'pie' || type === 'doughnut' ? 'right' : 'top', labels: { color: '#e2e8f0' } }
+        },
+        onClick: (e, elements, chart) => {
+            if (elements.length > 0 && options.onChartClick) {
+                const idx = elements[0].index;
+                const label = chart.data.labels[idx];
+                options.onChartClick(label);
+            }
         }
     };
     if (options.plugins) { Object.keys(options.plugins).forEach(key => { baseOptions.plugins[key] = options.plugins[key]; }); }
@@ -1183,8 +1294,11 @@ function generateReport(keepPage = false) {
     const data = AppState.filteredData.filter(d => d.nganh_hang === 'DM');
     const reportContent = document.getElementById('report-content');
 
+    // Chỉ đếm các đơn Hư hỏng (bỏ qua các loại lỗi khác nếu có trong file Database)
+    const damageData = data.filter(d => d.mapped_label.toLowerCase().includes('damage'));
+
     // Calculations
-    const totalIssues = data.length;
+    const totalIssues = damageData.length;
 
     const weekGroups = {};
     data.forEach(d => { weekGroups[d.clean_week] = (weekGroups[d.clean_week] || 0) + 1; });
@@ -1201,8 +1315,6 @@ function generateReport(keepPage = false) {
         else if (diff < 0) trendText = `<span style="color: var(--accent-success)">Giảm ${pct}%</span> so với tuần trước.`;
         else trendText = "Tương đương tuần trước.";
     }
-
-    const damageData = data.filter(d => d.mapped_label.toLowerCase().includes('damage'));
 
     const ktcGroups = {};
     const gxtGroups = {};
@@ -1694,3 +1806,48 @@ function pushMappedDataToSheet() {
     }
 }
 
+
+
+// Sort headers listener
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('#dashboard-detail-table th[data-sort]').forEach(th => {
+        th.addEventListener('click', () => {
+            const field = th.getAttribute('data-sort');
+            if (window.dashboardTableSort.field === field) {
+                window.dashboardTableSort.direction = window.dashboardTableSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                window.dashboardTableSort.field = field;
+                window.dashboardTableSort.direction = 'asc';
+            }
+            window.renderDashboardTable();
+        });
+    });
+
+    // Export CSV listener
+    const btnExport = document.getElementById('btn-dashboard-export');
+    if (btnExport) {
+        btnExport.addEventListener('click', () => {
+            if (!window.dashboardTableData || window.dashboardTableData.length === 0) {
+                alert("Không có dữ liệu để tải xuống!");
+                return;
+            }
+            
+            // Generate CSV
+            const headers = ["Mã Đơn", "Tuần", "Phân Loại", "Loại Hư Hỏng", "Kho Giao", "Kho KTC", "Khách Hàng"];
+            const rows = window.dashboardTableData.map(d => [
+                d.order_code, d.clean_week, d.mapped_label, d.clean_type, d.clean_gxt, d.mapped_ktc, d.clean_client
+            ].map(v => `"${String(v || '').replace(/"/g, '"'"' )}"`).join(","));
+            
+            const csvContent = "\uFEFF" + headers.join(",") + "\n" + rows.join("\n");
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "Bao_cao_Hu_hong_" + new Date().toISOString().slice(0,10) + ".csv";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+    }
+});

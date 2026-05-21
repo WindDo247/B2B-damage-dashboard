@@ -1551,13 +1551,13 @@ if (autoSyncCheckbox) {
         if (e.target.checked) {
             doAutoSync();
             if (autoSyncInterval) clearInterval(autoSyncInterval);
-            autoSyncInterval = setInterval(doAutoSync, 30 * 60 * 1000);
+            autoSyncInterval = setInterval(doAutoSync, 1 * 60 * 1000);
         } else {
             clearInterval(autoSyncInterval);
         }
     });
     if (autoSyncCheckbox.checked) {
-        autoSyncInterval = setInterval(doAutoSync, 30 * 60 * 1000);
+        autoSyncInterval = setInterval(doAutoSync, 1 * 60 * 1000);
     }
 }
 

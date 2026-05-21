@@ -25,7 +25,7 @@ async function loadDefaultApis() {
     if (overlay) overlay.classList.add('active');
     
     let promises = [];
-    ['db', 'kw', 'gxt', 'pickup'].forEach(target => {
+    ['db', 'kw', 'gxt'].forEach(target => {
         const url = DEFAULT_API[target] || localStorage.getItem(`saved_url_${target}`);
         
         // Cập nhật lại UI ô input cho đẹp
@@ -39,7 +39,6 @@ async function loadDefaultApis() {
                         if (target === 'db') AppState.dbData = jsonArray;
                         if (target === 'kw') AppState.kwData = jsonArray;
                         if (target === 'gxt') AppState.gxtData = jsonArray;
-                        if (target === 'pickup') AppState.pickupData = jsonArray;
                         
                         // Save URL to localStorage for auto-sync
                         localStorage.setItem(`saved_url_${target}`, url);
@@ -58,6 +57,37 @@ async function loadDefaultApis() {
             );
         }
     });
+
+    // Tải Pickup API ngầm (Không block UI vì dữ liệu quá lớn)
+    const pickupUrl = DEFAULT_API['pickup'] || localStorage.getItem(`saved_url_pickup`);
+    const pickupInput = document.getElementById('link-pickup');
+    if (pickupInput && pickupUrl) pickupInput.value = pickupUrl;
+    
+    if (pickupUrl) {
+        fetch(pickupUrl).then(res => res.json()).then(jsonArray => {
+            if (Array.isArray(jsonArray) && jsonArray.length > 0) {
+                AppState.pickupData = jsonArray;
+                localStorage.setItem(`saved_url_pickup`, pickupUrl);
+                AppState.filesLoaded['pickup'] = true;
+                
+                const statusEl = document.getElementById(`status-pickup`);
+                const dropBox = document.getElementById(`drop-pickup`);
+                if (statusEl) {
+                    statusEl.textContent = `API Mặc định (${jsonArray.length} dòng)`;
+                    statusEl.style.color = 'var(--accent-success)';
+                }
+                if (dropBox) dropBox.classList.add('success');
+                
+                // Nếu đang ở Dashboard thì tự động render lại để cập nhật Tỉ lệ
+                const dashContent = document.getElementById('dashboard-content');
+                if (dashContent && dashContent.style.display !== 'none' && dashContent.classList.contains('active')) {
+                    if (typeof renderDashboardCharts === 'function') {
+                        renderDashboardCharts();
+                    }
+                }
+            }
+        }).catch(e => console.error(`Lỗi tải API Pickup ngầm:`, e));
+    }
 
     if (promises.length > 0) {
         await Promise.all(promises);

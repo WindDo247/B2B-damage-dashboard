@@ -1140,79 +1140,62 @@ function buildDashboard() {
 }
 
 function createChart(id, type, data, options = {}) {
-    if (AppState.charts[id]) {
-        AppState.charts[id].destroy();
-    }
-
+    if (AppState.charts[id]) { AppState.charts[id].destroy(); }
     const ctx = document.getElementById(id).getContext('2d');
-
     Chart.defaults.color = '#94a3b8';
     Chart.defaults.font.family = "'Inter', sans-serif";
-
     const baseOptions = {
         layout: { padding: { top: 35 } },
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-            legend: {
-                position: type === 'pie' || type === 'doughnut' ? 'right' : 'top',
-                labels: { color: '#e2e8f0' }
-            }
-        },
-        ...options
+            legend: { position: type === 'pie' || type === 'doughnut' ? 'right' : 'top', labels: { color: '#e2e8f0' } }
+        }
     };
-
+    if (options.plugins) { Object.keys(options.plugins).forEach(key => { baseOptions.plugins[key] = options.plugins[key]; }); }
     if (type === 'bar' || type === 'line') {
+        const cs = options.scales || {};
         baseOptions.scales = {
-            y: {
-                beginAtZero: true,
-                grid: { color: 'rgba(255, 255, 255, 0.05)' }
-            },
-            x: {
-                grid: { display: false }
-            }
+            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ...(cs.y || {}) },
+            x: { grid: { display: false }, ...(cs.x || {}) }
         };
-        // For horizontal bar chart
+        if (cs.y1) baseOptions.scales.y1 = cs.y1;
         if (options.indexAxis === 'y') {
-            baseOptions.scales.x.grid = { color: 'rgba(255, 255, 255, 0.05)' };
+            baseOptions.indexAxis = 'y';
+            baseOptions.scales.x.grid = { color: 'rgba(255,255,255,0.05)' };
             baseOptions.scales.y.grid = { display: false };
         }
     }
-
+    if (options.cutout) baseOptions.cutout = options.cutout;
     if (typeof ChartDataLabels !== 'undefined') {
         Chart.register(ChartDataLabels);
+        const isH = options.indexAxis === 'y';
         baseOptions.plugins.datalabels = {
-            color: '#fff',
-            font: {
-                weight: 'bold',
-                size: 11
-            },
-            textAlign: 'center',
-            align: type === 'line' ? 'top' : (type === 'bar' && !options.indexAxis ? 'end' : 'center'),
-            anchor: type === 'line' ? 'center' : (type === 'bar' && !options.indexAxis ? 'end' : 'center'),
-            offset: type === 'line' ? 12 : (type === 'bar' && !options.indexAxis ? 4 : 0),
+            color: '#fff', font: { weight: 'bold', size: 11 }, textAlign: 'center',
+            align: type === 'line' ? 'top' : (!isH ? 'end' : 'center'),
+            anchor: type === 'line' ? 'center' : (!isH ? 'end' : 'center'),
+            offset: type === 'line' ? 12 : (!isH ? 4 : 0),
             clip: false,
             formatter: (value, ctx) => {
+                if (value === 0) return '';
+                const label = ctx.chart.data.labels[ctx.dataIndex];
+                const pMap = options._pickupMap || null;
+                if (pMap && label) {
+                    const pickup = pMap[label] || 0;
+                    if (pickup > 0) { return value + '\n(' + ((value / pickup) * 100).toFixed(1) + '%)'; }
+                }
                 let sum = 0;
-                let dataArr = ctx.chart.data.datasets[0].data;
-                dataArr.forEach(data => {
-                    sum += parseFloat(data);
-                });
-                if (sum === 0 || value === 0) return value;
-                let percentage = (value * 100 / sum).toFixed(1) + "%";
-                // Trả về 2 dòng bằng cách dùng dấu \n
-                return `${value}\n(${percentage})`;
+                ctx.chart.data.datasets[0].data.forEach(d => { sum += parseFloat(d); });
+                if (sum === 0) return value;
+                return value + '\n(' + (value * 100 / sum).toFixed(1) + '%)';
             }
         };
+        if (type === 'line') {
+            baseOptions.plugins.datalabels.formatter = (v) => v === 0 ? '' : v + '%';
+        }
     }
-
-    AppState.charts[id] = new Chart(ctx, {
-        type: type,
-        data: data,
-        options: baseOptions
-    });
+    AppState.charts[id] = new Chart(ctx, { type, data, options: baseOptions });
 }
-
 // Report Generation
 function generateReport(keepPage = false) {
     const data = AppState.mappedData;

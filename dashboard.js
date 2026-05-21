@@ -1839,7 +1839,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const headers = ["Mã Đơn", "Tuần", "Phân Loại", "Loại Hư Hỏng", "Kho Giao", "Kho KTC", "Khách Hàng"];
             const rows = window.dashboardTableData.map(d => [
                 d.order_code, d.clean_week, d.mapped_label, d.clean_type, d.clean_gxt, d.mapped_ktc, d.clean_client
-            ].map(v => `"${String(v || '').replace(/"/g, '"'"' )}"`).join(","));
+            ].map(v => `"${String(v || '').replace(/"/g, '""' )}"`).join(","));
             
             const csvContent = "\uFEFF" + headers.join(",") + "\n" + rows.join("\n");
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });

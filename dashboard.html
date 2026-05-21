@@ -186,6 +186,31 @@
 
                                 <div class="file-status" id="status-gxt">Chưa có dữ liệu</div>
                             </div>
+
+                            <!-- Pickup Upload -->
+                            <div class="upload-box" id="drop-pickup">
+                                <div class="upload-icon">📦</div>
+                                <h4>4. File Dữ liệu lấy (Pick Up)</h4>
+                                <p class="fields-info">Nên điền link API ngầm để không đơ trình duyệt</p>
+
+                                <div class="import-tabs">
+                                    <button class="import-tab" data-type="file" data-target="pickup">Tải
+                                        File</button>
+                                    <button class="import-tab active" data-type="link" data-target="pickup">Nhập Link</button>
+                                </div>
+
+                                <div class="import-content" id="content-file-pickup">
+                                    <input type="file" id="file-pickup" accept=".csv, .xlsx, .xls" class="file-input">
+                                    <button class="btn-upload" onclick="document.getElementById('file-pickup').click()">Chọn File</button>
+                                </div>
+
+                                <div class="import-content active" id="content-link-pickup">
+                                    <input type="text" id="link-pickup" class="link-input" placeholder="Nhập URL API">
+                                    <button class="btn-upload btn-fetch" data-target="pickup">Lưu Link</button>
+                                </div>
+
+                                <div class="file-status" id="status-pickup">Chưa có dữ liệu</div>
+                            </div>
                         </div>
 
                         <div class="action-bar">
@@ -450,7 +475,7 @@
         <p>Đang xử lý dữ liệu...</p>
     </div>
 
-    <script src="dashboard.js?t=1779357139"></script>
+    <script src="dashboard.js?t=1779357887"></script>
 </body>
 
 </html>

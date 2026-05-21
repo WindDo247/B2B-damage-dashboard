@@ -1130,7 +1130,7 @@ function renderDashboardCharts() {
         window.dashboardTableData.forEach(row => {
             html += `
                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                    <td style="padding: 8px 10px;">${row.order_code || '-'}</td>
+                    <td style="padding: 8px 10px;">${row.clean_order || '-'}</td>
                     <td style="padding: 8px 10px;">${row.clean_week || '-'}</td>
                     <td style="padding: 8px 10px;">${row.mapped_label || '-'}</td>
                     <td style="padding: 8px 10px;">${row.clean_type || '-'}</td>
@@ -1864,7 +1864,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Generate CSV
             const headers = ["Mã Đơn", "Tuần", "Phân Loại", "Loại Hư Hỏng", "Kho Giao", "Kho KTC", "Khách Hàng"];
             const rows = window.dashboardTableData.map(d => [
-                d.order_code, d.clean_week, d.mapped_label, d.clean_type, d.clean_gxt, d.mapped_ktc, d.clean_client
+                d.clean_order, d.clean_week, d.mapped_label, d.clean_type, d.clean_gxt, d.mapped_ktc, d.clean_client
             ].map(v => `"${String(v || '').replace(/"/g, '""' )}"`).join(","));
             
             const csvContent = "\uFEFF" + headers.join(",") + "\n" + rows.join("\n");

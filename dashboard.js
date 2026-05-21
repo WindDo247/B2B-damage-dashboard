@@ -1174,11 +1174,12 @@ function createChart(id, type, data, options = {}) {
             baseOptions.plugins.datalabels.formatter = (v) => v === 0 ? '' : v + '%';
         }
     }
-    AppState.charts[id] = new Chart(ctx, { type, data, options: baseOptions });
-}
+    AppState.charts[id] = new Chart(ctx, { type, data, options: baseOptions }
+
 // Report Generation
 function generateReport(keepPage = false) {
-    const data = AppState.mappedData;
+    // Chỉ tập trung vào ngành hàng DM cho phần Insights
+    const data = AppState.filteredData.filter(d => d.nganh_hang === 'DM');
     const reportContent = document.getElementById('report-content');
 
     // Calculations

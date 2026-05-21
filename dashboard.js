@@ -972,11 +972,7 @@ function renderDashboardCharts() {
 
     const groupBy = (array, key) => array.reduce((r, c) => ((r[c[key]] = r[c[key]] || []).push(c), r), {});
 
-    // 1. Build mapping for GXT -> KTC using all mapped data
-    const gxtToKtcMap = {};
-    AppState.mappedData.forEach(d => {
-        if (d.clean_gxt && d.mapped_ktc) gxtToKtcMap[d.clean_gxt.toLowerCase().trim()] = d.mapped_ktc;
-    });
+    // Mapping GXT -> KTC already built at the top
 
     // 2. Count pickups per GXT, KTC, Client
     const pickupByGxt = {};

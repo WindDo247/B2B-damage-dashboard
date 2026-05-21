@@ -830,6 +830,7 @@ function updateKPICards(data, totalPickup, damageRate) {
     });
     const topGxt = Object.keys(gxtCounts).reduce((a, b) => gxtCounts[a] > gxtCounts[b] ? a : b, "N/A");
 
+    const rateClass = damageRate > 5 ? 'danger' : damageRate > 2 ? 'warning' : 'success';
     const rateColor = damageRate > 5 ? 'var(--accent-danger)' : damageRate > 2 ? 'var(--accent-warning)' : 'var(--accent-success)';
 
     kpiContainer.innerHTML = `
@@ -847,18 +848,11 @@ function updateKPICards(data, totalPickup, damageRate) {
                 <div class="kpi-value">${totalDamages.toLocaleString()}</div>
             </div>
         </div>
-        <div class="kpi-card success">
+        <div class="kpi-card ${rateClass}">
             <div class="kpi-icon"></div>
             <div class="kpi-content">
-                <div class="kpi-title">Tỷ Lệ Damage Rate</div>
+                <div class="kpi-title">Tỷ lệ hư hỏng trung bình</div>
                 <div class="kpi-value" style="color: ${rateColor}">${totalPickup > 0 ? damageRate + '%' : 'N/A'}</div>
-            </div>
-        </div>
-        <div class="kpi-card warning">
-            <div class="kpi-icon"></div>
-            <div class="kpi-content">
-                <div class="kpi-title">Loại Lỗi Phổ Biến Nhất</div>
-                <div class="kpi-value" style="font-size: 18px; line-height: 28px">${topLabel}</div>
             </div>
         </div>
     `;

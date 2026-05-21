@@ -41,6 +41,8 @@ async function loadDefaultApis() {
                         if (target === 'gxt') AppState.gxtData = jsonArray;
                         if (target === 'pickup') AppState.pickupData = jsonArray;
                         
+                        // Save URL to localStorage for auto-sync
+                        localStorage.setItem(`saved_url_${target}`, url);
                         AppState.filesLoaded[target] = true;
                         
                         // Update UI
@@ -835,28 +837,28 @@ function updateKPICards(data, totalPickup, damageRate) {
             <div class="kpi-icon"></div>
             <div class="kpi-content">
                 <div class="kpi-title">Tổng Đơn Lấy</div>
-                <div class="kpi-value">{totalPickup > 0 ? totalPickup.toLocaleString() : 'N/A'}</div>
+                <div class="kpi-value">${totalPickup > 0 ? totalPickup.toLocaleString() : 'N/A'}</div>
             </div>
         </div>
         <div class="kpi-card danger">
             <div class="kpi-icon"></div>
             <div class="kpi-content">
                 <div class="kpi-title">Tổng Đơn Hư Hỏng</div>
-                <div class="kpi-value">{totalDamages.toLocaleString()}</div>
+                <div class="kpi-value">${totalDamages.toLocaleString()}</div>
             </div>
         </div>
         <div class="kpi-card success">
             <div class="kpi-icon"></div>
             <div class="kpi-content">
                 <div class="kpi-title">Tỷ Lệ Damage Rate</div>
-                <div class="kpi-value" style="color: {rateColor}">{totalPickup > 0 ? damageRate + '%' : 'N/A'}</div>
+                <div class="kpi-value" style="color: ${rateColor}">${totalPickup > 0 ? damageRate + '%' : 'N/A'}</div>
             </div>
         </div>
         <div class="kpi-card warning">
             <div class="kpi-icon"></div>
             <div class="kpi-content">
                 <div class="kpi-title">Loại Lỗi Phổ Biến Nhất</div>
-                <div class="kpi-value" style="font-size: 18px; line-height: 28px">{topLabel}</div>
+                <div class="kpi-value" style="font-size: 18px; line-height: 28px">${topLabel}</div>
             </div>
         </div>
     `;
@@ -1588,7 +1590,7 @@ loadStateFromDB().then(savedState => {
 
 // --- AUTO SYNC LOGIC ---
 async function doAutoSync() {
-    const urls = ['db', 'kw', 'gxt', 'pickup'].map(t => ({ target: t, url: localStorage.getItem(`saved_url_${t}`) }));
+    const urls = ['db', 'kw', 'gxt', 'pickup'].map(t => ({ target: t, url: localStorage.getItem(`saved_url_${t}`) || DEFAULT_API[t] || '' }));
     const validUrls = urls.filter(u => u.url && u.url.includes('script.google.com/macros/s/'));
     if (validUrls.length === 0) return;
 

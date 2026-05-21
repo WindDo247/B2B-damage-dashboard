@@ -938,17 +938,17 @@ function renderDashboardCharts() {
     // Filter only Damage records for all charts
     const damageData = filteredData.filter(d => d.mapped_label.toLowerCase().includes('damage'));
 
-        // 1. Trend Chart (Dual axis: damage count + damage rate %)
+            // 1. Trend Chart (Damage Rate % only)
     const weekGroups = groupBy(damageData, 'clean_week');
-    const weeks = Object.keys(weekGroups).sort();
-    const trendData = weeks.map(w => weekGroups[w].length);
-
-    // Calculate damage rate per week using pickupData
     const pickupWeekGroups = {};
     filteredPickup.forEach(p => {
         const w = String(p.isoweek_pickup_time || '').trim();
         if (w) pickupWeekGroups[w] = (pickupWeekGroups[w] || 0) + 1;
     });
+
+    const allWeekSet = new Set([...Object.keys(weekGroups), ...Object.keys(pickupWeekGroups)]);
+    const weeks = [...allWeekSet].sort();
+
     const trendRateData = weeks.map(w => {
         const total = pickupWeekGroups[w] || 0;
         const damaged = weekGroups[w] ? weekGroups[w].length : 0;
@@ -958,37 +958,34 @@ function renderDashboardCharts() {
     createChart('trendChart', 'line', {
         labels: weeks,
         datasets: [{
-            label: 'Số đơn damage',
-            data: trendData,
-            borderColor: '#3b82f6',
-            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-            borderWidth: 2,
-            tension: 0.4,
-            fill: true,
-            pointBackgroundColor: '#3b82f6',
-            pointBorderColor: '#fff',
-            pointRadius: 4,
-            yAxisID: 'y'
-        }, {
             label: 'Damage Rate %',
             data: trendRateData,
             borderColor: '#ef4444',
-            backgroundColor: 'rgba(239, 68, 68, 0.08)',
-            borderWidth: 2,
-            borderDash: [6, 3],
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            borderWidth: 2.5,
             tension: 0.4,
-            fill: false,
+            fill: true,
             pointBackgroundColor: '#ef4444',
             pointBorderColor: '#fff',
-            pointRadius: 4,
-            yAxisID: 'y1'
+            pointRadius: 5,
+            pointHoverRadius: 7
         }]
     }, {
-        scales: {
-            y: { position: 'left', title: { display: true, text: 'Số đơn damage' } },
-            y1: { position: 'right', title: { display: true, text: 'Damage Rate %' }, grid: { drawOnChartArea: false }, ticks: { callback: v => v + '%' } }
+        scales: { y: { beginAtZero: true, ticks: { callback: v => v + '%' } } },
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    label: ctx => {
+                        const w = ctx.label;
+                        const damaged = weekGroups[w] ? weekGroups[w].length : 0;
+                        const total = pickupWeekGroups[w] || 0;
+                        return ['Damage Rate: ' + ctx.parsed.y + '%', 'Damaged: ' + damaged, 'Pickup: ' + total];
+                    }
+                }
+            }
         }
     });
+
 // 2. KTC Chart (Top 10)
     const ktcMap = {};
     damageData.forEach(d => {

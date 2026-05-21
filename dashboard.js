@@ -785,7 +785,7 @@ function processData() {
 }
 
 // Dashboard Building
-function updateKPICards(data) {
+function updateKPICards(data, totalRecords) {
     const kpiContainer = document.getElementById('kpi-container');
     if (!kpiContainer) return;
 
@@ -865,8 +865,9 @@ function renderDashboardCharts() {
         }
     }
 
-    // 0. Update KPIs
-    updateKPICards(filteredData);
+    // 0. Update KPIs (pass both total and damage-only data)
+    const damageOnly = filteredData.filter(d => d.mapped_label.toLowerCase().includes('damage'));
+    updateKPICards(damageOnly, filteredData.length);
 
     // Grouping Helpers
     const groupBy = (array, key) => {
@@ -876,8 +877,11 @@ function renderDashboardCharts() {
         }, {});
     };
 
-    // 1. Trend Chart
-    const weekGroups = groupBy(filteredData, 'clean_week');
+    // Filter only Damage records for all charts
+    const damageData = filteredData.filter(d => d.mapped_label.toLowerCase().includes('damage'));
+
+    // 1. Trend Chart (only Damage)
+    const weekGroups = groupBy(damageData, 'clean_week');
     const weeks = Object.keys(weekGroups).sort();
     const trendData = weeks.map(w => weekGroups[w].length);
 
@@ -898,7 +902,6 @@ function renderDashboardCharts() {
     });
 
     // 2. KTC Chart (Top 10)
-    const damageData = filteredData.filter(d => d.mapped_label.toLowerCase().includes('damage'));
     const ktcMap = {};
     damageData.forEach(d => {
         ktcMap[d.mapped_ktc] = (ktcMap[d.mapped_ktc] || 0) + 1;

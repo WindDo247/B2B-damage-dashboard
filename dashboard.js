@@ -872,6 +872,7 @@ function renderDashboardCharts() {
     // L?y gi? tr? t? Multi-Select checkboxes
     const weekContainer = document.querySelector('#ms-week .ms-options');
     const clientContainer = document.querySelector('#ms-client .ms-options');
+    const nganhContainer = document.querySelector('#ms-nganh .ms-options');
 
     if (weekContainer) {
         const checkedWeeks = [...weekContainer.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value);
@@ -885,6 +886,15 @@ function renderDashboardCharts() {
         const allClients = [...clientContainer.querySelectorAll('input[type="checkbox"]')];
         if (checkedClients.length > 0 && checkedClients.length < allClients.length) {
             filteredData = filteredData.filter(d => checkedClients.includes(d.clean_client));
+        }
+    }
+
+    // Filter by Nganh Hang
+    if (nganhContainer) {
+        const checkedNganh = [...nganhContainer.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value);
+        const allNganh = [...nganhContainer.querySelectorAll('input[type="checkbox"]')];
+        if (checkedNganh.length > 0 && checkedNganh.length < allNganh.length) {
+            filteredData = filteredData.filter(d => checkedNganh.includes(d.nganh_hang || 'Khác'));
         }
     }
 

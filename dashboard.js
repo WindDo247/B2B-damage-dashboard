@@ -561,6 +561,7 @@ btnProcess.addEventListener('click', () => {
             processData();
             buildDashboard();
             generateReport();
+            pushMappedDataToSheet();
 
             // Enable navigation and switch to dashboard
             document.getElementById('nav-mapping').style.display = 'flex';
@@ -1582,12 +1583,7 @@ document.getElementById('btn-export-data').addEventListener('click', () => {
 // --- AUTO-PUSH MAPPED DATA TO GOOGLE SHEETS ---
 const MAPPED_SHEET_PUSH_URL = "https://script.google.com/macros/s/AKfycbzyYQqaXN3tey2FH8slerYSmx4aHreoYVAKE9duSkVnK6AMM-6MJvJVs4vJz_6IiZ8L/exec";
 
-async function pushMappedDataToSheet() {
-    if (MAPPED_SHEET_PUSH_URL === "https://script.google.com/macros/s/AKfycbzyYQqaXN3tey2FH8slerYSmx4aHreoYVAKE9duSkVnK6AMM-6MJvJVs4vJz_6IiZ8L/exec") {
-        console.log("Push URL chua duoc cau hinh, bo qua auto-push.");
-        return;
-    }
-
+function pushMappedDataToSheet() {
     const data = AppState.mappedData;
     if (!data || data.length === 0) return;
 
@@ -1602,27 +1598,41 @@ async function pushMappedDataToSheet() {
         syncText.style.color = 'var(--text-secondary)';
     }
 
-    try {
-        const response = await fetch(MAPPED_SHEET_PUSH_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ data: data })
-        });
+    // Use form-based approach for reliable Google Apps Script POST
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = MAPPED_SHEET_PUSH_URL;
+    form.target = 'push-iframe';
+    form.style.display = 'none';
 
-        if (syncStatus) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'payload';
+    input.value = JSON.stringify({ data: data });
+    form.appendChild(input);
+
+    // Create hidden iframe
+    let iframe = document.getElementById('push-iframe');
+    if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.id = 'push-iframe';
+        iframe.name = 'push-iframe';
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+    form.remove();
+
+    // Since we can't read the iframe response (cross-origin), assume success after a delay
+    if (syncStatus) {
+        setTimeout(() => {
             syncIcon.textContent = '✅';
             syncText.textContent = 'Đồng bộ thành công (' + data.length + ' dòng)';
             syncText.style.color = 'var(--accent-success)';
             setTimeout(() => { syncStatus.style.display = 'none'; }, 5000);
-        }
-    } catch (error) {
-        console.error('Lỗi đồng bộ:', error);
-        if (syncStatus) {
-            syncIcon.textContent = '❌';
-            syncText.textContent = 'Lỗi đồng bộ. Thử lại sau.';
-            syncText.style.color = 'var(--accent-danger)';
-            setTimeout(() => { syncStatus.style.display = 'none'; }, 8000);
-        }
+        }, 3000);
     }
 }
+

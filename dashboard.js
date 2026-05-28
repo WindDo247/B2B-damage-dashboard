@@ -1056,7 +1056,8 @@ function renderDashboardCharts() {
             pointHoverRadius: 6 
         }]
     }, {
-        scales: { y: { beginAtZero: true } }
+        scales: { y: { beginAtZero: true } },
+        forceAbsolute: true
     });
 
     // 3. Trend Chart (Damage Rate % only)
@@ -1349,7 +1350,11 @@ function createChart(id, type, data, options = {}) {
             }
         };
         if (type === 'line') {
-            baseOptions.plugins.datalabels.formatter = (v) => v === 0 ? '' : v + '%';
+            baseOptions.plugins.datalabels.formatter = (v) => {
+                if (v === 0) return '';
+                if (options.forceAbsolute) return v;
+                return v + '%';
+            };
         }
     }
     AppState.charts[id] = new Chart(ctx, { type, data, options: baseOptions });

@@ -1021,6 +1021,44 @@ function renderDashboardCharts() {
         }
     });
 
+    // 2.5 Daily Pickup Trend Chart (Absolute)
+    const pickupDayGroups = {};
+    filteredPickup.forEach(p => {
+        // Try to get a daily date, fallback to empty string if not found.
+        // It tries pickup_time, time_updated, date, etc.
+        let rawDate = p.pickup_time || p.time_updated || p.isoweek_pickup_time || '';
+        
+        // If it's a date string containing "W", it's a week, not a day, but we use it as fallback if daily date is missing
+        let d = String(rawDate).trim().split(' ')[0]; // Handle timestamp like "2026-05-21 9:00:00"
+        
+        if (d) {
+            pickupDayGroups[d] = (pickupDayGroups[d] || 0) + 1;
+        }
+    });
+    
+    // Sort days chronologically
+    const days = Object.keys(pickupDayGroups).sort();
+    const dailyPickupData = days.map(d => pickupDayGroups[d]);
+
+    createChart('dailyPickupChart', 'line', {
+        labels: days.length > 0 ? days : ['Chưa có dữ liệu ngày'],
+        datasets: [{ 
+            label: 'Đơn lấy thành công', 
+            data: days.length > 0 ? dailyPickupData : [0], 
+            borderColor: '#3b82f6', 
+            backgroundColor: 'rgba(59, 130, 246, 0.1)', 
+            borderWidth: 2.5, 
+            tension: 0.4, 
+            fill: true, 
+            pointBackgroundColor: '#3b82f6', 
+            pointBorderColor: '#fff', 
+            pointRadius: 4, 
+            pointHoverRadius: 6 
+        }]
+    }, {
+        scales: { y: { beginAtZero: true } }
+    });
+
     // 3. Trend Chart (Damage Rate % only)
     const weekGroups = groupBy(damageData, 'clean_week');
     const pickupWeekGroups = {};

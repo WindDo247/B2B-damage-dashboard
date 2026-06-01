@@ -11,6 +11,19 @@ const AppState = {
     charts: {}
 };
 
+function parseApiResponse(json) {
+    if (Array.isArray(json)) return json;
+    if (json && json.headers && json.data) {
+        const h = json.headers;
+        return json.data.map(row => {
+            let obj = {};
+            h.forEach((key, i) => { obj[key] = row[i]; });
+            return obj;
+        });
+    }
+    return [];
+}
+
 // --- DEFAULT API LINKS (HARDCODED) ---
 const DEFAULT_API = {
     db: "https://script.google.com/macros/s/AKfycbwnBwEObKKhJ1R3rEh7ypuW2OaPxFR5KxCbUm5D1Yw2vQWFXkcmrbFxnlBC0OTI_F1G/exec",
@@ -34,8 +47,9 @@ async function loadDefaultApis() {
         
         if (url && url.includes('script.google.com/macros/s/')) {
             promises.push(
-                fetch(url).then(res => res.json()).then(jsonArray => {
-                    if (Array.isArray(jsonArray) && jsonArray.length > 0) {
+                fetch(url).then(res => res.json()).then(json => {
+                    const jsonArray = parseApiResponse(json);
+                    if (jsonArray.length > 0) {
                         if (target === 'db') AppState.dbData = jsonArray;
                         if (target === 'kw') AppState.kwData = jsonArray;
                         if (target === 'gxt') AppState.gxtData = jsonArray;
@@ -64,8 +78,9 @@ async function loadDefaultApis() {
     if (pickupInput && pickupUrl) pickupInput.value = pickupUrl;
     
     if (pickupUrl) {
-        fetch(pickupUrl).then(res => res.json()).then(jsonArray => {
-            if (Array.isArray(jsonArray) && jsonArray.length > 0) {
+        fetch(pickupUrl).then(res => res.json()).then(json => {
+            const jsonArray = parseApiResponse(json);
+            if (jsonArray.length > 0) {
                 AppState.pickupData = jsonArray;
                 localStorage.setItem(`saved_url_pickup`, pickupUrl);
                 AppState.filesLoaded['pickup'] = true;
@@ -433,9 +448,10 @@ document.querySelectorAll('.btn-fetch').forEach(btn => {
                 try {
                     const response = await fetch(url);
                     if (!response.ok) throw new Error("Lỗi khi kết nối đến Google Apps Script API");
-                    const jsonArray = await response.json();
+                    const json = await response.json();
+                    const jsonArray = parseApiResponse(json);
 
-                    if (jsonArray.error) throw new Error(jsonArray.error);
+                    if (json.error) throw new Error(json.error);
 
                     if (target === 'db') AppState.dbData = jsonArray;
                     if (target === 'kw') AppState.kwData = jsonArray;
@@ -1764,8 +1780,9 @@ async function doAutoSync() {
         try {
             const response = await fetch(url);
             if (response.ok) {
-                const jsonArray = await response.json();
-                if (!jsonArray.error && jsonArray.length > 0) {
+                const json = await response.json();
+                const jsonArray = parseApiResponse(json);
+                if (!json.error && jsonArray.length > 0) {
                     if (target === 'db') AppState.dbData = jsonArray;
                     if (target === 'kw') AppState.kwData = jsonArray;
                     if (target === 'gxt') AppState.gxtData = jsonArray;

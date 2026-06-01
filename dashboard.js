@@ -17,7 +17,10 @@ function parseApiResponse(json) {
         const h = json.headers;
         return json.data.map(row => {
             let obj = {};
-            h.forEach((key, i) => { obj[key] = row[i]; });
+            h.forEach((key, i) => { 
+                const safeKey = key ? String(key).trim() : `Col_${i}`;
+                obj[safeKey] = row[i]; 
+            });
             return obj;
         });
     }

@@ -921,7 +921,7 @@ function renderDashboardCharts() {
         const checked = [...weekContainer.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value);
         const all = [...weekContainer.querySelectorAll('input[type="checkbox"]')];
         if (checked.length > 0 && checked.length < all.length) {
-            filteredData = filteredData.filter(d => checked.includes(d.clean_week));
+            filteredData = filteredData.filter(d => checked.includes(normDate(d.clean_week)));
             filteredPickup = filteredPickup.filter(p => checked.includes(normDate(p.isoweek_pickup_time)));
         }
     }
@@ -1061,12 +1061,21 @@ function renderDashboardCharts() {
     });
 
     // 3. Trend Chart (Damage Rate % only)
-    const weekGroups = groupBy(damageData, 'clean_week');
+    const weekGroups = {};
+    filteredData.forEach(d => {
+        const w = normDate(d.clean_week);
+        if (w) {
+            if (!weekGroups[w]) weekGroups[w] = [];
+            weekGroups[w].push(d);
+        }
+    });
+    
     const pickupWeekGroups = {};
     filteredPickup.forEach(p => {
         const w = normDate(p.isoweek_pickup_time);
         if (w) pickupWeekGroups[w] = (pickupWeekGroups[w] || 0) + 1;
     });
+
     const allWeekSet = new Set([...Object.keys(weekGroups), ...Object.keys(pickupWeekGroups)]);
     const weeks = [...allWeekSet].sort();
     const trendRateData = weeks.map(w => {
@@ -1275,7 +1284,7 @@ function buildDashboard() {
     });
 
     // Build unique values
-    const uniqueWeeks = [...new Set(data.map(d => d.clean_week).filter(Boolean))].sort();
+    const uniqueWeeks = [...new Set(data.map(d => normDate(d.clean_week)).filter(Boolean))].sort();
     const uniqueClients = [...new Set(data.map(d => d.clean_client).filter(Boolean))].sort();
 
     initMultiSelect('ms-week', uniqueWeeks, 'Tất cả các tuần', renderDashboardCharts);

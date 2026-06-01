@@ -53,6 +53,7 @@ async function loadDefaultApis() {
                         if (target === 'db') AppState.dbData = jsonArray;
                         if (target === 'kw') AppState.kwData = jsonArray;
                         if (target === 'gxt') AppState.gxtData = jsonArray;
+                        if (target === 'pickup') AppState.pickupData = jsonArray;
                         
                         // Save URL to localStorage for auto-sync
                         localStorage.setItem(`saved_url_${target}`, url);
@@ -456,6 +457,7 @@ document.querySelectorAll('.btn-fetch').forEach(btn => {
                     if (target === 'db') AppState.dbData = jsonArray;
                     if (target === 'kw') AppState.kwData = jsonArray;
                     if (target === 'gxt') AppState.gxtData = jsonArray;
+                    if (target === 'pickup') AppState.pickupData = jsonArray;
 
                     AppState.filesLoaded[target] = true;
                     statuses[target].textContent = `Google API (${jsonArray.length} dòng)`;
@@ -512,6 +514,7 @@ document.querySelectorAll('.btn-fetch').forEach(btn => {
                             if (target === 'db') AppState.dbData = jsonArray;
                             if (target === 'kw') AppState.kwData = jsonArray;
                             if (target === 'gxt') AppState.gxtData = jsonArray;
+                            if (target === 'pickup') AppState.pickupData = jsonArray;
 
                             AppState.filesLoaded[target] = true;
                             statuses[target].textContent = `Google Sheets (${jsonArray.length} dòng)`;

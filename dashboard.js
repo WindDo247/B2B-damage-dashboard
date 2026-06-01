@@ -894,14 +894,16 @@ function renderDashboardCharts() {
     let filteredData = AppState.mappedData;
     let filteredPickup = AppState.pickupData || [];
     
-    // Helper to normalize dates like "4/13/2026" to "2026-04-13"
+    // Helper to normalize dates to DD/MM/YYYY format
     const normDate = (d) => {
         let s = String(d || '').trim();
         if (!s) return s;
         let p = s.split(/[/\- T]/);
         if (p.length >= 3) {
-            if (p[2].length === 4) return p[2] + '-' + p[0].padStart(2, '0') + '-' + p[1].padStart(2, '0');
-            if (p[0].length === 4) return p[0] + '-' + p[1].padStart(2, '0') + '-' + p[2].padStart(2, '0');
+            // YYYY-MM-DD -> DD/MM/YYYY
+            if (p[0].length === 4) return p[2].padStart(2, '0') + '/' + p[1].padStart(2, '0') + '/' + p[0];
+            // DD/MM/YYYY or MM/DD/YYYY -> DD/MM/YYYY (assuming VN locale DD/MM)
+            if (p[2].length === 4) return p[0].padStart(2, '0') + '/' + p[1].padStart(2, '0') + '/' + p[2];
         }
         return s;
     };
@@ -1025,11 +1027,9 @@ function renderDashboardCharts() {
     const pickupDayGroups = {};
     filteredPickup.forEach(p => {
         // Try to get a daily date, fallback to empty string if not found.
-        // It tries pickup_time, time_updated, date, etc.
         let rawDate = p.pickup_time || p.time_updated || p.isoweek_pickup_time || '';
         
-        // If it's a date string containing "W", it's a week, not a day, but we use it as fallback if daily date is missing
-        let d = String(rawDate).trim().split(' ')[0]; // Handle timestamp like "2026-05-21 9:00:00"
+        let d = normDate(String(rawDate).trim().split(' ')[0]);
         
         if (d) {
             pickupDayGroups[d] = (pickupDayGroups[d] || 0) + 1;

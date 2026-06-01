@@ -304,12 +304,14 @@ const fileInputs = {
 const statuses = {
     db: document.getElementById('status-db'),
     kw: document.getElementById('status-kw'),
-    gxt: document.getElementById('status-gxt')
+    gxt: document.getElementById('status-gxt'),
+    pickup: document.getElementById('status-pickup')
 };
 const dropBoxes = {
     db: document.getElementById('drop-db'),
     kw: document.getElementById('drop-kw'),
-    gxt: document.getElementById('drop-gxt')
+    gxt: document.getElementById('drop-gxt'),
+    pickup: document.getElementById('drop-pickup')
 };
 const btnProcess = document.getElementById('btn-process');
 const loadingOverlay = document.getElementById('loading-overlay');

@@ -15,6 +15,7 @@ function parseApiResponse(json) {
     if (Array.isArray(json)) return json;
     if (json && json.headers && json.data) {
         const h = json.headers;
+        console.log('[API] Compressed format detected. Headers:', h.length, 'Rows:', json.data.length);
         return json.data.map(row => {
             let obj = {};
             h.forEach((key, i) => { 
@@ -25,6 +26,12 @@ function parseApiResponse(json) {
         });
     }
     return [];
+}
+
+// Them timestamp vao URL de chong cache
+function noCacheUrl(url) {
+    const sep = url.includes('?') ? '&' : '?';
+    return url + sep + '_t=' + Date.now();
 }
 
 // --- DEFAULT API LINKS (HARDCODED) ---
@@ -50,7 +57,7 @@ async function loadDefaultApis() {
         
         if (url && url.includes('script.google.com/macros/s/')) {
             promises.push(
-                fetch(url).then(res => res.json()).then(json => {
+                fetch(noCacheUrl(url)).then(res => res.json()).then(json => {
                     const jsonArray = parseApiResponse(json);
                     if (jsonArray.length > 0) {
                         if (target === 'db') AppState.dbData = jsonArray;
@@ -82,7 +89,7 @@ async function loadDefaultApis() {
     if (pickupInput && pickupUrl) pickupInput.value = pickupUrl;
     
     if (pickupUrl) {
-        fetch(pickupUrl).then(res => res.json()).then(json => {
+        fetch(noCacheUrl(pickupUrl)).then(res => res.json()).then(json => {
             const jsonArray = parseApiResponse(json);
             if (jsonArray.length > 0) {
                 AppState.pickupData = jsonArray;
@@ -452,7 +459,7 @@ document.querySelectorAll('.btn-fetch').forEach(btn => {
             // Xử lý link API từ Google Apps Script
             else if (url.includes('script.google.com/macros/s/')) {
                 try {
-                    const response = await fetch(url);
+                    const response = await fetch(noCacheUrl(url));
                     if (!response.ok) throw new Error("Lỗi khi kết nối đến Google Apps Script API");
                     const json = await response.json();
                     const jsonArray = parseApiResponse(json);
@@ -1786,7 +1793,7 @@ async function doAutoSync() {
     let updated = false;
     for (let { target, url } of validUrls) {
         try {
-            const response = await fetch(url);
+            const response = await fetch(noCacheUrl(url));
             if (response.ok) {
                 const json = await response.json();
                 const jsonArray = parseApiResponse(json);

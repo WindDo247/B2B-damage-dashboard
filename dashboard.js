@@ -34,6 +34,18 @@ function noCacheUrl(url) {
     return url + sep + '_t=' + Date.now();
 }
 
+// Chuan hoa ngay thanh DD/MM/YYYY
+function normDate(d) {
+    let s = String(d || '').trim();
+    if (!s) return s;
+    let p = s.split(/[/\- T]/);
+    if (p.length >= 3) {
+        if (p[0].length === 4) return p[2].padStart(2, '0') + '/' + p[1].padStart(2, '0') + '/' + p[0];
+        if (p[2].length === 4) return p[0].padStart(2, '0') + '/' + p[1].padStart(2, '0') + '/' + p[2];
+    }
+    return s;
+}
+
 // --- DEFAULT API LINKS (HARDCODED) ---
 const DEFAULT_API = {
     db: "https://script.google.com/macros/s/AKfycbwnBwEObKKhJ1R3rEh7ypuW2OaPxFR5KxCbUm5D1Yw2vQWFXkcmrbFxnlBC0OTI_F1G/exec",
@@ -459,7 +471,12 @@ document.querySelectorAll('.btn-fetch').forEach(btn => {
             // Xử lý link API từ Google Apps Script
             else if (url.includes('script.google.com/macros/s/')) {
                 try {
-                    const response = await fetch(noCacheUrl(url));
+                    // Tu dong them ?sheet=Pick%20Up neu la pickup ma user quen them
+                    let apiUrl = url;
+                    if (target === 'pickup' && !url.includes('sheet=')) {
+                        apiUrl = url + (url.includes('?') ? '&' : '?') + 'sheet=Pick%20Up';
+                    }
+                    const response = await fetch(noCacheUrl(apiUrl));
                     if (!response.ok) throw new Error("Lỗi khi kết nối đến Google Apps Script API");
                     const json = await response.json();
                     const jsonArray = parseApiResponse(json);
@@ -925,19 +942,7 @@ function renderDashboardCharts() {
     let filteredData = AppState.mappedData;
     let filteredPickup = AppState.pickupData || [];
     
-    // Helper to normalize dates to DD/MM/YYYY format
-    const normDate = (d) => {
-        let s = String(d || '').trim();
-        if (!s) return s;
-        let p = s.split(/[/\- T]/);
-        if (p.length >= 3) {
-            // YYYY-MM-DD -> DD/MM/YYYY
-            if (p[0].length === 4) return p[2].padStart(2, '0') + '/' + p[1].padStart(2, '0') + '/' + p[0];
-            // DD/MM/YYYY or MM/DD/YYYY -> DD/MM/YYYY (assuming VN locale DD/MM)
-            if (p[2].length === 4) return p[0].padStart(2, '0') + '/' + p[1].padStart(2, '0') + '/' + p[2];
-        }
-        return s;
-    };
+    // normDate is defined globally at top of file
 
     // Helper to normalize client names
     const normClient = (c) => {

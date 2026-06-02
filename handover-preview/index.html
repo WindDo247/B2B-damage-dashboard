@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng Phân Công PIC Khách Hàng — Preview</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --primary-light: #e8f0fe;
+            --primary-dark: #1557b0;
+            --success: #137333;
+            --success-bg: #e6f4ea;
+            --warning: #e37400;
+            --warning-bg: #fef7e0;
+            --danger: #c5221f;
+            --danger-bg: #fce8e6;
+            --info: #0b57d0;
+            --info-bg: #d3e3fd;
+            --gray-50: #f8f9fa;
+            --gray-100: #f1f3f4;
+            --gray-200: #e8eaed;
+            --gray-300: #dadce0;
+            --gray-400: #bdc1c6;
+            --gray-500: #9aa0a6;
+            --gray-600: #80868b;
+            --gray-700: #5f6368;
+            --gray-800: #3c4043;
+            --gray-900: #202124;
+            --white: #ffffff;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 25px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            --shadow-xl: 0 20px 50px -12px rgba(0,0,0,0.15);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 24px;
+            color: var(--gray-900);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header Section */
+        .page-header {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius);
+            padding: 32px 40px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), #34a853, var(--warning), var(--danger));
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--gray-900);
+            letter-spacing: -0.5px;
+        }
+
+        .header-title span {
+            color: var(--primary);
+        }
+
+        .header-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .badge-primary {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .badge-success {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: var(--warning-bg);
+            color: var(--warning);
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            color: var(--gray-600);
+            line-height: 1.6;
+            max-width: 800px;
+        }
+
+        /* Stats Row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(255,255,255,0.3);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .stat-card:nth-child(1)::after { background: var(--primary); }
+        .stat-card:nth-child(2)::after { background: var(--success); }
+        .stat-card:nth-child(3)::after { background: var(--warning); }
+        .stat-card:nth-child(4)::after { background: var(--danger); }
+
+        .stat-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--gray-500);
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .stat-card:nth-child(1) .stat-value { color: var(--primary); }
+        .stat-card:nth-child(2) .stat-value { color: var(--success); }
+        .stat-card:nth-child(3) .stat-value { color: var(--warning); }
+        .stat-card:nth-child(4) .stat-value { color: var(--danger); }
+
+        .stat-detail {
+            font-size: 12px;
+            color: var(--gray-500);
+            margin-top: 4px;
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            gap: 4px;
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius) var(--radius) 0 0;
+            padding: 8px 8px 0;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-bottom: none;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gray-600);
+            cursor: pointer;
+            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255,255,255,0.5);
+            color: var(--gray-800);
+        }
+
+        .tab-btn.active {
+            background: var(--white);
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 16px;
+            right: 16px;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 2px 2px 0 0;
+        }
+
+        .tab-icon {
+            font-size: 16px;
+        }
+
+        .tab-count {
+            background: var(--gray-200);
+            color: var(--gray-700);
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        .tab-btn.active .tab-count {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        /* Table Container */
+        .table-container {
+            background: var(--white);
+            border-radius: 0 0 var(--radius) var(--radius);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-top: none;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Table Styles */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .data-table thead th {
+            background: linear-gradient(180deg, var(--gray-800) 0%, var(--gray-900) 100%);
+            color: var(--white);
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            white-space: nowrap;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .data-table thead th:first-child {
+            text-align: center;
+            width: 50px;
+        }
+
+        .data-table tbody tr {
+            transition: var(--transition);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background: var(--gray-50);
+        }
+
+        .data-table tbody tr:hover {
+            background: var(--primary-light);
+            transform: scale(1.002);
+        }
+
+        .data-table tbody td {
+            padding: 12px 16px;
+            vertical-align: middle;
+        }
+
+        .data-table tbody td:first-child {
+            text-align: center;
+            font-weight: 700;
+            color: var(--gray-400);
+            font-size: 12px;
+        }
+
+        /* Client Name Styling */
+        .client-name {
+            font-weight: 700;
+            color: var(--gray-900);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .client-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .dot-fmcg { background: #34a853; }
+        .dot-electronics { background: #4285f4; }
+        .dot-fnb { background: #ea4335; }
+        .dot-fashion { background: #9c27b0; }
+        .dot-other { background: #ff9800; }
+
+        /* Industry Badge */
+        .industry-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .industry-fmcg { background: #e6f4ea; color: #137333; }
+        .industry-electronics { background: #d3e3fd; color: #0b57d0; }
+        .industry-fnb { background: #fce8e6; color: #c5221f; }
+        .industry-fashion { background: #f3e8fd; color: #7b1fa2; }
+        .industry-other { background: #fef7e0; color: #e37400; }
+
+        /* Team Badge */
+        .team-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .team-chungthu { background: #e8f0fe; color: #1a73e8; border: 1px solid #c5d9f7; }
+        .team-sd { background: #fef7e0; color: #e37400; border: 1px solid #f5deb3; }
+        .team-clientops { background: #f3e8fd; color: #7b1fa2; border: 1px solid #dbc4f0; }
+        .team-cs { background: #fce8e6; color: #c5221f; border: 1px solid #f5c6c2; }
+        .team-transfer { 
+            background: linear-gradient(90deg, #fce8e6, #e8f0fe); 
+            color: var(--gray-800); 
+            border: 1px solid var(--gray-300);
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .status-done {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+
+        .status-progress {
+            background: var(--warning-bg);
+            color: var(--warning);
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        .status-pending {
+            background: var(--danger-bg);
+            color: var(--danger);
+        }
+
+        .status-confirm {
+            background: var(--info-bg);
+            color: var(--info);
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(227, 116, 0, 0); }
+            50% { box-shadow: 0 0 0 4px rgba(227, 116, 0, 0.15); }
+        }
+
+        /* PIC Name */
+        .pic-name {
+            font-weight: 500;
+            color: var(--gray-800);
+        }
+
+        .pic-placeholder {
+            color: var(--gray-400);
+            font-style: italic;
+            font-size: 12px;
+        }
+
+        /* Note Cell */
+        .note-text {
+            font-size: 12px;
+            color: var(--gray-600);
+            line-height: 1.5;
+        }
+
+        .note-highlight {
+            background: #fff3e0;
+            padding: 2px 8px;
+            border-radius: 4px;
+            border-left: 3px solid var(--warning);
+            display: inline-block;
+            font-size: 12px;
+        }
+
+        /* Timeline */
+        .timeline-text {
+            font-size: 12px;
+            color: var(--gray-700);
+            font-weight: 500;
+        }
+
+        /* Sheet 2 - Contact Table */
+        .contact-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .contact-table thead th {
+            background: linear-gradient(180deg, #1a73e8 0%, #1557b0 100%);
+            color: var(--white);
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .contact-table tbody tr {
+            border-bottom: 1px solid var(--gray-200);
+            transition: var(--transition);
+        }
+
+        .contact-table tbody tr:nth-child(even) {
+            background: var(--gray-50);
+        }
+
+        .contact-table tbody tr:hover {
+            background: var(--primary-light);
+        }
+
+        .contact-table tbody td {
+            padding: 12px 16px;
+        }
+
+        .contact-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+            color: white;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        .avatar-blue { background: linear-gradient(135deg, #4285f4, #1a73e8); }
+        .avatar-green { background: linear-gradient(135deg, #34a853, #137333); }
+        .avatar-orange { background: linear-gradient(135deg, #fbbc04, #e37400); }
+        .avatar-purple { background: linear-gradient(135deg, #a142f4, #7b1fa2); }
+
+        .contact-email {
+            color: var(--primary);
+            font-size: 12px;
+            text-decoration: none;
+        }
+
+        .contact-phone {
+            color: var(--gray-600);
+            font-size: 12px;
+        }
+
+        /* Sheet 3 - Escalation Table */
+        .escalation-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .escalation-table thead th {
+            background: linear-gradient(180deg, #ea4335 0%, #c5221f 100%);
+            color: var(--white);
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .escalation-table tbody tr {
+            border-bottom: 1px solid var(--gray-200);
+            transition: var(--transition);
+        }
+
+        .escalation-table tbody tr:nth-child(even) {
+            background: var(--gray-50);
+        }
+
+        .escalation-table tbody tr:hover {
+            background: #fce8e6;
+        }
+
+        .escalation-table tbody td {
+            padding: 14px 16px;
+            vertical-align: top;
+        }
+
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .step-1 { background: var(--primary); }
+        .step-2 { background: var(--warning); }
+        .step-3 { background: var(--danger); }
+
+        .situation-icon {
+            font-size: 18px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        /* Footer */
+        .table-footer {
+            background: var(--gray-50);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .footer-info {
+            font-size: 12px;
+            color: var(--gray-500);
+        }
+
+        .footer-legend {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--gray-600);
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        /* Watermark */
+        .watermark {
+            text-align: center;
+            padding: 24px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .watermark a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .page-header, .table-container, .stat-card {
+                box-shadow: none;
+                border: 1px solid var(--gray-300);
+            }
+            .tab-nav { display: none; }
+            .tab-content { display: block !important; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .header-top {
+                flex-direction: column;
+                gap: 12px;
+            }
+            body { padding: 12px; }
+        }
+
+        /* Tooltip */
+        .tooltip-trigger {
+            position: relative;
+            cursor: help;
+            border-bottom: 1px dashed var(--gray-400);
+        }
+
+        .tooltip-trigger:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gray-900);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            white-space: nowrap;
+            z-index: 100;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Transfer Arrow Animation */
+        .transfer-arrow {
+            display: inline-block;
+            animation: arrow-bounce 1.5s ease-in-out infinite;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        @keyframes arrow-bounce {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(4px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-top">
+                <div>
+                    <h1 class="header-title">📋 Bảng Phân Công <span>PIC Khách Hàng</span></h1>
+                    <p class="header-subtitle" style="margin-top: 8px;">
+                        Thống nhất người phụ trách (PIC) cho từng khách hàng giữa các team — đảm bảo khi có sự vụ phát sinh, 
+                        tất cả các bên đều biết liên hệ đúng người.
+                    </p>
+                </div>
+                <div class="header-badges">
+                    <span class="badge badge-primary">📅 Hiệu lực: 02/06/2026</span>
+                    <span class="badge badge-success">✏️ Phiên bản: v1.0</span>
+                    <span class="badge badge-warning">🔄 Cập nhật: 02/06/2026</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-label">Tổng khách hàng</div>
+                <div class="stat-value">13</div>
+                <div class="stat-detail">Across all teams</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Đã bàn giao</div>
+                <div class="stat-value">11</div>
+                <div class="stat-detail">84.6% hoàn tất</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Đang bàn giao</div>
+                <div class="stat-value">1</div>
+                <div class="stat-detail">LocknLock — T06/2026</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Cần xác nhận</div>
+                <div class="stat-value">1</div>
+                <div class="stat-detail">Honor — thiếu PIC</div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('sheet1')">
+                <span class="tab-icon">📋</span>
+                Phân công PIC
+                <span class="tab-count">13</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('sheet2')">
+                <span class="tab-icon">📞</span>
+                Liên hệ PIC
+            </button>
+            <button class="tab-btn" onclick="switchTab('sheet3')">
+                <span class="tab-icon">🚨</span>
+                Quy trình Escalation
+            </button>
+        </div>
+
+        <!-- Table Container -->
+        <div class="table-container">
+            <!-- Sheet 1: Phân Công PIC -->
+            <div id="sheet1" class="tab-content active">
+                <div style="overflow-x: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Khách hàng</th>
+                                <th>Ngành hàng</th>
+                                <th>PIC Chứng từ</th>
+                                <th>Team Chứng từ</th>
+                                <th>PIC Daily Ops</th>
+                                <th>Team Daily Ops</th>
+                                <th>Trạng thái</th>
+                                <th>Timeline</th>
+                                <th>Ghi chú</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td><span class="client-name"><span class="client-dot dot-fmcg"></span>AQUA B2B</span></td>
+                                <td><span class="industry-badge industry-fmcg">FMCG</span></td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td><span class="team-badge team-chungthu">📄 Team Chứng từ</span></td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td><span class="team-badge team-sd">⚙️ Team SD</span></td>
+                                <td><span class="status-badge status-done">✅ Đã bàn giao</span></td>
+                                <td class="timeline-text">—</td>
+                                <td class="note-text"></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td><span class="client-name"><span class="client-dot dot-fmcg"></span>CJ | PALDO</span></td>
+                                <td><span class="industry-badge industry-fmcg">FMCG</span></td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td><span class="team-badge team-chungthu">📄 Team Chứng từ</span></td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td><span class="team-badge team-sd">⚙️ Team SD</span></td>
+                                <td><span class="status-badge status-done">✅ Đã bàn giao</span></td>
+                                <td class="timeline-text">—</td>
+                                <td class="note-text"></td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td><span class="client-name"><span class="client-dot dot-fmcg"></span>SCF x KFM</span></td>
+                                <td><span class="industry-badge industry-fmcg">FMCG</span></td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td><span class="team-badge team-chungthu">📄 Team Chứng từ</span></td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td><span class="team-badge team-sd">⚙️ Team SD</span></td>
+                                <td><span class="status-badge status-done">✅ Đã bàn giao</span></td>
+                                <td class="timeline-text">—</td>
+                                <td class="note-text"></td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td><span class="client-name"><span class="client-dot dot-fmcg"></span>SF | WILMAR</span></td>
+                                <td><span class="industry-badge industry-fmcg">FMCG</span></td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td><span class="team-badge team-chungthu">📄 Team Chứng từ</span></td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td><span class="team-badge team-sd">⚙️ Team SD</span></td>
+                                <td><span class="status-badge status-done">✅ Đã bàn giao</span></td>
+                                <td class="timeline-text">—</td>
+                                <td class="note-text"></td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td><span class="client-name"><span class="client-dot dot-electronics"></span>LG</span></td>
+                                <td><span class="industry-badge industry-electronics">Điện máy</span></td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td><span class="team-badge team-chungthu">📄 Team Chứng từ</span></td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td><span class="team-badge team-sd">⚙️ Team SD</span></td>
+                                <td><span class="status-badge status-done">✅ Đã bàn giao</span></td>
+                                <td class="timeline-text">—</td>
+                                <td class="note-text"></td>
+                            </tr>
+                            <tr>
+                                <td>6</td>
+                                <td><span class="client-name"><span class="client-dot dot-other"></span>NTF</span></td>
+                                <td><span class="industry-badge industry-other">Khác</span></td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td><span class="team-badge team-chungthu">📄 Team Chứng từ</span></td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td><span class="team-badge team-sd">⚙️ Team SD</span></td>
+                                <td><span class="status-badge status-done">✅ Đã bàn giao</span></td>
+                                <td class="timeline-text">—</td>
+                                <td class="note-text"></td>
+                            </tr>
+                            <tr>
+                                <td>7</td>
+                                <td><span class="client-name"><span class="client-dot dot-other"></span>SF | AUX</span></td>
+                                <td><span class="industry-badge industry-other">Khác</span></td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td><span class="team-badge team-chungthu">📄 Team Chứng từ</span></td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td><span class="team-badge team-sd">⚙️ Team SD</span></td>
+                                <td><span class="status-badge status-done">✅ Đã bàn giao</span></td>
+                                <td class="timeline-text">—</td>
+                                <td class="note-text"></td>
+                            </tr>
+                            <tr>
+                                <td>8</td>
+                                <td><span class="client-name"><span class="client-dot dot-fmcg"></span>MDLz</span></td>
+                                <td><span class="industry-badge industry-fmcg">FMCG</span></td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td><span class="team-badge team-sd">⚙️ Team SD</span></td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td><span class="team-badge team-sd">⚙️ Team SD</span></td>
+                                <td><span class="status-badge status-done">✅ Đã bàn giao</span></td>
+                                <td class="timeline-text">—</td>
+                                <td class="note-text"><span class="note-highlight">⚠️ Cả chứng từ & ops đều do SD phụ trách</span></td>
+                            </tr>
+                            <tr>
+                                <td>9</td>
+                                <td><span class="client-name"><span class="client-dot dot-other"></span>LocknLock</span></td>
+                                <td><span class="industry-badge industry-other">Khác</span></td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td>
+                                    <span class="team-badge team-transfer">
+                                        🔴 CS <span class="transfer-arrow">→</span> 📄 Chứng từ
+                                    </span>
+                                </td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td><span class="team-badge team-sd">⚙️ Team SD</span></td>
+                                <td><span class="status-badge status-progress">🔄 Đang bàn giao</span></td>
+                                <td class="timeline-text">Trong T06/2026</td>
+                                <td class="note-text"><span class="note-highlight">⚠️ Đang bàn giao chứng từ từ CS → Chứng từ</span></td>
+                            </tr>
+                            <tr>
+                                <td>10</td>
+                                <td><span class="client-name"><span class="client-dot dot-fnb"></span>Phê La</span></td>
+                                <td><span class="industry-badge industry-fnb">F&B</span></td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td><span class="team-badge team-chungthu">📄 Team Chứng từ</span></td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td><span class="team-badge team-sd">⚙️ Team SD</span></td>
+                                <td><span class="status-badge status-done">✅ Đã bàn giao</span></td>
+                                <td class="timeline-text">—</td>
+                                <td class="note-text"></td>
+                            </tr>
+                            <tr>
+                                <td>11</td>
+                                <td><span class="client-name"><span class="client-dot dot-fashion"></span>KEC Uniqlo</span></td>
+                                <td><span class="industry-badge industry-fashion">Thời trang</span></td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td><span class="team-badge team-chungthu">📄 Team Chứng từ</span></td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td><span class="team-badge team-sd">⚙️ Team SD</span></td>
+                                <td><span class="status-badge status-done">✅ Đã bàn giao</span></td>
+                                <td class="timeline-text">—</td>
+                                <td class="note-text"></td>
+                            </tr>
+                            <tr>
+                                <td>12</td>
+                                <td><span class="client-name"><span class="client-dot dot-other"></span>UNICOMMER</span></td>
+                                <td><span class="industry-badge industry-other">Khác</span></td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td><span class="team-badge team-chungthu">📄 Team Chứng từ</span></td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td><span class="team-badge team-sd">⚙️ Team SD</span></td>
+                                <td><span class="status-badge status-done">✅ Đã bàn giao</span></td>
+                                <td class="timeline-text">—</td>
+                                <td class="note-text"></td>
+                            </tr>
+                            <tr>
+                                <td>13</td>
+                                <td><span class="client-name"><span class="client-dot dot-electronics"></span>Honor</span></td>
+                                <td><span class="industry-badge industry-electronics">Điện máy</span></td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td><span class="team-badge" style="background:#fff3e0; color:#bf360c; border:1px solid #f5c6a0;">❓ Chưa phân công</span></td>
+                                <td><span class="pic-placeholder">Cần bổ sung</span></td>
+                                <td><span class="team-badge team-clientops">👥 Team Client Ops</span></td>
+                                <td><span class="status-badge status-confirm">❓ Cần xác nhận</span></td>
+                                <td class="timeline-text">—</td>
+                                <td class="note-text"><span class="note-highlight">⚠️ Chưa có PIC chứng từ — cần xác nhận</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-footer">
+                    <div class="footer-info">
+                        Tổng cộng <strong>13</strong> khách hàng · Cập nhật lần cuối: 02/06/2026
+                    </div>
+                    <div class="footer-legend">
+                        <span class="legend-item"><span class="legend-dot dot-fmcg"></span> FMCG</span>
+                        <span class="legend-item"><span class="legend-dot dot-electronics"></span> Điện máy</span>
+                        <span class="legend-item"><span class="legend-dot dot-fnb"></span> F&B</span>
+                        <span class="legend-item"><span class="legend-dot dot-fashion"></span> Thời trang</span>
+                        <span class="legend-item"><span class="legend-dot dot-other"></span> Khác</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sheet 2: Liên hệ PIC -->
+            <div id="sheet2" class="tab-content">
+                <div style="overflow-x: auto;">
+                    <table class="contact-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Họ tên</th>
+                                <th>Team</th>
+                                <th>Vai trò</th>
+                                <th>Khách hàng phụ trách</th>
+                                <th>Email</th>
+                                <th>Số điện thoại</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>
+                                    <span class="contact-avatar avatar-blue">A</span>
+                                    <span class="pic-placeholder">Cần bổ sung</span>
+                                </td>
+                                <td><span class="team-badge team-chungthu">📄 Team Chứng từ</span></td>
+                                <td>PIC Chứng từ</td>
+                                <td class="note-text">AQUA, CJ|PALDO, SCF x KFM, ...</td>
+                                <td><span class="pic-placeholder">example@company.com</span></td>
+                                <td><span class="pic-placeholder">09xx xxx xxx</span></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>
+                                    <span class="contact-avatar avatar-orange">B</span>
+                                    <span class="pic-placeholder">Cần bổ sung</span>
+                                </td>
+                                <td><span class="team-badge team-sd">⚙️ Team SD</span></td>
+                                <td>PIC Daily Ops</td>
+                                <td class="note-text">AQUA, CJ|PALDO, MDLz, ...</td>
+                                <td><span class="pic-placeholder">example@company.com</span></td>
+                                <td><span class="pic-placeholder">09xx xxx xxx</span></td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>
+                                    <span class="contact-avatar avatar-purple">C</span>
+                                    <span class="pic-placeholder">Cần bổ sung</span>
+                                </td>
+                                <td><span class="team-badge team-clientops">👥 Team Client Ops</span></td>
+                                <td>PIC Daily Ops</td>
+                                <td class="note-text">Honor</td>
+                                <td><span class="pic-placeholder">example@company.com</span></td>
+                                <td><span class="pic-placeholder">09xx xxx xxx</span></td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>
+                                    <span class="contact-avatar avatar-green">D</span>
+                                    <span class="pic-placeholder">Cần bổ sung</span>
+                                </td>
+                                <td><span class="team-badge team-cs">🔴 Team CS</span></td>
+                                <td>PIC Chứng từ (tạm)</td>
+                                <td class="note-text">LocknLock (đang bàn giao)</td>
+                                <td><span class="pic-placeholder">example@company.com</span></td>
+                                <td><span class="pic-placeholder">09xx xxx xxx</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-footer">
+                    <div class="footer-info">
+                        💡 <em>Wind cần bổ sung tên PIC cụ thể, email và số điện thoại cho từng người.</em>
+                    </div>
+                    <div></div>
+                </div>
+            </div>
+
+            <!-- Sheet 3: Escalation -->
+            <div id="sheet3" class="tab-content">
+                <div style="overflow-x: auto;">
+                    <table class="escalation-table">
+                        <thead>
+                            <tr>
+                                <th>Tình huống</th>
+                                <th>Bước 1</th>
+                                <th>Bước 2</th>
+                                <th>Bước 3</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <span class="situation-icon">📄</span>
+                                    <strong>Sự vụ chứng từ</strong>
+                                    <br><span class="note-text">Sai chứng từ, thiếu chứng từ, chậm xử lý</span>
+                                </td>
+                                <td>
+                                    <span class="step-badge step-1">1</span>
+                                    Liên hệ <strong>PIC Chứng từ</strong> của KH đó (tra Sheet 1)
+                                </td>
+                                <td>
+                                    <span class="step-badge step-2">2</span>
+                                    Escalate lên <strong>Team Lead Chứng từ</strong>
+                                </td>
+                                <td>
+                                    <span class="step-badge step-3">3</span>
+                                    Escalate lên <strong>Wind</strong> (Trưởng phòng)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <span class="situation-icon">⚙️</span>
+                                    <strong>Sự vụ vận hành (Daily Ops)</strong>
+                                    <br><span class="note-text">Lỗi quy trình, chậm xử lý đơn hàng</span>
+                                </td>
+                                <td>
+                                    <span class="step-badge step-1">1</span>
+                                    Liên hệ <strong>PIC Daily Ops</strong> của KH đó (tra Sheet 1)
+                                </td>
+                                <td>
+                                    <span class="step-badge step-2">2</span>
+                                    Escalate lên <strong>Team Lead SD / Client Ops</strong>
+                                </td>
+                                <td>
+                                    <span class="step-badge step-3">3</span>
+                                    Escalate lên <strong>Wind</strong> (Trưởng phòng)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <span class="situation-icon">❓</span>
+                                    <strong>Không rõ ai phụ trách</strong>
+                                    <br><span class="note-text">KH mới hoặc chưa được phân công</span>
+                                </td>
+                                <td>
+                                    <span class="step-badge step-1">1</span>
+                                    Tra cứu <strong>Sheet 1</strong> → tìm PIC tương ứng
+                                </td>
+                                <td>
+                                    <span class="step-badge step-2">2</span>
+                                    Nếu không có PIC → liên hệ <strong>Wind</strong> để phân công
+                                </td>
+                                <td>
+                                    <span class="step-badge step-3" style="background: var(--gray-400);">—</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <span class="situation-icon">🆕</span>
+                                    <strong>Khách hàng mới</strong>
+                                    <br><span class="note-text">Onboard KH mới, cần phân công PIC</span>
+                                </td>
+                                <td>
+                                    <span class="step-badge step-1">1</span>
+                                    Thông báo cho <strong>Wind</strong> để phân công PIC
+                                </td>
+                                <td>
+                                    <span class="step-badge step-2">2</span>
+                                    Wind cập nhật Sheet 1 & thông báo các team
+                                </td>
+                                <td>
+                                    <span class="step-badge step-3" style="background: var(--gray-400);">—</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <span class="situation-icon">🔄</span>
+                                    <strong>Thay đổi nhân sự PIC</strong>
+                                    <br><span class="note-text">PIC nghỉ việc, chuyển team, thay đổi</span>
+                                </td>
+                                <td>
+                                    <span class="step-badge step-1">1</span>
+                                    Team Lead thông báo cho <strong>Wind</strong>
+                                </td>
+                                <td>
+                                    <span class="step-badge step-2">2</span>
+                                    Wind cập nhật Sheet 1, 2 & email thông báo
+                                </td>
+                                <td>
+                                    <span class="step-badge step-3" style="background: var(--gray-400);">—</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-footer">
+                    <div class="footer-info">
+                        ⏱️ <strong>SLA:</strong> Bước 1 → phản hồi trong 1h · Bước 2 → phản hồi trong 2h · Bước 3 → phản hồi trong 4h
+                    </div>
+                    <div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="watermark">
+            Preview layout — Được tạo bởi Wind · 02/06/2026
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabId) {
+            // Remove active class from all buttons and contents
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Add active class to clicked tab
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        // Add row hover sound effect (visual only)
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('mouseenter', () => {
+                row.style.transition = 'all 0.2s ease';
+            });
+        });
+    </script>
+</body>
+</html>

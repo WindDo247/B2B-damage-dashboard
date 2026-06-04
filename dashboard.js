@@ -1073,7 +1073,12 @@ function renderDashboardCharts() {
     });
     
     // Sort days chronologically
-    const days = Object.keys(pickupDayGroups).sort();
+    const days = Object.keys(pickupDayGroups).sort((a, b) => {
+        const pa = a.split('/'), pb = b.split('/');
+        const da = new Date(pa[2], pa[1] - 1, pa[0]);
+        const db = new Date(pb[2], pb[1] - 1, pb[0]);
+        return da - db;
+    });
     const dailyPickupData = days.map(d => pickupDayGroups[d]);
 
     createChart('dailyPickupChart', 'line', {
@@ -1113,7 +1118,12 @@ function renderDashboardCharts() {
     });
 
     const allWeekSet = new Set([...Object.keys(weekGroups), ...Object.keys(pickupWeekGroups)]);
-    const weeks = [...allWeekSet].sort();
+    const weeks = [...allWeekSet].sort((a, b) => {
+        const pa = a.split('/'), pb = b.split('/');
+        const da = new Date(pa[2], pa[1] - 1, pa[0]);
+        const db = new Date(pb[2], pb[1] - 1, pb[0]);
+        return da - db;
+    });
     const trendRateData = weeks.map(w => {
         const total = pickupWeekGroups[w] || 0;
         const damaged = weekGroups[w] ? weekGroups[w].length : 0;

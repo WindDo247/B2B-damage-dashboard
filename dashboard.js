@@ -56,16 +56,44 @@ function noCacheUrl(url) {
     return url + sep + '_t=' + Date.now() + '&token=' + API_TOKEN;
 }
 
-// Chuan hoa ngay thanh DD/MM/YYYY
+
+// Chuan hoa ngay thanh dd/mm/yyyy
+// Input co the la: yyyy-mm-dd, dd/mm/yyyy, mm/dd/yyyy, d/m/yyyy, etc.
+// LUON tra ve dd/mm/yyyy (Vietnamese format)
 function normDate(d) {
     let s = String(d || '').trim();
     if (!s) return s;
-    let p = s.split(/[/\- T]/);
-    if (p.length >= 3) {
-        if (p[0].length === 4) return p[2].padStart(2, '0') + '/' + p[1].padStart(2, '0') + '/' + p[0];
-        if (p[2].length === 4) return p[0].padStart(2, '0') + '/' + p[1].padStart(2, '0') + '/' + p[2];
+    
+    // Loai bo phan thoi gian neu co (2026-06-01T00:00:00)
+    s = s.split('T')[0].split(' ')[0];
+    
+    let p = s.split(/[/\-]/);
+    if (p.length < 3) return s;
+    
+    let day, month, year;
+    
+    if (p[0].length === 4) {
+        // yyyy-mm-dd (ISO format tu BI)
+        year = p[0];
+        month = p[1].padStart(2, '0');
+        day = p[2].padStart(2, '0');
+    } else if (p[2].length === 4) {
+        // dd/mm/yyyy (Vietnamese) - LUON giu nguyen thu tu
+        day = p[0].padStart(2, '0');
+        month = p[1].padStart(2, '0');
+        year = p[2];
+    } else {
+        return s;
     }
-    return s;
+    
+    return day + '/' + month + '/' + year;
+}
+
+// Chuyen dd/mm/yyyy thanh Date object
+function parseVNDate(str) {
+    const p = str.split('/');
+    if (p.length !== 3) return null;
+    return new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0]));
 }
 
 // --- DEFAULT API ---
@@ -1381,10 +1409,9 @@ function buildDashboard() {
 
     // Build unique values
     const uniqueWeeks = [...new Set(data.map(d => normDate(d.clean_week)).filter(Boolean))].sort((a, b) => {
-        const pa = a.split('/'), pb = b.split('/');
-        const da = new Date(pa[2], pa[1] - 1, pa[0]);
-        const db = new Date(pb[2], pb[1] - 1, pb[0]);
-        return db - da; // Newest first
+        const da = parseVNDate(a), db = parseVNDate(b);
+        if (!da || !db) return 0;
+        return db - da; // Mới nhất trước
     });
     const uniqueClients = [...new Set(data.map(d => d.clean_client).filter(Boolean))].sort();
 

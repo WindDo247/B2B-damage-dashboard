@@ -69,11 +69,12 @@ function normDate(d) {
 }
 
 // --- DEFAULT API LINKS (HARDCODED) ---
+const API_BASE = "https://script.google.com/macros/s/AKfycbzyYQqaXN3tey2FH8slerYSmx4aHreoYVAKE9duSkVnK6AMM-6MJvJVs4vJz_6IiZ8L/exec";
 const DEFAULT_API = {
-    db: "https://script.google.com/macros/s/AKfycbzyYQqaXN3tey2FH8slerYSmx4aHreoYVAKE9duSkVnK6AMM-6MJvJVs4vJz_6IiZ8L/exec?sheet=Damage",
-    kw: "https://script.google.com/macros/s/AKfycbwT_ZuYX8RN84QgWWJT8J2P57wVreYj7lEi7qOvyHYp1MhkVCRfWRJn8C4_7L4cqyyP/exec",
-    gxt: "https://script.google.com/macros/s/AKfycbynJP4pfNr3thl0Ff63xZ-IEnkwSdIrO5YOXZTCqEW61zsbqPhkD69k8PjHC0IgZeoZXg/exec",
-    pickup: "https://script.google.com/macros/s/AKfycbzyYQqaXN3tey2FH8slerYSmx4aHreoYVAKE9duSkVnK6AMM-6MJvJVs4vJz_6IiZ8L/exec?sheet=Pick%20Up"
+    db: API_BASE + "?sheet=Damage",
+    kw: API_BASE + "?sheet=Keyword",
+    gxt: API_BASE + "?sheet=Danh%20s%C3%A1ch%20KTC%20KCT",
+    pickup: API_BASE + "?sheet=Pick%20Up"
 };
 
 // Hàm tự động tải API mặc định
@@ -81,73 +82,46 @@ async function loadDefaultApis() {
     const overlay = document.getElementById('loading-overlay');
     if (overlay) overlay.classList.add('active');
     
+    // Tải TẤT CẢ 4 API cùng lúc (song song) để tối ưu tốc độ
     let promises = [];
-    ['db', 'kw', 'gxt'].forEach(target => {
-        const url = DEFAULT_API[target] || localStorage.getItem(`saved_url_${target}`);
+    ['db', 'kw', 'gxt', 'pickup'].forEach(target => {
+        const url = DEFAULT_API[target];
+        if (!url) return;
         
-        // Cập nhật lại UI ô input cho đẹp
-        const input = document.getElementById(`link-${target}`);
-        if (input && url) input.value = url;
-        
-        if (url && url.includes('script.google.com/macros/s/')) {
-            promises.push(
-                fetch(noCacheUrl(url)).then(res => res.json()).then(json => {
-                    const jsonArray = parseApiResponse(json);
-                    if (jsonArray.length > 0) {
-                        if (target === 'db') AppState.dbData = jsonArray;
-                        if (target === 'kw') AppState.kwData = jsonArray;
-                        if (target === 'gxt') AppState.gxtData = jsonArray;
-                        if (target === 'pickup') AppState.pickupData = jsonArray;
-                        
-                        // Save URL to localStorage for auto-sync
-                        localStorage.setItem(`saved_url_${target}`, url);
-                        AppState.filesLoaded[target] = true;
-                        
-                        // Update UI
-                        const statusEl = document.getElementById(`status-${target}`);
-                        const dropBox = document.getElementById(`drop-${target}`);
-                        if (statusEl) {
-                            statusEl.textContent = `API Mặc định (${jsonArray.length} dòng)`;
-                            statusEl.style.color = 'var(--accent-success)';
-                        }
-                        if (dropBox) dropBox.classList.add('success');
-                    }
-                }).catch(e => console.error(`Lỗi tải API mặc định ${target}:`, e))
-            );
+        const startTime = Date.now();
+        const statusEl = document.getElementById(`status-${target}`);
+        const dropBox = document.getElementById(`drop-${target}`);
+        if (statusEl) {
+            statusEl.textContent = '⏳ Đang tải...';
+            statusEl.style.color = 'var(--text-secondary)';
         }
-    });
-
-    // Tải Pickup API ngầm (Không block UI vì dữ liệu quá lớn)
-    const pickupUrl = DEFAULT_API['pickup'] || localStorage.getItem(`saved_url_pickup`);
-    const pickupInput = document.getElementById('link-pickup');
-    if (pickupInput && pickupUrl) pickupInput.value = pickupUrl;
-    
-    if (pickupUrl) {
-        fetch(noCacheUrl(pickupUrl)).then(res => res.json()).then(json => {
-            const jsonArray = parseApiResponse(json);
-            if (jsonArray.length > 0) {
-                AppState.pickupData = jsonArray;
-                localStorage.setItem(`saved_url_pickup`, pickupUrl);
-                AppState.filesLoaded['pickup'] = true;
-                
-                const statusEl = document.getElementById(`status-pickup`);
-                const dropBox = document.getElementById(`drop-pickup`);
-                if (statusEl) {
-                    statusEl.textContent = `API Mặc định (${jsonArray.length} dòng)`;
-                    statusEl.style.color = 'var(--accent-success)';
-                }
-                if (dropBox) dropBox.classList.add('success');
-                
-                // Nếu đang ở Dashboard thì tự động render lại để cập nhật Tỉ lệ
-                const dashContent = document.getElementById('dashboard-content');
-                if (dashContent && dashContent.style.display !== 'none' && dashContent.classList.contains('active')) {
-                    if (typeof renderDashboardCharts === 'function') {
-                        renderDashboardCharts();
+        
+        promises.push(
+            fetch(noCacheUrl(url)).then(res => res.json()).then(json => {
+                const jsonArray = parseApiResponse(json);
+                const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+                if (jsonArray.length > 0) {
+                    if (target === 'db') AppState.dbData = jsonArray;
+                    if (target === 'kw') AppState.kwData = jsonArray;
+                    if (target === 'gxt') AppState.gxtData = jsonArray;
+                    if (target === 'pickup') AppState.pickupData = jsonArray;
+                    
+                    AppState.filesLoaded[target] = true;
+                    
+                    if (statusEl) {
+                        statusEl.textContent = `✅ ${jsonArray.length.toLocaleString()} dòng (${elapsed}s)`;
+                        statusEl.style.color = 'var(--accent-success)';
                     }
+                    if (dropBox) dropBox.classList.add('success');
                 }
-            }
-        }).catch(e => console.error(`Lỗi tải API Pickup ngầm:`, e));
-    }
+            }).catch(e => {
+                if (statusEl) {
+                    statusEl.textContent = '❌ Lỗi tải dữ liệu';
+                    statusEl.style.color = 'var(--accent-danger)';
+                }
+            })
+        );
+    });
 
     if (promises.length > 0) {
         await Promise.all(promises);

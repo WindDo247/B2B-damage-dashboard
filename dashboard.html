@@ -117,82 +117,36 @@
                 <section id="upload-section" class="section active">
                     <div class="glass-card upload-container">
                         <h3>Import Dữ Liệu</h3>
-                        <p class="subtitle">Vui lòng tải lên các file cần thiết để hệ thống phân tích và tạo dashboard.
-                        </p>
+                        <p class="subtitle">Tất cả dữ liệu được tự động đồng bộ từ Google Sheets. Bấm "Tải & Xử Lý" để bắt đầu.</p>
 
                         <div class="upload-grid">
-                            <!-- Database Upload -->
                             <div class="upload-box" id="drop-db">
                                 <div class="upload-icon">📊</div>
-                                <h4>1. Data Hư Hỏng (Damage)</h4>
-                                <p class="fields-info" style="color: var(--accent-success);">✅ Tự động đồng bộ từ BI → Sheet "Damage"</p>
-                                <p class="fields-info" style="font-size: 0.75rem; opacity: 0.7;">Không cần nhập thủ công. Data được sync qua Apps Script.</p>
-                                <div class="file-status" id="status-db">Đang chờ tải...</div>
+                                <h4>Data Hư Hỏng</h4>
+                                <p class="fields-info" style="color: var(--accent-success);">✅ Auto-sync từ BI → Sheet "Damage"</p>
+                                <div class="file-status" id="status-db">Đang chờ...</div>
                             </div>
 
-                            <!-- Keyword Upload -->
                             <div class="upload-box" id="drop-kw">
                                 <div class="upload-icon">🏷️</div>
-                                <h4>2. File Keyword</h4>
-                                <p class="fields-info">Yêu cầu: Cột keyword và label (hoặc tương đương)</p>
-
-                                <div class="import-tabs">
-                                    <button class="import-tab active" data-type="file" data-target="kw">Tải
-                                        File</button>
-                                    <button class="import-tab" data-type="link" data-target="kw">Nhập Link</button>
-                                </div>
-
-                                <div class="import-content active" id="content-file-kw">
-                                    <input type="file" id="file-kw" accept=".csv, .xlsx, .xls" class="file-input">
-                                    <button class="btn-upload" onclick="document.getElementById('file-kw').click()">Chọn
-                                        File</button>
-                                </div>
-
-                                <div class="import-content" id="content-link-kw">
-                                    <input type="text" id="link-kw" class="link-input"
-                                        placeholder="Nhập URL (CSV/Excel)">
-                                    <button class="btn-upload btn-fetch" data-target="kw">Tải Link</button>
-                                </div>
-
-                                <div class="file-status" id="status-kw">Chưa có dữ liệu</div>
+                                <h4>Keyword Map</h4>
+                                <p class="fields-info" style="color: var(--accent-success);">✅ Auto-sync từ tab "Keyword"</p>
+                                <div class="file-status" id="status-kw">Đang chờ...</div>
                             </div>
 
-                            <!-- GXT_KTC Upload -->
                             <div class="upload-box" id="drop-gxt">
                                 <div class="upload-icon">🏢</div>
-                                <h4>3. File Danh Sách Kho</h4>
-                                <p class="fields-info">Yêu cầu: Kho GXT, KTC/KCT liền kề trước</p>
-
-                                <div class="import-tabs">
-                                    <button class="import-tab active" data-type="file" data-target="gxt">Tải
-                                        File</button>
-                                    <button class="import-tab" data-type="link" data-target="gxt">Nhập Link</button>
-                                </div>
-
-                                <div class="import-content active" id="content-file-gxt">
-                                    <input type="file" id="file-gxt" accept=".csv, .xlsx, .xls" class="file-input">
-                                    <button class="btn-upload"
-                                        onclick="document.getElementById('file-gxt').click()">Chọn File</button>
-                                </div>
-
-                                <div class="import-content" id="content-link-gxt">
-                                    <input type="text" id="link-gxt" class="link-input"
-                                        placeholder="Nhập URL (CSV/Excel)">
-                                    <button class="btn-upload btn-fetch" data-target="gxt">Tải Link</button>
-                                </div>
-
-                                <div class="file-status" id="status-gxt">Chưa có dữ liệu</div>
+                                <h4>Danh Sách KTC/KCT</h4>
+                                <p class="fields-info" style="color: var(--accent-success);">✅ Auto-sync từ tab "Danh sách KTC KCT"</p>
+                                <div class="file-status" id="status-gxt">Đang chờ...</div>
                             </div>
 
-                            <!-- Pickup Upload -->
                             <div class="upload-box" id="drop-pickup">
                                 <div class="upload-icon">📦</div>
-                                <h4>4. Data Đơn Lấy (Pick Up)</h4>
-                                <p class="fields-info" style="color: var(--accent-success);">✅ Tự động đồng bộ từ BI → Sheet "Pick Up"</p>
-                                <p class="fields-info" style="font-size: 0.75rem; opacity: 0.7;">Không cần nhập thủ công. Data được sync qua Apps Script.</p>
-                                <div class="file-status" id="status-pickup">Đang chờ tải...</div>
+                                <h4>Data Đơn Lấy</h4>
+                                <p class="fields-info" style="color: var(--accent-success);">✅ Auto-sync từ tab "Pick Up"</p>
+                                <div class="file-status" id="status-pickup">Đang chờ...</div>
                             </div>
-
                         </div>
 
                         <div class="action-bar">
@@ -467,7 +421,7 @@
         <p>Đang xử lý dữ liệu...</p>
     </div>
 
-    <script src="dashboard.js?t=1780989642"></script>
+    <script src="dashboard.js?t=1780991018"></script>
 </body>
 
 </html>

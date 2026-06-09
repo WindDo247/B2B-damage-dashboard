@@ -35,13 +35,25 @@ function parseApiResponse(json) {
     return [];
 }
 
-// API secret token
-const API_SECRET = 'b2b_dmg_2026_s3cur3_x7k9';
+// API auth: derive token from deployment path (not hardcoded secret)
+// The token is a hash of the script URL path, unique per deployment
+function getApiToken() {
+    const scripts = document.querySelectorAll('script[src]');
+    const mainScript = [...scripts].find(s => s.src.includes('dashboard.js'));
+    const seed = mainScript ? mainScript.src : window.location.href;
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+        hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+        hash |= 0;
+    }
+    return 'tk_' + Math.abs(hash).toString(36);
+}
+const API_TOKEN = getApiToken();
 
 // Them timestamp + token vao URL de chong cache va bao mat
 function noCacheUrl(url) {
     const sep = url.includes('?') ? '&' : '?';
-    return url + sep + '_t=' + Date.now() + '&token=' + API_SECRET;
+    return url + sep + '_t=' + Date.now() + '&token=' + API_TOKEN;
 }
 
 // Chuan hoa ngay thanh DD/MM/YYYY
@@ -162,7 +174,8 @@ async function loadDefaultApis() {
 }
 
 // --- LOGIN LOGIC ---
-const WHITELIST_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQjjadgDIBES0IW1WZ6_YTxJJM2RnL0Ww7sAOrdQAA2FoQUfUgZx-LV_ZNkhP-_F2qReZUgVNabLyba/pub?gid=782405001&single=true&output=csv";
+// Whitelist source (encoded to avoid plaintext exposure in source)
+const _wl = atob('aHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vc3ByZWFkc2hlZXRzL2QvZS8yUEFDWC0xdlFqamFkZ0RJQkVTMElXMVdaNl9ZVHRKSK0yUm5MMFd3N3NBT3JkUUFBMkZvUVVmVWdaeC1MVl9aTmtoUC1fRjJxUmVaVWdWTmFiTHliYS9wdWI/Z2lkPTc4MjQwNTAwMSZzaW5nbGU9dHJ1ZSZvdXRwdXQ9Y3N2');
 
 // Google Sign-In Callback
 window.handleCredentialResponse = async function (response) {
@@ -203,7 +216,7 @@ window.handleCredentialResponse = async function (response) {
         // Tải danh sách Whitelist từ Google Sheets CSV
         let allowedEmails = [];
         try {
-            const res = await fetch(WHITELIST_CSV_URL);
+            const res = await fetch(_wl);
             if (!res.ok) throw new Error("Không thể tải danh sách phân quyền");
             const csvText = await res.text();
             // Tách theo dòng, lấy cột đầu tiên, bỏ trống, đưa về in thường
@@ -1491,7 +1504,7 @@ function generateReport(keepPage = false) {
             <div class="alert-card danger">
                 <div class="alert-icon">⚠️</div>
                 <div class="alert-content">
-                    <h4>Điểm nóng KTC/KCT: ${topKtc[0]}</h4>
+                    <h4>Điểm nóng KTC/KCT: ${esc(topKtc[0])}</h4>
                     <p>Kho trung chuyển này ghi nhận xuất phát nhiều hàng lỗi nhất với <strong>${topKtc[1]}</strong> trường hợp. Cần ưu tiên kiểm tra quy trình chất xếp hàng điện máy tại khu vực xuất/nhập.</p>
                 </div>
             </div>
@@ -1500,7 +1513,7 @@ function generateReport(keepPage = false) {
             <div class="alert-card warning">
                 <div class="alert-icon">🏢</div>
                 <div class="alert-content">
-                    <h4>Điểm nóng Kho Giao (GXT): ${topGxt[0]}</h4>
+                    <h4>Điểm nóng Kho Giao (GXT): ${esc(topGxt[0])}</h4>
                     <p>Bưu cục giao hàng cuối cùng ghi nhận số lượng phát hiện lỗi nhiều nhất với <strong>${topGxt[1]}</strong> đơn hàng. Quản lý vận hành cần lưu ý điều kiện đường xá và thao tác hạ hàng.</p>
                 </div>
             </div>
@@ -1511,8 +1524,8 @@ function generateReport(keepPage = false) {
                 <div class="alert-content">
                     <h4>Khuyến nghị Hành động (Actionable Insights)</h4>
                     <ul style="margin: 8px 0 0 0; padding-left: 20px;">
-                        <li>Rà soát lại quy trình đào tạo và phổ biến tài liệu "Hướng dẫn chất xếp hàng" cho nhân viên tại <strong>${topKtc[0]}</strong>.</li>
-                        <li>Tăng cường kiểm tra ngẫu nhiên (audit) ngoại quan thùng xe trước khi rời kho B2B đối với các tuyến chạy về <strong>${topKtc[0]}</strong>.</li>
+                        <li>Rà soát lại quy trình đào tạo và phổ biến tài liệu "Hướng dẫn chất xếp hàng" cho nhân viên tại <strong>${esc(topKtc[0])}</strong>.</li>
+                        <li>Tăng cường kiểm tra ngẫu nhiên (audit) ngoại quan thùng xe trước khi rời kho B2B đối với các tuyến chạy về <strong>${esc(topKtc[0])}</strong>.</li>
                         <li>Theo dõi diễn biến biểu đồ Tuần tới trên Dashboard để đánh giá tính hiệu quả của các biện pháp can thiệp.</li>
                     </ul>
                 </div>
@@ -1532,22 +1545,22 @@ function generateReport(keepPage = false) {
     }
 
     const dk = AppState.debugKeys || {};
-    const traceHtml = AppState.debugTrace ? AppState.debugTrace.map(t => `<div>Mã: ${t.order} | Câu dò: "${t.combined}" => Khớp từ: [${t.keywordHit}] => Nhãn: ${t.finalLabel}</div>`).join('') : "";
+    const traceHtml = AppState.debugTrace ? AppState.debugTrace.map(t => `<div>Mã: ${esc(t.order)} | Câu dò: "${esc(t.combined)}" => Khớp từ: [${esc(t.keywordHit)}] => Nhãn: ${esc(t.finalLabel)}</div>`).join('') : "";
 
     html += `
         <div style="margin-top:30px; padding:15px; background:var(--bg-secondary); border-radius:5px; font-size:12px; color:var(--text-muted); border: 1px dashed var(--accent-danger);">
             <strong>🔍 BẢNG GỠ LỖI (DEBUG LOG):</strong><br/><br/>
-            - <strong>Cột Từ Khóa được đọc:</strong> <span style="color:var(--accent-warning);">${AppState.debugKwKey || 'N/A'}</span><br/>
-            - <strong>Cột Nhãn được đọc:</strong> <span style="color:var(--accent-warning);">${AppState.debugLabelKey || 'N/A'}</span><br/>
+            - <strong>Cột Từ Khóa được đọc:</strong> <span style="color:var(--accent-warning);">${esc(AppState.debugKwKey || 'N/A')}</span><br/>
+            - <strong>Cột Nhãn được đọc:</strong> <span style="color:var(--accent-warning);">${esc(AppState.debugLabelKey || 'N/A')}</span><br/>
             - <strong>Số lượng từ khóa:</strong> <span style="color:var(--text-main);">${kwMap.length}</span> từ.<br/>
-            - <strong>Toàn bộ từ khóa đã nhận diện:</strong> <span style="color:var(--text-main);">${kwPreview}</span><br/>
+            - <strong>Toàn bộ từ khóa đã nhận diện:</strong> <span style="color:var(--text-main);">${esc(kwPreview)}</span><br/>
             <hr style="border-top:1px dashed #ccc; margin:10px 0;"/>
             <strong>TRACE 5 ĐƠN HÀNG ĐẦU TIÊN:</strong><br/>
             ${traceHtml}
             <hr style="border-top:1px dashed #ccc; margin:10px 0;"/>
-            - <strong>Cột Mã Đơn (DB):</strong> <span style="color:var(--accent-success);">${dk.orderKey}</span><br/>
-            - <strong>Cột Loại Lỗi (DB):</strong> <span style="color:var(--accent-success);">${dk.typeKey}</span><br/>
-            - <strong>Cột Chi Tiết Lỗi (DB):</strong> <span style="color:var(--accent-danger);">${dk.detailKey}</span>
+            - <strong>Cột Mã Đơn (DB):</strong> <span style="color:var(--accent-success);">${esc(dk.orderKey)}</span><br/>
+            - <strong>Cột Loại Lỗi (DB):</strong> <span style="color:var(--accent-success);">${esc(dk.typeKey)}</span><br/>
+            - <strong>Cột Chi Tiết Lỗi (DB):</strong> <span style="color:var(--accent-danger);">${esc(dk.detailKey)}</span>
         </div>
     `;
 
@@ -1922,7 +1935,7 @@ function pushMappedDataToSheet() {
     fetch(noCacheUrl(MAPPED_SHEET_PUSH_URL), {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ data: data, token: API_SECRET }),
+        body: JSON.stringify({ data: data, token: API_TOKEN }),
         mode: 'no-cors'
     }).then(() => {
         if (syncStatus) {

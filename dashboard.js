@@ -1508,12 +1508,10 @@ function createChart(id, type, data, options = {}) {
 
 // Report Generation
 function generateReport(keepPage = false) {
-    // Chỉ tập trung vào ngành hàng DM cho phần Insights
-    const data = AppState.filteredData.filter(d => d.nganh_hang === 'DM');
+    // Dung cung data voi Dashboard (theo filter dang chon)
+    const data = AppState.filteredData;
     const reportContent = document.getElementById('report-content');
 
-    // Chỉ đếm các đơn Hư hỏng (bỏ qua các loại lỗi khác nếu có trong file Database)
-    // All data in DB is damage data (every row is a damage case)
     const damageData = data;
 
     // Calculations

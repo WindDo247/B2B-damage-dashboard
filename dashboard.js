@@ -19,6 +19,106 @@ function esc(str) {
     return div.innerHTML;
 }
 
+// === TOAST NOTIFICATIONS ===
+function showToast(message, type = 'info', duration = 3000) {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+    const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<span class="toast-icon">${icons[type] || icons.info}</span><span>${esc(message)}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.classList.add('leaving');
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
+
+// === COUNT-UP ANIMATION ===
+function animateCountUp(element, target, duration = 800) {
+    const start = 0;
+    const startTime = performance.now();
+    const isPercent = String(target).includes('%');
+    const numTarget = parseFloat(String(target).replace(/[^0-9.]/g, ''));
+    if (isNaN(numTarget)) { element.textContent = target; return; }
+    
+    function update(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+        const current = Math.round(eased * numTarget);
+        element.textContent = current.toLocaleString() + (isPercent ? '%' : '');
+        if (progress < 1) requestAnimationFrame(update);
+        else {
+            element.textContent = target;
+            element.classList.add('count-pulse');
+            setTimeout(() => element.classList.remove('count-pulse'), 400);
+        }
+    }
+    requestAnimationFrame(update);
+}
+
+// === STAGGER ANIMATION ===
+function staggerElements(selector, delay = 80) {
+    document.querySelectorAll(selector).forEach((el, i) => {
+        el.style.animationDelay = (i * delay) + 'ms';
+        el.classList.add('stagger-in');
+    });
+}
+
+// === HAMBURGER MENU ===
+function initHamburger() {
+    const btn = document.getElementById('hamburger-btn');
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    if (!btn || !sidebar) return;
+    
+    btn.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+        if (overlay) overlay.classList.toggle('active');
+    });
+    if (overlay) {
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        });
+    }
+    // Close sidebar when nav item clicked (mobile)
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.remove('open');
+                if (overlay) overlay.classList.remove('active');
+            }
+        });
+    });
+}
+
+// === SCROLL TO TOP ===
+function initScrollToTop() {
+    const btn = document.createElement('button');
+    btn.className = 'scroll-top-btn';
+    btn.innerHTML = '↑';
+    btn.title = 'Scroll to top';
+    btn.id = 'scroll-top-btn';
+    document.body.appendChild(btn);
+    
+    const mainContent = document.querySelector('.main-content');
+    if (mainContent) {
+        mainContent.addEventListener('scroll', () => {
+            btn.classList.toggle('visible', mainContent.scrollTop > 300);
+        });
+    }
+    btn.addEventListener('click', () => {
+        if (mainContent) mainContent.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}
+
 function parseApiResponse(json) {
     if (Array.isArray(json)) return json;
     if (json && json.headers && json.data) {
@@ -222,10 +322,14 @@ async function loadDefaultApis() {
                 document.getElementById('nav-mapping').style.display = 'flex';
                 document.getElementById('nav-dashboard').style.display = 'flex';
                 document.getElementById('nav-report').style.display = 'flex';
-                document.querySelectorAll('.nav-item')[2].click(); // Chuyển sang Dashboard
+                document.querySelectorAll('.nav-item')[2].click();
                 saveStateToDB();
+                showToast('Dữ liệu đã tải thành công!', 'success');
+                // Stagger chart cards
+                staggerElements('.chart-card', 100);
             } catch (error) {
                 console.error("Lỗi khi tự động xử lý dữ liệu.");
+                showToast('Lỗi xử lý dữ liệu', 'error');
             }
         }
     }
@@ -334,6 +438,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (loginOverlay) loginOverlay.classList.remove('hidden');
         });
     }
+    
+    // Init UI enhancements
+    initHamburger();
+    initScrollToTop();
 });
 
 // --- STATE PERSISTENCE (INDEXEDDB) ---
@@ -1017,11 +1125,16 @@ function updateKPICards(data, totalPickup, damageRate) {
             <div class="kpi-content">
                 <div class="kpi-title">Tỷ lệ hư hỏng trung bình</div>
                 <div class="kpi-value" style="color: ${rateColor}">${totalPickup > 0 ? damageRate + '%' : 'N/A'}</div>
-            </div>
         </div>
     `;
-}
 
+    // Count-up animation cho KPI values
+    kpiContainer.querySelectorAll('.kpi-value').forEach(el => {
+        animateCountUp(el, el.textContent);
+    });
+    // Stagger animation cho KPI cards
+    staggerElements('.kpi-card', 100);
+}
 
 // Hàm render toàn bộ Dashboard dựa trên bộ lọc
 function renderDashboardCharts() {

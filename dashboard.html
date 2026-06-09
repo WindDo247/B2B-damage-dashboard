@@ -14,6 +14,7 @@
                    connect-src 'self' https://script.google.com https://docs.google.com https://*.googleusercontent.com https://cdn.jsdelivr.net; 
                    frame-src https://accounts.google.com;">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
     <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()">
@@ -22,15 +23,15 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chart.js (pinned versions) -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js" crossorigin="anonymous"></script>
-    <!-- SheetJS (xlsx) for parsing Excel/CSV -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" crossorigin="anonymous"></script>
+    <!-- Chart.js (pinned versions + SRI) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js" integrity="sha384-Sse/HDqcypGpyTDpvZOJNnG0TT3feGQUkF9H+mnRvic+LjR+K1NhTt8f51KIQ3v3" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js" integrity="sha384-M00GJNq2IplZCB3+JOJEl2H0un45ODvqJSSnIc4DvG8gPn8RX5ToITFXcv3AvOx5" crossorigin="anonymous"></script>
+    <!-- SheetJS (xlsx + SRI) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" integrity="sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw" crossorigin="anonymous"></script>
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="dashboard.css?t=1779351507">
+    <link rel="stylesheet" href="dashboard.css?t=1781001628">
 </head>
 
 <body>
@@ -62,6 +63,8 @@
     </div>
 
     <div class="app-container">
+        <!-- Sidebar overlay (mobile) -->
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
         <!-- Sidebar / Navigation -->
         <aside class="sidebar">
             <div class="logo">
@@ -91,7 +94,10 @@
         <!-- Main Content -->
         <main class="main-content">
             <header class="top-header">
-                <h2>Phân Tích Hư Hỏng Hàng Điện Máy</h2>
+                <div style="display:flex;align-items:center;gap:12px">
+                    <button id="hamburger-btn" class="hamburger-btn" aria-label="Menu">☰</button>
+                    <h2>Phân Tích Hư Hỏng Hàng Điện Máy</h2>
+                </div>
                 <div style="display: flex; align-items: center; gap: 20px;">
                     <label
                         style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer;"
@@ -420,7 +426,7 @@
         <p>Đang xử lý dữ liệu...</p>
     </div>
 
-    <script src="dashboard.js?t=1780998701"></script>
+    <script src="dashboard.js?t=1781001628"></script>
 </body>
 
 </html>

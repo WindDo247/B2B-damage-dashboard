@@ -11,11 +11,18 @@ const AppState = {
     charts: {}
 };
 
+// HTML sanitizer to prevent XSS
+function esc(str) {
+    if (str === null || str === undefined) return '';
+    const div = document.createElement('div');
+    div.textContent = String(str);
+    return div.innerHTML;
+}
+
 function parseApiResponse(json) {
     if (Array.isArray(json)) return json;
     if (json && json.headers && json.data) {
         const h = json.headers;
-        console.log('[API] Compressed format detected. Headers:', h.length, 'Rows:', json.data.length);
         return json.data.map(row => {
             let obj = {};
             h.forEach((key, i) => { 
@@ -28,10 +35,13 @@ function parseApiResponse(json) {
     return [];
 }
 
-// Them timestamp vao URL de chong cache
+// API secret token
+const API_SECRET = 'b2b_dmg_2026_s3cur3_x7k9';
+
+// Them timestamp + token vao URL de chong cache va bao mat
 function noCacheUrl(url) {
     const sep = url.includes('?') ? '&' : '?';
-    return url + sep + '_t=' + Date.now();
+    return url + sep + '_t=' + Date.now() + '&token=' + API_SECRET;
 }
 
 // Chuan hoa ngay thanh DD/MM/YYYY
@@ -166,6 +176,18 @@ window.handleCredentialResponse = async function (response) {
 
         const payload = JSON.parse(jsonPayload);
         const email = payload.email.toLowerCase();
+
+        // Validate JWT token
+        const now = Math.floor(Date.now() / 1000);
+        if (payload.exp && payload.exp < now) {
+            throw new Error("Token đã hết hạn. Vui lòng đăng nhập lại.");
+        }
+        if (payload.iss && !['accounts.google.com', 'https://accounts.google.com'].includes(payload.iss)) {
+            throw new Error("Token không hợp lệ (issuer).");
+        }
+        if (!payload.email_verified) {
+            throw new Error("Email chưa được xác minh.");
+        }
 
         const loginError = document.getElementById('login-error');
         const loginOverlay = document.getElementById('login-overlay');
@@ -916,7 +938,7 @@ function updateKPICards(data, totalPickup, damageRate) {
             <div class="kpi-icon"></div>
             <div class="kpi-content">
                 <div class="kpi-title">Tổng Đơn Lấy</div>
-                <div class="kpi-value">${totalPickup > 0 ? totalPickup.toLocaleString() : 'N/A'}</div>
+                <div class="kpi-value">${esc(totalPickup > 0 ? totalPickup.toLocaleString() : 'N/A')}</div>
             </div>
         </div>
         <div class="kpi-card danger">
@@ -1224,13 +1246,13 @@ function renderDashboardCharts() {
         window.dashboardTableData.forEach(row => {
             html += `
                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                    <td style="padding: 8px 10px;">${row.clean_order || '-'}</td>
-                    <td style="padding: 8px 10px;">${row.clean_week || '-'}</td>
-                    <td style="padding: 8px 10px;">${row.mapped_label || '-'}</td>
-                    <td style="padding: 8px 10px;">${row.clean_type || '-'}</td>
-                    <td style="padding: 8px 10px;">${row.clean_gxt || '-'}</td>
-                    <td style="padding: 8px 10px;">${row.mapped_ktc || '-'}</td>
-                    <td style="padding: 8px 10px;">${row.clean_client || '-'}</td>
+                    <td style="padding: 8px 10px;">${esc(row.clean_order) || '-'}</td>
+                    <td style="padding: 8px 10px;">${esc(row.clean_week) || '-'}</td>
+                    <td style="padding: 8px 10px;">${esc(row.mapped_label) || '-'}</td>
+                    <td style="padding: 8px 10px;">${esc(row.clean_type) || '-'}</td>
+                    <td style="padding: 8px 10px;">${esc(row.clean_gxt) || '-'}</td>
+                    <td style="padding: 8px 10px;">${esc(row.mapped_ktc) || '-'}</td>
+                    <td style="padding: 8px 10px;">${esc(row.clean_client) || '-'}</td>
                 </tr>
             `;
         });
@@ -1273,18 +1295,18 @@ function buildDashboard() {
 
         // Populate checkboxes
         optionsDiv.innerHTML = values.map(val => 
-            '<label class="ms-option"><input type="checkbox" value="' + val + '" checked> <span>' + val + '</span></label>'
+            '<label class="ms-option"><input type="checkbox" value="' + esc(val) + '" checked> <span>' + esc(val) + '</span></label>'
         ).join('');
 
         function updateLabel() {
             const checked = [...optionsDiv.querySelectorAll('input:checked')];
             const total = optionsDiv.querySelectorAll('input[type="checkbox"]').length;
             if (checked.length === 0 || checked.length === total) {
-                labelEl.innerHTML = defaultLabel;
+                labelEl.textContent = defaultLabel;
             } else if (checked.length === 1) {
-                labelEl.innerHTML = checked[0].value;
+                labelEl.textContent = checked[0].value;
             } else {
-                labelEl.innerHTML = checked.length + ' ' + defaultLabel.replace(/[^\s]+\s/, '').toLowerCase() + ' <span class="ms-badge">' + checked.length + '</span>';
+                labelEl.innerHTML = esc(checked.length + ' ' + defaultLabel.replace(/[^\s]+\s/, '').toLowerCase()) + ' <span class="ms-badge">' + checked.length + '</span>';
             }
         }
         updateLabel();
@@ -1664,12 +1686,12 @@ function renderTable(page) {
 
         // Tạo HTML cho Dropdown list dựa trên danh sách nhãn đã có
         let optionsHtml = AppState.uniqueLabels.map(l =>
-            `<option value="${l}" ${l === row.mapped_label ? 'selected' : ''}>${l}</option>`
+            `<option value="${esc(l)}" ${l === row.mapped_label ? 'selected' : ''}>${esc(l)}</option>`
         ).join('');
 
         // Bổ sung thêm nhãn nếu nhãn hiện tại không nằm trong bộ keyword map
         if (!AppState.uniqueLabels.includes(row.mapped_label)) {
-            optionsHtml += `<option value="${row.mapped_label}" selected>${row.mapped_label}</option>`;
+            optionsHtml += `<option value="${esc(row.mapped_label)}" selected>${esc(row.mapped_label)}</option>`;
         }
 
         const getBadgeClass = (label) => {
@@ -1684,17 +1706,17 @@ function renderTable(page) {
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>${row.clean_order}</td>
-            <td>${row.clean_week}</td>
-            <td>${row.clean_type}</td>
-            <td>${row.clean_gxt}</td>
-            <td>${row.mapped_ktc}</td>
-            <td>${row.clean_client}</td>
-            <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${row.clean_detail || ''}">
-                ${row.clean_detail || ''}
+            <td>${esc(row.clean_order)}</td>
+            <td>${esc(row.clean_week)}</td>
+            <td>${esc(row.clean_type)}</td>
+            <td>${esc(row.clean_gxt)}</td>
+            <td>${esc(row.mapped_ktc)}</td>
+            <td>${esc(row.clean_client)}</td>
+            <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${esc(row.clean_detail || '')}">
+                ${esc(row.clean_detail || '')}
             </td>
             <td>
-                <select class="label-select badge ${badgeClass}" data-index="${globalIndex}" title="${row.keyword_hit ? 'Bắt được từ: ' + row.keyword_hit : 'Không bắt được từ khóa nào'}">
+                <select class="label-select badge ${badgeClass}" data-index="${globalIndex}" title="${esc(row.keyword_hit ? 'Bắt được từ: ' + row.keyword_hit : 'Không bắt được từ khóa nào')}">
                     ${optionsHtml}
                 </select>
             </td>
@@ -1896,42 +1918,26 @@ function pushMappedDataToSheet() {
         syncText.style.color = 'var(--text-secondary)';
     }
 
-    // Use form-based approach for reliable Google Apps Script POST
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = MAPPED_SHEET_PUSH_URL;
-    form.target = 'push-iframe';
-    form.style.display = 'none';
-
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = 'payload';
-    input.value = JSON.stringify({ data: data });
-    form.appendChild(input);
-
-    // Create hidden iframe
-    let iframe = document.getElementById('push-iframe');
-    if (!iframe) {
-        iframe = document.createElement('iframe');
-        iframe.id = 'push-iframe';
-        iframe.name = 'push-iframe';
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
-    }
-
-    document.body.appendChild(form);
-    form.submit();
-    form.remove();
-
-    // Since we can't read the iframe response (cross-origin), assume success after a delay
-    if (syncStatus) {
-        setTimeout(() => {
+    // Use fetch with custom headers for CSRF protection
+    fetch(noCacheUrl(MAPPED_SHEET_PUSH_URL), {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ data: data, token: API_SECRET }),
+        mode: 'no-cors'
+    }).then(() => {
+        if (syncStatus) {
             syncIcon.textContent = '✅';
             syncText.textContent = 'Đồng bộ thành công (' + data.length + ' dòng)';
             syncText.style.color = 'var(--accent-success)';
             setTimeout(() => { syncStatus.style.display = 'none'; }, 5000);
-        }, 3000);
-    }
+        }
+    }).catch(err => {
+        if (syncStatus) {
+            syncIcon.textContent = '❌';
+            syncText.textContent = 'Lỗi đồng bộ: ' + err.message;
+            syncText.style.color = 'var(--accent-danger)';
+        }
+    });
 }
 
 

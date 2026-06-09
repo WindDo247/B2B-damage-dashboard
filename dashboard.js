@@ -68,8 +68,8 @@ function normDate(d) {
     return s;
 }
 
-// --- DEFAULT API LINKS (HARDCODED) ---
-const API_BASE = "https://script.google.com/macros/s/AKfycbzyYQqaXN3tey2FH8slerYSmx4aHreoYVAKE9duSkVnK6AMM-6MJvJVs4vJz_6IiZ8L/exec";
+// --- DEFAULT API ---
+const API_BASE = atob('aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J6eVlRcWFYTjN0ZXkyRkg4c2xlcllTbXg0YUhyZW9ZVkFLRTlkdVNrVm5LNkFNTS02TUp2SlZzNHZKel82SWlaOEwvZXhlYw==');
 const DEFAULT_API = {
     db: API_BASE + "?sheet=Damage",
     kw: API_BASE + "?sheet=Keyword",
@@ -140,7 +140,7 @@ async function loadDefaultApis() {
                 document.querySelectorAll('.nav-item')[2].click(); // Chuyển sang Dashboard
                 saveStateToDB();
             } catch (error) {
-                console.error("Lỗi khi tự động xử lý dữ liệu:", error);
+                console.error("Lỗi khi tự động xử lý dữ liệu.");
             }
         }
     }
@@ -149,7 +149,7 @@ async function loadDefaultApis() {
 
 // --- LOGIN LOGIC ---
 // Whitelist source (encoded to avoid plaintext exposure in source)
-const _wl = atob('aHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vc3ByZWFkc2hlZXRzL2QvZS8yUEFDWC0xdlFqamFkZ0RJQkVTMElXMVdaNl9ZVHRKSK0yUm5MMFd3N3NBT3JkUUFBMkZvUVVmVWdaeC1MVl9aTmtoUC1fRjJxUmVaVWdWTmFiTHliYS9wdWI/Z2lkPTc4MjQwNTAwMSZzaW5nbGU9dHJ1ZSZvdXRwdXQ9Y3N2');
+// Whitelist check is done server-side via API
 
 // Google Sign-In Callback
 window.handleCredentialResponse = async function (response) {
@@ -187,27 +187,23 @@ window.handleCredentialResponse = async function (response) {
             loginError.style.display = 'block';
         }
 
-        // Tải danh sách Whitelist từ Google Sheets CSV
-        let allowedEmails = [];
+        // Kiểm tra quyền qua server-side API (whitelist URL không lộ ở client)
+        let isAllowed = false;
         try {
-            const res = await fetch(_wl);
-            if (!res.ok) throw new Error("Không thể tải danh sách phân quyền");
-            const csvText = await res.text();
-            // Tách theo dòng, lấy cột đầu tiên, bỏ trống, đưa về in thường
-            allowedEmails = csvText.split('\n')
-                                   .map(line => line.split(',')[0].trim().toLowerCase())
-                                   .filter(e => e && e.includes('@'));
+            const res = await fetch(noCacheUrl(API_BASE + '?action=checkEmail&email=' + encodeURIComponent(email)));
+            if (!res.ok) throw new Error('Server error');
+            const result = await res.json();
+            isAllowed = result.allowed === true;
         } catch (fetchErr) {
-            console.error("Lỗi tải Whitelist:", fetchErr);
             if (loginError) {
                 loginError.textContent = "Lỗi kết nối máy chủ phân quyền. Vui lòng thử lại sau.";
                 loginError.style.color = "var(--accent-danger)";
             }
-            return; // Dừng đăng nhập
+            return;
         }
 
-        // Kiểm tra quyền (phải có trong danh sách VÀ ưu tiên đuôi @ghn.vn nếu cần)
-        if (allowedEmails.includes(email)) {
+        // Kiểm tra kết quả từ server
+        if (isAllowed) {
             localStorage.setItem('ghn_user_email', email);
             if (emailDisplay) emailDisplay.textContent = email;
             if (loginOverlay) loginOverlay.classList.add('hidden');
@@ -226,12 +222,12 @@ window.handleCredentialResponse = async function (response) {
             // Đăng xuất khỏi Google identity để người dùng có thể thử tài khoản khác dễ dàng
             if (window.google && google.accounts) {
                 google.accounts.id.revoke(email, done => {
-                    console.log('Revoked Google access for non-GHN email.');
+                    // Revoked
                 });
             }
         }
     } catch (e) {
-        console.error("Lỗi giải mã token xác thực:", e);
+        console.error("Lỗi xác thực.");
     }
 };
 
@@ -405,7 +401,7 @@ function handleDataLoad(type, data, filename) {
         checkAllFilesLoaded();
         saveStateToDB(); // Lưu vào DB ngay khi import thành công
     } catch (error) {
-        console.error("Lỗi đọc dữ liệu:", error);
+        console.error("Lỗi đọc dữ liệu.");
         statuses[type].textContent = 'Lỗi định dạng dữ liệu!';
         statuses[type].style.color = 'var(--accent-danger)';
         dropBoxes[type].classList.remove('success');
@@ -624,7 +620,7 @@ document.querySelectorAll('.btn-fetch').forEach(btn => {
                 handleDataLoad(target, data, filename);
             }
         } catch (error) {
-            console.error('Lỗi tải URL:', error);
+            console.error('Lỗi tải URL.');
             statuses[target].textContent = `Lỗi: ${error.message}`;
             statuses[target].style.color = 'var(--accent-danger)';
             dropBoxes[target].classList.remove('success');
@@ -664,7 +660,7 @@ btnProcess.addEventListener('click', () => {
             // Lưu toàn bộ trạng thái vào DB
             saveStateToDB();
         } catch (error) {
-            console.error("Lỗi khi xử lý dữ liệu:", error);
+            console.error("Lỗi khi xử lý dữ liệu.");
             alert("Có lỗi xảy ra trong quá trình xử lý: " + error.message);
         } finally {
             loadingOverlay.classList.remove('active');
@@ -1813,7 +1809,7 @@ loadStateFromDB().then(savedState => {
             loadDefaultApis();
         }
     }
-}).catch(e => console.error("Không thể khôi phục state:", e));
+}).catch(() => console.error("Không thể khôi phục state."));
 
 // --- AUTO SYNC LOGIC ---
 async function doAutoSync() {
@@ -1842,7 +1838,7 @@ async function doAutoSync() {
                     updated = true;
                 }
             }
-        } catch (e) { console.error("Auto-sync failed", e); }
+        } catch (e) { console.error("Auto-sync failed."); }
     }
 
     if (updated && AppState.dbData.length > 0) {
@@ -1895,7 +1891,7 @@ document.getElementById('btn-export-data').addEventListener('click', () => {
 });
 
 // --- AUTO-PUSH MAPPED DATA TO GOOGLE SHEETS ---
-const MAPPED_SHEET_PUSH_URL = "https://script.google.com/macros/s/AKfycbzyYQqaXN3tey2FH8slerYSmx4aHreoYVAKE9duSkVnK6AMM-6MJvJVs4vJz_6IiZ8L/exec";
+const MAPPED_SHEET_PUSH_URL = API_BASE;
 
 function pushMappedDataToSheet() {
     const data = AppState.mappedData;

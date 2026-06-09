@@ -124,29 +124,10 @@
                             <!-- Database Upload -->
                             <div class="upload-box" id="drop-db">
                                 <div class="upload-icon">📊</div>
-                                <h4>1. File Database</h4>
-                                <p class="fields-info">Yêu cầu: order_code, damage_details, pickup_week,
-                                    warehouse_giao...</p>
-
-                                <div class="import-tabs">
-                                    <button class="import-tab active" data-type="file" data-target="db">Tải
-                                        File</button>
-                                    <button class="import-tab" data-type="link" data-target="db">Nhập Link</button>
-                                </div>
-
-                                <div class="import-content active" id="content-file-db">
-                                    <input type="file" id="file-db" accept=".csv, .xlsx, .xls" class="file-input">
-                                    <button class="btn-upload" onclick="document.getElementById('file-db').click()">Chọn
-                                        File</button>
-                                </div>
-
-                                <div class="import-content" id="content-link-db">
-                                    <input type="text" id="link-db" class="link-input"
-                                        placeholder="Nhập URL (CSV/Excel)">
-                                    <button class="btn-upload btn-fetch" data-target="db">Tải Link</button>
-                                </div>
-
-                                <div class="file-status" id="status-db">Chưa có dữ liệu</div>
+                                <h4>1. Data Hư Hỏng (Damage)</h4>
+                                <p class="fields-info" style="color: var(--accent-success);">✅ Tự động đồng bộ từ BI → Sheet "Damage"</p>
+                                <p class="fields-info" style="font-size: 0.75rem; opacity: 0.7;">Không cần nhập thủ công. Data được sync qua Apps Script.</p>
+                                <div class="file-status" id="status-db">Đang chờ tải...</div>
                             </div>
 
                             <!-- Keyword Upload -->
@@ -206,27 +187,12 @@
                             <!-- Pickup Upload -->
                             <div class="upload-box" id="drop-pickup">
                                 <div class="upload-icon">📦</div>
-                                <h4>4. File Dữ liệu lấy (Pick Up)</h4>
-                                <p class="fields-info">Nên điền link API ngầm để không đơ trình duyệt</p>
-
-                                <div class="import-tabs">
-                                    <button class="import-tab" data-type="file" data-target="pickup">Tải
-                                        File</button>
-                                    <button class="import-tab active" data-type="link" data-target="pickup">Nhập Link</button>
-                                </div>
-
-                                <div class="import-content" id="content-file-pickup">
-                                    <input type="file" id="file-pickup" accept=".csv, .xlsx, .xls" class="file-input">
-                                    <button class="btn-upload" onclick="document.getElementById('file-pickup').click()">Chọn File</button>
-                                </div>
-
-                                <div class="import-content active" id="content-link-pickup">
-                                    <input type="text" id="link-pickup" class="link-input" placeholder="Nhập URL API">
-                                    <button class="btn-upload btn-fetch" data-target="pickup">Lưu Link</button>
-                                </div>
-
-                                <div class="file-status" id="status-pickup">Chưa có dữ liệu</div>
+                                <h4>4. Data Đơn Lấy (Pick Up)</h4>
+                                <p class="fields-info" style="color: var(--accent-success);">✅ Tự động đồng bộ từ BI → Sheet "Pick Up"</p>
+                                <p class="fields-info" style="font-size: 0.75rem; opacity: 0.7;">Không cần nhập thủ công. Data được sync qua Apps Script.</p>
+                                <div class="file-status" id="status-pickup">Đang chờ tải...</div>
                             </div>
+
                         </div>
 
                         <div class="action-bar">
@@ -501,7 +467,7 @@
         <p>Đang xử lý dữ liệu...</p>
     </div>
 
-    <script src="dashboard.js?t=1780986113"></script>
+    <script src="dashboard.js?t=1780989642"></script>
 </body>
 
 </html>

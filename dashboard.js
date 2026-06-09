@@ -1089,10 +1089,15 @@ function renderDashboardCharts() {
         }
     }
 
+    // Dong bo filteredData vao AppState de Insights/Alert dung cung data
+    AppState.filteredData = filteredData;
+
     // ALL charts use all filteredData as damage data
-    // (Database only contains damage records, every row is a damage case regardless of label language)
     const damageData = filteredData;
     const totalPickup = filteredPickup.length;
+
+    // Cap nhat Insights/Alert theo filter hien tai
+    generateReport(true);
 
     // Update Cross Filter UI
     let cfUi = document.getElementById('cross-filter-ui');

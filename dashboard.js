@@ -82,9 +82,9 @@ async function loadDefaultApis() {
     const overlay = document.getElementById('loading-overlay');
     if (overlay) overlay.classList.add('active');
     
-    // Tải TẤT CẢ 4 API cùng lúc (song song) để tối ưu tốc độ
-    let promises = [];
-    ['db', 'kw', 'gxt', 'pickup'].forEach(target => {
+    // Tải DB + KW + GXT song song (3 file nhỏ, chờ xong mới xử lý)
+    let corePromises = [];
+    ['db', 'kw', 'gxt'].forEach(target => {
         const url = DEFAULT_API[target];
         if (!url) return;
         
@@ -96,7 +96,7 @@ async function loadDefaultApis() {
             statusEl.style.color = 'var(--text-secondary)';
         }
         
-        promises.push(
+        corePromises.push(
             fetch(noCacheUrl(url)).then(res => res.json()).then(json => {
                 const jsonArray = parseApiResponse(json);
                 const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
@@ -104,7 +104,6 @@ async function loadDefaultApis() {
                     if (target === 'db') AppState.dbData = jsonArray;
                     if (target === 'kw') AppState.kwData = jsonArray;
                     if (target === 'gxt') AppState.gxtData = jsonArray;
-                    if (target === 'pickup') AppState.pickupData = jsonArray;
                     
                     AppState.filesLoaded[target] = true;
                     
@@ -113,6 +112,11 @@ async function loadDefaultApis() {
                         statusEl.style.color = 'var(--accent-success)';
                     }
                     if (dropBox) dropBox.classList.add('success');
+                } else {
+                    if (statusEl) {
+                        statusEl.textContent = '⚠️ Sheet trống (0 dòng)';
+                        statusEl.style.color = 'var(--accent-warning)';
+                    }
                 }
             }).catch(e => {
                 if (statusEl) {
@@ -123,12 +127,56 @@ async function loadDefaultApis() {
         );
     });
 
-    if (promises.length > 0) {
-        await Promise.all(promises);
+    // Tải Pickup SONG SONG nhưng KHÔNG CHỜ (dữ liệu lớn, load ngầm)
+    const pickupUrl = DEFAULT_API['pickup'];
+    if (pickupUrl) {
+        const pickupStatusEl = document.getElementById('status-pickup');
+        const pickupDropBox = document.getElementById('drop-pickup');
+        if (pickupStatusEl) {
+            pickupStatusEl.textContent = '⏳ Đang tải (file lớn)...';
+            pickupStatusEl.style.color = 'var(--text-secondary)';
+        }
+        const pickupStart = Date.now();
+        
+        fetch(noCacheUrl(pickupUrl)).then(res => res.json()).then(json => {
+            const jsonArray = parseApiResponse(json);
+            const elapsed = ((Date.now() - pickupStart) / 1000).toFixed(1);
+            if (jsonArray.length > 0) {
+                AppState.pickupData = jsonArray;
+                AppState.filesLoaded['pickup'] = true;
+                
+                if (pickupStatusEl) {
+                    pickupStatusEl.textContent = `✅ ${jsonArray.length.toLocaleString()} dòng (${elapsed}s)`;
+                    pickupStatusEl.style.color = 'var(--accent-success)';
+                }
+                if (pickupDropBox) pickupDropBox.classList.add('success');
+                
+                // Re-render dashboard khi pickup load xong (cập nhật tỉ lệ)
+                const dashContent = document.getElementById('dashboard-content');
+                if (dashContent && dashContent.classList.contains('active')) {
+                    if (typeof renderDashboardCharts === 'function') renderDashboardCharts();
+                }
+            } else {
+                if (pickupStatusEl) {
+                    pickupStatusEl.textContent = '⚠️ Sheet trống';
+                    pickupStatusEl.style.color = 'var(--accent-warning)';
+                }
+            }
+        }).catch(e => {
+            if (pickupStatusEl) {
+                pickupStatusEl.textContent = '❌ Lỗi tải Pickup';
+                pickupStatusEl.style.color = 'var(--accent-danger)';
+            }
+        });
+    }
+
+    // Chờ 3 file core xong → auto-process (KHÔNG chờ Pickup)
+    if (corePromises.length > 0) {
+        await Promise.all(corePromises);
         checkAllFilesLoaded();
         
-        // Nếu đủ cả 3 file (hoặc DB + 2 file đã có sẵn trong IndexedDB), tự động chạy luôn!
-        if (AppState.filesLoaded.db && AppState.filesLoaded.kw && AppState.filesLoaded.gxt) {
+        // Chỉ cần DB là bắt buộc. KW + GXT nếu có thì tốt hơn.
+        if (AppState.filesLoaded.db) {
             try {
                 processData();
                 buildDashboard();

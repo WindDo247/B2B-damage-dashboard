@@ -73,7 +73,7 @@ const API_BASE = atob('aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J6e
 const DEFAULT_API = {
     db: API_BASE + "?sheet=Damage",
     kw: API_BASE + "?sheet=Keyword",
-    gxt: API_BASE + "?sheet=Danh%20s%C3%A1ch%20KTC%20KCT",
+    gxt: API_BASE + "?sheet=Danh%20sach%20KTC%20KCT",
     pickup: API_BASE + "?sheet=Pick%20Up"
 };
 
@@ -368,11 +368,7 @@ function loadStateFromDB() {
 // DOM Elements
 const sections = document.querySelectorAll('.section');
 const navItems = document.querySelectorAll('.nav-item');
-const fileInputs = {
-    db: document.getElementById('file-db'),
-    kw: document.getElementById('file-kw'),
-    gxt: document.getElementById('file-gxt')
-};
+const fileInputs = {};  // No manual file uploads — all data auto-synced from API
 const statuses = {
     db: document.getElementById('status-db'),
     kw: document.getElementById('status-kw'),

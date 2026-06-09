@@ -58,29 +58,38 @@ function noCacheUrl(url) {
 
 
 // Chuan hoa ngay thanh dd/mm/yyyy
-// Input co the la: yyyy-mm-dd, dd/mm/yyyy, mm/dd/yyyy, d/m/yyyy, etc.
-// LUON tra ve dd/mm/yyyy (Vietnamese format)
+// Tu dong phat hien: yyyy-mm-dd, dd/mm/yyyy, mm/dd/yyyy
 function normDate(d) {
     let s = String(d || '').trim();
     if (!s) return s;
     
-    // Loai bo phan thoi gian neu co (2026-06-01T00:00:00)
+    // Loai bo thoi gian (2026-06-01T00:00:00)
     s = s.split('T')[0].split(' ')[0];
     
     let p = s.split(/[/\-]/);
     if (p.length < 3) return s;
     
     let day, month, year;
+    let n0 = parseInt(p[0]), n1 = parseInt(p[1]), n2 = parseInt(p[2]);
     
     if (p[0].length === 4) {
-        // yyyy-mm-dd (ISO format tu BI)
-        year = p[0];
-        month = p[1].padStart(2, '0');
-        day = p[2].padStart(2, '0');
+        // yyyy-mm-dd (ISO)
+        year = p[0]; month = p[1].padStart(2, '0'); day = p[2].padStart(2, '0');
     } else if (p[2].length === 4) {
-        // dd/mm/yyyy (Vietnamese) - LUON giu nguyen thu tu
-        day = p[0].padStart(2, '0');
-        month = p[1].padStart(2, '0');
+        // xx/yy/yyyy — smart detect dd/mm vs mm/dd
+        if (n1 > 12) {
+            // p[1] > 12 → p[1] phai la ngay → format la mm/dd/yyyy
+            month = p[0].padStart(2, '0');
+            day = p[1].padStart(2, '0');
+        } else if (n0 > 12) {
+            // p[0] > 12 → p[0] phai la ngay → format la dd/mm/yyyy
+            day = p[0].padStart(2, '0');
+            month = p[1].padStart(2, '0');
+        } else {
+            // Ca 2 <= 12 → mac dinh dd/mm/yyyy (Vietnamese)
+            day = p[0].padStart(2, '0');
+            month = p[1].padStart(2, '0');
+        }
         year = p[2];
     } else {
         return s;

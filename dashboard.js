@@ -1038,8 +1038,9 @@ function renderDashboardCharts() {
         }
     }
 
-    // ALL charts use damageData only
-    const damageData = filteredData.filter(d => d.mapped_label.toLowerCase().includes('damage'));
+    // ALL charts use all filteredData as damage data
+    // (Database only contains damage records, every row is a damage case regardless of label language)
+    const damageData = filteredData;
     const totalPickup = filteredPickup.length;
 
     // Update Cross Filter UI
@@ -1365,7 +1366,12 @@ function buildDashboard() {
     });
 
     // Build unique values
-    const uniqueWeeks = [...new Set(data.map(d => normDate(d.clean_week)).filter(Boolean))].sort();
+    const uniqueWeeks = [...new Set(data.map(d => normDate(d.clean_week)).filter(Boolean))].sort((a, b) => {
+        const pa = a.split('/'), pb = b.split('/');
+        const da = new Date(pa[2], pa[1] - 1, pa[0]);
+        const db = new Date(pb[2], pb[1] - 1, pb[0]);
+        return db - da; // Newest first
+    });
     const uniqueClients = [...new Set(data.map(d => d.clean_client).filter(Boolean))].sort();
 
     initMultiSelect('ms-week', uniqueWeeks, 'Tất cả các tuần', renderDashboardCharts);
@@ -1457,7 +1463,8 @@ function generateReport(keepPage = false) {
     const reportContent = document.getElementById('report-content');
 
     // Chỉ đếm các đơn Hư hỏng (bỏ qua các loại lỗi khác nếu có trong file Database)
-    const damageData = data.filter(d => d.mapped_label.toLowerCase().includes('damage'));
+    // All data in DB is damage data (every row is a damage case)
+    const damageData = data;
 
     // Calculations
     const totalIssues = damageData.length;

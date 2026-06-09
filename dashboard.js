@@ -70,7 +70,7 @@ function normDate(d) {
 
 // --- DEFAULT API LINKS (HARDCODED) ---
 const DEFAULT_API = {
-    db: "https://script.google.com/macros/s/AKfycbwnBwEObKKhJ1R3rEh7ypuW2OaPxFR5KxCbUm5D1Yw2vQWFXkcmrbFxnlBC0OTI_F1G/exec",
+    db: "https://script.google.com/macros/s/AKfycbzyYQqaXN3tey2FH8slerYSmx4aHreoYVAKE9duSkVnK6AMM-6MJvJVs4vJz_6IiZ8L/exec",
     kw: "https://script.google.com/macros/s/AKfycbwT_ZuYX8RN84QgWWJT8J2P57wVreYj7lEi7qOvyHYp1MhkVCRfWRJn8C4_7L4cqyyP/exec",
     gxt: "https://script.google.com/macros/s/AKfycbynJP4pfNr3thl0Ff63xZ-IEnkwSdIrO5YOXZTCqEW61zsbqPhkD69k8PjHC0IgZeoZXg/exec",
     pickup: "https://script.google.com/macros/s/AKfycbzyYQqaXN3tey2FH8slerYSmx4aHreoYVAKE9duSkVnK6AMM-6MJvJVs4vJz_6IiZ8L/exec?sheet=Pick%20Up"

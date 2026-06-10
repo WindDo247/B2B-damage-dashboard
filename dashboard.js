@@ -1265,10 +1265,6 @@ function renderDashboardCharts() {
     });
     const totalPickup = filteredPickup.length;
 
-    // === DEBUG: xoa sau khi fix ===
-    console.log('[DEBUG] filteredData:', filteredData.length, '| damageData:', damageData.length, '| week25:', damageData.filter(d=>d.clean_week==='2026-05-25').length);
-    console.log('[DEBUG PICKUP] pickupData:', AppState.pickupData?.length, '| filteredPickup:', filteredPickup.length, '| sample:', filteredPickup[0]?.isoweek_pickup_time, '| normDate:', normDate(filteredPickup[0]?.isoweek_pickup_time));
-
     // Cap nhat Insights/Alert theo filter hien tai
     generateReport(true);
 
@@ -1393,9 +1389,6 @@ function renderDashboardCharts() {
         const damaged = weekGroups[w] ? weekGroups[w].length : 0;
         return total > 0 ? parseFloat(((damaged / total) * 100).toFixed(2)) : 0;
     });
-
-    // === DEBUG trend chart ===
-    console.log('[DEBUG TREND] weeks:', weeks, 'weekGroups 25/05:', weekGroups['25/05/2026']?.length, 'trendRateData:', trendRateData);
 
     createChart('trendChart', 'line', {
         labels: weeks,

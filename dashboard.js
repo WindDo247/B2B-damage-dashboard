@@ -1255,6 +1255,9 @@ function renderDashboardCharts() {
     });
     const totalPickup = filteredPickup.length;
 
+    // === DEBUG: xoa sau khi fix ===
+    console.log('[DEBUG] filteredData:', filteredData.length, '| damageData:', damageData.length, '| week25:', damageData.filter(d=>d.clean_week==='2026-05-25').length);
+
     // Cap nhat Insights/Alert theo filter hien tai
     generateReport(true);
 

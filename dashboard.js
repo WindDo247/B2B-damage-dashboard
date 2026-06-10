@@ -1073,6 +1073,28 @@ function processData() {
 
     AppState.debugTrace = debugTrace;
 
+    // Debug function: go window.debugOrder('GYTRVH34') trong Console
+    window.debugOrder = function(code) {
+        const entry = AppState.mappedData.find(d => d.clean_order === code);
+        if (!entry) {
+            // Tim trong dbData goc
+            const rawRows = AppState.dbData.filter(r => {
+                const keys = Object.keys(r);
+                return keys.some(k => String(r[k]).trim() === code);
+            });
+            console.table(rawRows);
+            return 'Khong tim thay trong mappedData. Raw rows o tren.';
+        }
+        console.log('=== ORDER:', code, '===');
+        console.log('Label:', entry.mapped_label);
+        console.log('Keyword hit:', entry.keyword_hit);
+        console.log('Type:', entry.clean_type);
+        console.log('Detail:', entry.clean_detail);
+        console.log('Normalized:', normalizeStr(entry.clean_type + ' ' + entry.clean_detail));
+        console.log('All keywords:', (AppState.keywordMap || []).map(m => m.keyword).join(', '));
+        return entry;
+    };
+
     // Enrich mappedData with nganh_hang from pickupData
     if (AppState.pickupData && AppState.pickupData.length > 0) {
         const pickupLookup = {};

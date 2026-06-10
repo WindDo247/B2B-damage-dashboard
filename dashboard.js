@@ -1141,6 +1141,7 @@ function updateKPICards(data, totalPickup, damageRate) {
             <div class="kpi-content">
                 <div class="kpi-title">Tỷ lệ bể vỡ</div>
                 <div class="kpi-value" style="color: ${rateColor}">${totalPickup > 0 ? damageRate + '%' : 'N/A'}</div>
+            </div>
         </div>
     `;
 

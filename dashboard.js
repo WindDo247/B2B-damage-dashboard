@@ -1412,6 +1412,13 @@ function renderDashboardCharts() {
         datasets: [{ label: 'Đơn Damage', data: clientData, backgroundColor: '#10b981', borderRadius: 4 }]
     }, { indexAxis: 'y', forceAbsolute: true, _pickupMap: pickupByClient });
 
+    // 7b. Pickup by Client Chart
+    const sortedPickupClients = Object.entries(pickupByClient).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    createChart('pickupClientChart', 'bar', {
+        labels: sortedPickupClients.map(c => c[0]),
+        datasets: [{ label: 'Đơn Lấy', data: sortedPickupClients.map(c => c[1]), backgroundColor: '#3b82f6', borderRadius: 4 }]
+    }, { indexAxis: 'y', forceAbsolute: true });
+
     // 8. Render Sortable Data Table
     window.dashboardTableData = [...damageData]; // Store globally for sorting/exporting
     if (!window.dashboardTableSort) { window.dashboardTableSort = { field: 'order_code', direction: 'asc' }; }

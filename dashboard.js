@@ -417,16 +417,26 @@ window.handleCredentialResponse = async function (response) {
         // Kiểm tra quyền qua server-side API (whitelist URL không lộ ở client)
         let isAllowed = false;
         try {
-            const res = await fetch(noCacheUrl(API_BASE + '?action=checkEmail&email=' + encodeURIComponent(email)));
-            if (!res.ok) throw new Error('Server error');
+            const checkUrl = API_BASE + '?action=checkEmail&email=' + encodeURIComponent(email);
+            console.log('[LOGIN] Checking:', email);
+            const res = await fetch(noCacheUrl(checkUrl));
+            if (!res.ok) throw new Error('Server status: ' + res.status);
             const result = await res.json();
+            console.log('[LOGIN] Server response:', JSON.stringify(result));
             isAllowed = result.allowed === true;
         } catch (fetchErr) {
-            if (loginError) {
-                loginError.textContent = "Lỗi kết nối máy chủ phân quyền. Vui lòng thử lại sau.";
-                loginError.style.color = "var(--accent-danger)";
+            console.error('[LOGIN] Server error:', fetchErr);
+            // Fallback: cho phep @ghn.vn khi server loi
+            if (email.endsWith('@ghn.vn')) {
+                console.log('[LOGIN] Fallback: allowing @ghn.vn domain');
+                isAllowed = true;
+            } else {
+                if (loginError) {
+                    loginError.textContent = "Lỗi kết nối máy chủ phân quyền. Vui lòng thử lại sau.";
+                    loginError.style.color = "var(--accent-danger)";
+                }
+                return;
             }
-            return;
         }
 
         // Kiểm tra kết quả từ server

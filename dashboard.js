@@ -19,6 +19,28 @@ function esc(str) {
     return div.innerHTML;
 }
 
+// === DEBUG: go debugOrder('GYTRVH34') trong F12 Console ===
+function debugOrder(code) {
+    // Check mappedData
+    const entry = AppState.mappedData.find(d => d.clean_order === code);
+    if (entry) {
+        console.log('=== MAPPED:', code, '===');
+        console.log('Label:', entry.mapped_label, '| Keyword hit:', entry.keyword_hit);
+        console.log('Type:', entry.clean_type);
+        console.log('Detail:', entry.clean_detail);
+        return entry;
+    }
+    // Check raw dbData
+    const rawRows = AppState.dbData.filter(r => Object.values(r).some(v => String(v).trim() === code));
+    if (rawRows.length > 0) {
+        console.log('=== RAW DATA (not in mappedData):', code, '===');
+        console.table(rawRows);
+        return rawRows;
+    }
+    console.log('Order', code, 'not found in dbData or mappedData');
+    return null;
+}
+
 // === TOAST NOTIFICATIONS ===
 function showToast(message, type = 'info', duration = 3000) {
     let container = document.getElementById('toast-container');
@@ -1072,28 +1094,6 @@ function processData() {
     });
 
     AppState.debugTrace = debugTrace;
-
-    // Debug function: go window.debugOrder('GYTRVH34') trong Console
-    window.debugOrder = function(code) {
-        const entry = AppState.mappedData.find(d => d.clean_order === code);
-        if (!entry) {
-            // Tim trong dbData goc
-            const rawRows = AppState.dbData.filter(r => {
-                const keys = Object.keys(r);
-                return keys.some(k => String(r[k]).trim() === code);
-            });
-            console.table(rawRows);
-            return 'Khong tim thay trong mappedData. Raw rows o tren.';
-        }
-        console.log('=== ORDER:', code, '===');
-        console.log('Label:', entry.mapped_label);
-        console.log('Keyword hit:', entry.keyword_hit);
-        console.log('Type:', entry.clean_type);
-        console.log('Detail:', entry.clean_detail);
-        console.log('Normalized:', normalizeStr(entry.clean_type + ' ' + entry.clean_detail));
-        console.log('All keywords:', (AppState.keywordMap || []).map(m => m.keyword).join(', '));
-        return entry;
-    };
 
     // Enrich mappedData with nganh_hang from pickupData
     if (AppState.pickupData && AppState.pickupData.length > 0) {

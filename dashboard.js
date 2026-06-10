@@ -1205,8 +1205,14 @@ function renderDashboardCharts() {
     // Dong bo filteredData vao AppState de Insights/Alert dung cung data
     AppState.filteredData = filteredData;
 
-    // ALL charts use all filteredData as damage data
-    const damageData = filteredData;
+    // DEDUPE: moi order_code chi dem 1 lan (giu dong dau tien)
+    const seenOrders = new Set();
+    const damageData = filteredData.filter(d => {
+        const key = String(d.clean_order || '').trim();
+        if (!key || seenOrders.has(key)) return false;
+        seenOrders.add(key);
+        return true;
+    });
     const totalPickup = filteredPickup.length;
 
     // Cap nhat Insights/Alert theo filter hien tai
@@ -1306,9 +1312,9 @@ function renderDashboardCharts() {
         forceAbsolute: true
     });
 
-    // 3. Trend Chart (Damage Rate % only)
+    // 3. Trend Chart (Damage Rate % only) — dung damageData (da dedupe)
     const weekGroups = {};
-    filteredData.forEach(d => {
+    damageData.forEach(d => {
         const w = normDate(d.clean_week);
         if (w) {
             if (!weekGroups[w]) weekGroups[w] = [];
@@ -1630,13 +1636,20 @@ function generateReport(keepPage = false) {
     const data = AppState.filteredData;
     const reportContent = document.getElementById('report-content');
 
-    const damageData = data;
+    // DEDUPE: moi order_code chi dem 1 lan
+    const seenReport = new Set();
+    const damageData = data.filter(d => {
+        const key = String(d.clean_order || '').trim();
+        if (!key || seenReport.has(key)) return false;
+        seenReport.add(key);
+        return true;
+    });
 
     // Calculations
     const totalIssues = damageData.length;
 
     const weekGroups = {};
-    data.forEach(d => { weekGroups[d.clean_week] = (weekGroups[d.clean_week] || 0) + 1; });
+    damageData.forEach(d => { weekGroups[d.clean_week] = (weekGroups[d.clean_week] || 0) + 1; });
     const weeks = Object.keys(weekGroups).sort();
 
     let trendText = "Chưa đủ dữ liệu tuần";

@@ -17,7 +17,7 @@
     <meta http-equiv="X-Frame-Options" content="DENY">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
-    <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()">
+
     <meta name="robots" content="noindex, nofollow">
     <title>AI Dashboard - Phân Tích Dữ Liệu Hư Hỏng</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
@@ -31,12 +31,13 @@
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="dashboard.css?t=1781073455">
+    <link rel="stylesheet" href="dashboard.css?t=1781086338">
 </head>
 
 <body>
     <!-- Login Overlay -->
-    <div id="login-overlay" class="login-overlay">
+    <!-- Hộp thoại đăng nhập với ARIA -->
+    <div id="login-overlay" class="login-overlay" role="dialog" aria-modal="true" aria-label="Đăng nhập">
         <div class="glass-card login-card">
             <div class="logo" style="justify-content: center; padding-bottom: 20px;">
                 <div class="logo-icon"></div>
@@ -66,12 +67,12 @@
         <!-- Sidebar overlay (mobile) -->
         <div id="sidebar-overlay" class="sidebar-overlay"></div>
         <!-- Sidebar / Navigation -->
-        <aside class="sidebar">
+        <aside class="sidebar" role="navigation" aria-label="Điều hướng chính">
             <div class="logo">
                 <div class="logo-icon"></div>
                 <h1>B2B Analytics</h1>
             </div>
-            <nav class="nav-menu">
+            <nav class="nav-menu" role="menubar">
                 <a href="#" class="nav-item active" data-target="upload-section">
                     <span class="nav-icon">📡</span>
                     Collect Data
@@ -155,6 +156,9 @@
                         </div>
 
                         <div class="action-bar">
+                            <div id="load-progress-bar" class="progress-bar" style="display:none;">
+                                <div id="load-progress" class="progress-bar-fill" style="width:0%"></div>
+                            </div>
                             <button id="btn-process" class="btn-primary" disabled>Xử Lý Dữ Liệu</button>
                         </div>
                     </div>
@@ -239,7 +243,8 @@
                                 <h3>Sản Lượng Đơn Lấy Thành Công Theo Ngày</h3>
                             </div>
                             <div class="chart-container">
-                                <canvas id="dailyPickupChart"></canvas>
+                                <!-- Biểu đồ sản lượng đơn lấy theo ngày -->
+                                <canvas id="dailyPickupChart" role="img" aria-label="Biểu đồ sản lượng theo ngày"></canvas>
                             </div>
                         </div>
 
@@ -252,7 +257,8 @@
                                 </div>
                             </div>
                             <div class="chart-container">
-                                <canvas id="trendChart"></canvas>
+                                <!-- Biểu đồ xu hướng hư hỏng -->
+                                <canvas id="trendChart" role="img" aria-label="Biểu đồ xu hướng bể vỡ"></canvas>
                             </div>
                         </div>
 
@@ -262,7 +268,8 @@
                                 <h3>Top KTC Có Nhiều Đơn Hư Hỏng Nhất (Số Lượng)</h3>
                             </div>
                             <div class="chart-container">
-                                <canvas id="ktcChart"></canvas>
+                                <!-- Biểu đồ KTC -->
+                                <canvas id="ktcChart" role="img" aria-label="Biểu đồ KTC"></canvas>
                             </div>
                         </div>
 
@@ -302,7 +309,8 @@
                                 <h3>Phân Bổ Theo Loại Hư Hỏng</h3>
                             </div>
                             <div class="chart-container">
-                                <canvas id="labelChart"></canvas>
+                                <!-- Biểu đồ phân loại hư hỏng -->
+                                <canvas id="labelChart" role="img" aria-label="Biểu đồ phân loại"></canvas>
                             </div>
                         </div>
 
@@ -312,7 +320,8 @@
                                 <h3>Khách Hàng Ảnh Hưởng Nhiều Nhất</h3>
                             </div>
                             <div class="chart-container">
-                                <canvas id="clientChart"></canvas>
+                                <!-- Biểu đồ khách hàng -->
+                                <canvas id="clientChart" role="img" aria-label="Biểu đồ khách hàng"></canvas>
                             </div>
                         </div>
 
@@ -322,7 +331,8 @@
                                 <h3>Lượng Đơn Lấy Theo Khách Hàng</h3>
                             </div>
                             <div class="chart-container">
-                                <canvas id="pickupClientChart"></canvas>
+                                <!-- Biểu đồ đơn lấy theo khách hàng -->
+                                <canvas id="pickupClientChart" role="img" aria-label="Biểu đồ đơn lấy theo khách hàng"></canvas>
                             </div>
                         </div>
 
@@ -431,12 +441,13 @@
     </div>
 
     <!-- Loading Overlay -->
-    <div id="loading-overlay" class="overlay">
+    <!-- Overlay loading với thông báo trạng thái -->
+    <div id="loading-overlay" class="overlay" role="alert" aria-live="assertive">
         <div class="spinner"></div>
         <p>Đang xử lý dữ liệu...</p>
     </div>
 
-    <script src="dashboard.js?t=1781082150"></script>
+    <script src="dashboard.js?t=1781086338"></script>
 </body>
 
 </html>

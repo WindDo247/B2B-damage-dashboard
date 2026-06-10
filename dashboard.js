@@ -240,6 +240,18 @@ const DEFAULT_API = {
 async function loadDefaultApis() {
     const overlay = document.getElementById('loading-overlay');
     if (overlay) overlay.classList.add('active');
+
+    // Progress bar cho data loading
+    let loadedCount = 0;
+    const totalFiles = 4; // db, kw, gxt, pickup
+    const progressEl = document.getElementById('load-progress');
+    const progressBar = document.getElementById('load-progress-bar');
+    if (progressBar) progressBar.style.display = 'block';
+    function updateProgress() {
+        loadedCount++;
+        if (progressEl) progressEl.style.width = (loadedCount / totalFiles * 100) + '%';
+        if (loadedCount >= totalFiles && progressBar) setTimeout(() => { progressBar.style.display = 'none'; }, 1000);
+    }
     
     // Tải DB + KW + GXT song song (3 file nhỏ, chờ xong mới xử lý)
     let corePromises = [];
@@ -277,11 +289,13 @@ async function loadDefaultApis() {
                         statusEl.style.color = 'var(--accent-warning)';
                     }
                 }
+                updateProgress();
             }).catch(e => {
                 if (statusEl) {
                     statusEl.textContent = '❌ Lỗi tải dữ liệu';
                     statusEl.style.color = 'var(--accent-danger)';
                 }
+                updateProgress();
             })
         );
     });
@@ -321,11 +335,13 @@ async function loadDefaultApis() {
                     pickupStatusEl.style.color = 'var(--accent-warning)';
                 }
             }
+            updateProgress();
         }).catch(e => {
             if (pickupStatusEl) {
                 pickupStatusEl.textContent = '❌ Lỗi tải Pickup';
                 pickupStatusEl.style.color = 'var(--accent-danger)';
             }
+            updateProgress();
         });
     }
 
@@ -416,6 +432,7 @@ window.handleCredentialResponse = async function (response) {
         // Kiểm tra kết quả từ server
         if (isAllowed) {
             localStorage.setItem('ghn_user_email', email);
+            localStorage.setItem('ghn_session_ts', Date.now().toString());
             if (emailDisplay) emailDisplay.textContent = email;
             if (loginOverlay) loginOverlay.classList.add('hidden');
             if (loginError) loginError.style.display = 'none';
@@ -444,19 +461,31 @@ window.handleCredentialResponse = async function (response) {
 
 document.addEventListener('DOMContentLoaded', () => {
     const savedEmail = localStorage.getItem('ghn_user_email');
+    const sessionTs = parseInt(localStorage.getItem('ghn_session_ts') || '0');
+    const SESSION_MAX_AGE = 24 * 60 * 60 * 1000; // 24 giờ
     const loginOverlay = document.getElementById('login-overlay');
     const emailDisplay = document.getElementById('user-email-display');
 
-    // Kiểm tra xem đã từng đăng nhập hợp lệ chưa
-    if (savedEmail && savedEmail.endsWith('@ghn.vn')) {
+    // Kiểm tra session hợp lệ (email + chưa hết hạn 24h)
+    if (savedEmail && savedEmail.endsWith('@ghn.vn') && (Date.now() - sessionTs) < SESSION_MAX_AGE) {
         if (loginOverlay) loginOverlay.classList.add('hidden');
         if (emailDisplay) emailDisplay.textContent = savedEmail;
+    } else if (savedEmail) {
+        // Session hết hạn → xóa
+        localStorage.removeItem('ghn_user_email');
+        localStorage.removeItem('ghn_session_ts');
     }
 
     const btnLogout = document.getElementById('btn-logout');
     if (btnLogout) {
         btnLogout.addEventListener('click', () => {
+            // Xóa TẤT CẢ dữ liệu nhạy cảm khi logout
             localStorage.removeItem('ghn_user_email');
+            localStorage.removeItem('ghn_session_ts');
+            localStorage.removeItem('ghn_api_db');
+            localStorage.removeItem('ghn_api_kw');
+            localStorage.removeItem('ghn_api_gxt');
+            localStorage.removeItem('ghn_api_pickup');
             if (loginOverlay) loginOverlay.classList.remove('hidden');
         });
     }
@@ -832,7 +861,8 @@ document.querySelectorAll('.btn-fetch').forEach(btn => {
             }
         } catch (error) {
             console.error('Lỗi tải URL.');
-            statuses[target].textContent = `Lỗi: ${error.message}`;
+            console.error('Chi tiết lỗi:', error);
+            statuses[target].textContent = 'Lỗi tải dữ liệu. Vui lòng thử lại.';
             statuses[target].style.color = 'var(--accent-danger)';
             dropBoxes[target].classList.remove('success');
             AppState.filesLoaded[target] = false;
@@ -872,7 +902,8 @@ btnProcess.addEventListener('click', () => {
             saveStateToDB();
         } catch (error) {
             console.error("Lỗi khi xử lý dữ liệu.");
-            alert("Có lỗi xảy ra trong quá trình xử lý: " + error.message);
+            console.error('Chi tiết lỗi xử lý:', error);
+            showToast('Có lỗi xảy ra trong quá trình xử lý. Vui lòng thử lại.', 'error');
         } finally {
             loadingOverlay.classList.remove('active');
         }
@@ -1155,21 +1186,21 @@ function updateKPICards(data, totalPickup, damageRate) {
 
     kpiContainer.innerHTML = `
         <div class="kpi-card primary">
-            <div class="kpi-icon"></div>
+            <div class="kpi-icon">📦</div>
             <div class="kpi-content">
                 <div class="kpi-title">Tổng Đơn Lấy</div>
                 <div class="kpi-value">${esc(totalPickup > 0 ? totalPickup.toLocaleString() : 'N/A')}</div>
             </div>
         </div>
         <div class="kpi-card danger">
-            <div class="kpi-icon"></div>
+            <div class="kpi-icon">💥</div>
             <div class="kpi-content">
                 <div class="kpi-title">Tổng Đơn Bể Vỡ</div>
                 <div class="kpi-value">${totalDamages.toLocaleString()}</div>
             </div>
         </div>
         <div class="kpi-card ${rateClass}">
-            <div class="kpi-icon"></div>
+            <div class="kpi-icon">📊</div>
             <div class="kpi-content">
                 <div class="kpi-title">Tỷ lệ bể vỡ</div>
                 <div class="kpi-value" style="color: ${rateColor}">${totalPickup > 0 ? damageRate + '%' : 'N/A'}</div>
@@ -1777,35 +1808,7 @@ function generateReport(keepPage = false) {
     `;
 
     // DEBUG INFO
-    const kwMap = AppState.keywordMap || [];
-    const kwPreview = kwMap.length > 0 ? kwMap.map(k => `[${k.keyword}]`).join(', ') : "Không tìm thấy";
-
-    let dbKeys = "Không có";
-    let dbRow1 = "Không có";
-    if (AppState.dbData && AppState.dbData.length > 0) {
-        dbKeys = Object.keys(AppState.dbData[0]).join(' | ');
-        dbRow1 = Object.values(AppState.dbData[0]).join(' | ');
-    }
-
-    const dk = AppState.debugKeys || {};
-    const traceHtml = AppState.debugTrace ? AppState.debugTrace.map(t => `<div>Mã: ${esc(t.order)} | Câu dò: "${esc(t.combined)}" => Khớp từ: [${esc(t.keywordHit)}] => Nhãn: ${esc(t.finalLabel)}</div>`).join('') : "";
-
-    html += `
-        <div style="margin-top:30px; padding:15px; background:var(--bg-secondary); border-radius:5px; font-size:12px; color:var(--text-muted); border: 1px dashed var(--accent-danger);">
-            <strong>🔍 BẢNG GỠ LỖI (DEBUG LOG):</strong><br/><br/>
-            - <strong>Cột Từ Khóa được đọc:</strong> <span style="color:var(--accent-warning);">${esc(AppState.debugKwKey || 'N/A')}</span><br/>
-            - <strong>Cột Nhãn được đọc:</strong> <span style="color:var(--accent-warning);">${esc(AppState.debugLabelKey || 'N/A')}</span><br/>
-            - <strong>Số lượng từ khóa:</strong> <span style="color:var(--text-main);">${kwMap.length}</span> từ.<br/>
-            - <strong>Toàn bộ từ khóa đã nhận diện:</strong> <span style="color:var(--text-main);">${esc(kwPreview)}</span><br/>
-            <hr style="border-top:1px dashed #ccc; margin:10px 0;"/>
-            <strong>TRACE 5 ĐƠN HÀNG ĐẦU TIÊN:</strong><br/>
-            ${traceHtml}
-            <hr style="border-top:1px dashed #ccc; margin:10px 0;"/>
-            - <strong>Cột Mã Đơn (DB):</strong> <span style="color:var(--accent-success);">${esc(dk.orderKey)}</span><br/>
-            - <strong>Cột Loại Lỗi (DB):</strong> <span style="color:var(--accent-success);">${esc(dk.typeKey)}</span><br/>
-            - <strong>Cột Chi Tiết Lỗi (DB):</strong> <span style="color:var(--accent-danger);">${esc(dk.detailKey)}</span>
-        </div>
-    `;
+    // Debug log chi hien trong Console, khong hien trong UI (bao mat)
 
     reportContent.innerHTML = html;
 
@@ -2190,7 +2193,8 @@ function pushMappedDataToSheet() {
     }).catch(err => {
         if (syncStatus) {
             syncIcon.textContent = '❌';
-            syncText.textContent = 'Lỗi đồng bộ: ' + err.message;
+            console.error('Chi tiết lỗi đồng bộ:', err);
+            syncText.textContent = 'Lỗi đồng bộ. Vui lòng thử lại.';
             syncText.style.color = 'var(--accent-danger)';
         }
     });

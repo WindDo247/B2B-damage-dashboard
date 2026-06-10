@@ -13,6 +13,8 @@
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
     --sidebar-width: 260px;
     --font-main: 'Inter', sans-serif;
+    --bg-card: #1e293b;
+    --text-muted: #64748b;
 }
 
 * {
@@ -395,6 +397,33 @@ body {
     padding: 24px;
     display: flex;
     flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.chart-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.card-header h3 {
+    position: relative;
+    display: inline-block;
+}
+
+.card-header h3::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--accent-primary);
+    transition: width 0.3s ease;
+}
+
+.chart-card:hover .card-header h3::after {
+    width: 100%;
 }
 
 .card-header {
@@ -1326,16 +1355,21 @@ button:focus-visible, .nav-item:focus-visible {
 
 /* --- Smooth section transitions --- */
 .section {
-    display: none;
+    position: absolute;
+    width: 100%;
     opacity: 0;
     transform: translateY(8px);
+    pointer-events: none;
+    visibility: hidden;
     transition: opacity 0.35s ease, transform 0.35s ease;
 }
 
 .section.active {
-    display: block;
+    position: relative;
     opacity: 1;
     transform: translateY(0);
+    pointer-events: auto;
+    visibility: visible;
 }
 
 /* ================================================================
@@ -1501,4 +1535,68 @@ button:focus-visible, .nav-item:focus-visible {
     .chart-container, .full-width .chart-container {
         height: 200px;
     }
+}
+
+/* --- Phản hồi header sắp xếp bảng --- */
+th[data-sort] {
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+th[data-sort]:hover {
+    background: rgba(59, 130, 246, 0.08);
+    color: var(--text-primary);
+}
+
+th[data-sort]:active {
+    background: rgba(59, 130, 246, 0.15);
+}
+
+/* --- Hiệu ứng hover nút đăng xuất --- */
+#btn-logout:hover {
+    color: #f87171;
+    text-decoration: none;
+}
+
+/* --- Hiệu ứng nhấp nháy đồng bộ tự động --- */
+@keyframes syncPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* --- Thanh tiến trình tải --- */
+.progress-bar {
+    width: 100%;
+    height: 3px;
+    background: var(--bg-secondary);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 8px 0;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-primary), #8b5cf6);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+}
+
+/* --- Hỗ trợ tiếp cận: giảm chuyển động --- */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    .spinner {
+        animation: none;
+        border: 4px solid var(--accent-primary);
+    }
+}
+
+/* --- Cuộn mượt --- */
+.main-content {
+    scroll-behavior: smooth;
 }

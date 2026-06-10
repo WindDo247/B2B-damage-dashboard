@@ -1005,37 +1005,53 @@ function processData() {
         isFirstRowHeader = true;
     }
 
-    const debugTrace = []; // Lấy 5 dòng đầu để trace lỗi
+    const debugTrace = [];
 
+    // BUOC 1: Gom tat ca dong theo order_code
+    const orderGroups = {};
+    AppState.dbData.forEach((row, index) => {
+        if (isFirstRowHeader && index === 0) return;
+        const code = String(row[orderKey] || '').trim();
+        if (!code) return;
+        if (!orderGroups[code]) orderGroups[code] = [];
+        orderGroups[code].push(row);
+    });
 
-    AppState.mappedData = AppState.dbData.map((row, index) => {
-        if (isFirstRowHeader && index === 0) return null; // Bỏ qua dòng tiêu đề nếu bị lọt vào data
-        
-        // BỎ QUA NGAY CÁC DÒNG TRỐNG (Không có mã vận đơn)
-        if (!row[orderKey] || String(row[orderKey]).trim() === '') return null;
+    // BUOC 2: Voi moi order_code, gom ALL text roi match keyword 1 lan
+    AppState.mappedData = Object.entries(orderGroups).map(([code, rows]) => {
+        // Gom TAT CA type + detail text tu moi dong cua cung order
+        const allTypes = [];
+        const allDetails = [];
+        rows.forEach(row => {
+            const t = String(row[typeKey] || '').trim();
+            const d = String(row[detailKey] || '').trim();
+            if (t) allTypes.push(t);
+            if (d) allDetails.push(d);
+        });
+        const combinedTypeText = allTypes.join(' | ');
+        const combinedDetailText = allDetails.join(' | ');
+        const combinedText = normalizeStr(combinedTypeText + " " + combinedDetailText);
 
-        // Gom chung text của Loại lỗi và Chi tiết lỗi để đối chiếu Keyword (tăng độ chính xác)
-        const typeText = String(row[typeKey] || '');
-        const detailText = String(row[detailKey] || '');
-        const combinedText = normalizeStr(typeText + " " + detailText);
-
+        // Match keyword tren toan bo text da gom
         let matchedLabel = "Khác";
         let keywordHit = "";
-
         for (let mapObj of keywordMap) {
             if (combinedText.includes(mapObj.keyword)) {
                 matchedLabel = mapObj.label;
                 keywordHit = mapObj.keyword;
-                break; // Lấy nhãn đầu tiên match được
+                break;
             }
         }
 
-        const gxtName = String(row[gxtKeyField] || '').trim();
+        // Lay thong tin tu dong dau tien (week, client, gxt)
+        const firstRow = rows[0];
+        const gxtName = String(firstRow[gxtKeyField] || '').trim();
         const matchedKTC = gxtMap[gxtName.toLowerCase()] || "Chưa xác định";
 
         if (debugTrace.length < 5) {
             debugTrace.push({
-                order: row[orderKey],
+                order: code,
+                rows: rows.length,
                 combined: combinedText,
                 keywordHit: keywordHit,
                 finalLabel: matchedLabel
@@ -1043,17 +1059,17 @@ function processData() {
         }
 
         return {
-            clean_week: row[weekKey] || "W_Unknown",
-            clean_client: row[clientKey] || "Khách lẻ",
-            clean_order: row[orderKey] || "N/A",
-            clean_type: typeText || "N/A",
-            clean_detail: detailText,
+            clean_week: firstRow[weekKey] || "W_Unknown",
+            clean_client: firstRow[clientKey] || "Khách lẻ",
+            clean_order: code,
+            clean_type: combinedTypeText || "N/A",
+            clean_detail: combinedDetailText,
             clean_gxt: gxtName,
             mapped_ktc: matchedKTC,
             mapped_label: matchedLabel,
             keyword_hit: keywordHit
         };
-    }).filter(d => d !== null); // Xóa bỏ dòng null (tiêu đề)
+    });
 
     AppState.debugTrace = debugTrace;
 

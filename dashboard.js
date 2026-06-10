@@ -1244,10 +1244,10 @@ function renderDashboardCharts() {
     // Dong bo filteredData vao AppState de Insights/Alert dung cung data
     AppState.filteredData = filteredData;
 
-    // DEDUPE + CHI GIU DON BE VO: loai 'Khac', moi order_code chi dem 1 lan
+    // DEDUPE + CHI GIU DON DAMAGE: chi lay label 'damage', moi order_code chi dem 1 lan
     const seenOrders = new Set();
     const damageData = filteredData.filter(d => {
-        if ((d.mapped_label || '').trim() === 'Khác') return false;
+        if ((d.mapped_label || '').trim().toLowerCase() !== 'damage') return false;
         const key = String(d.clean_order || '').trim();
         if (!key || seenOrders.has(key)) return false;
         seenOrders.add(key);
@@ -1689,9 +1689,10 @@ function generateReport(keepPage = false) {
     const data = AppState.filteredData;
     const reportContent = document.getElementById('report-content');
 
-    // DEDUPE: moi order_code chi dem 1 lan
+    // DEDUPE + CHI GIU DON DAMAGE
     const seenReport = new Set();
     const damageData = data.filter(d => {
+        if ((d.mapped_label || '').trim().toLowerCase() !== 'damage') return false;
         const key = String(d.clean_order || '').trim();
         if (!key || seenReport.has(key)) return false;
         seenReport.add(key);

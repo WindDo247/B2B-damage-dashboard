@@ -423,6 +423,10 @@ window.handleCredentialResponse = async function (response) {
             if (!res.ok) throw new Error('Server status: ' + res.status);
             const result = await res.json();
             console.log('[LOGIN] Server response:', JSON.stringify(result));
+            if (result.error) {
+                // Server bi loi noi bo → dung fallback
+                throw new Error('Server internal error: ' + result.error);
+            }
             isAllowed = result.allowed === true;
         } catch (fetchErr) {
             console.error('[LOGIN] Server error:', fetchErr);

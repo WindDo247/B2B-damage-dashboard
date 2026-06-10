@@ -1257,6 +1257,7 @@ function renderDashboardCharts() {
 
     // === DEBUG: xoa sau khi fix ===
     console.log('[DEBUG] filteredData:', filteredData.length, '| damageData:', damageData.length, '| week25:', damageData.filter(d=>d.clean_week==='2026-05-25').length);
+    console.log('[DEBUG PICKUP] pickupData:', AppState.pickupData?.length, '| filteredPickup:', filteredPickup.length, '| sample:', filteredPickup[0]?.isoweek_pickup_time, '| normDate:', normDate(filteredPickup[0]?.isoweek_pickup_time));
 
     // Cap nhat Insights/Alert theo filter hien tai
     generateReport(true);

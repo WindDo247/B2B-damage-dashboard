@@ -1116,14 +1116,14 @@ function updateKPICards(data, totalPickup, damageRate) {
         <div class="kpi-card danger">
             <div class="kpi-icon"></div>
             <div class="kpi-content">
-                <div class="kpi-title">Tổng Đơn Hư Hỏng</div>
+                <div class="kpi-title">Tổng Đơn Bể Vỡ</div>
                 <div class="kpi-value">${totalDamages.toLocaleString()}</div>
             </div>
         </div>
         <div class="kpi-card ${rateClass}">
             <div class="kpi-icon"></div>
             <div class="kpi-content">
-                <div class="kpi-title">Tỷ lệ hư hỏng trung bình</div>
+                <div class="kpi-title">Tỷ lệ bể vỡ</div>
                 <div class="kpi-value" style="color: ${rateColor}">${totalPickup > 0 ? damageRate + '%' : 'N/A'}</div>
         </div>
     `;
@@ -1205,9 +1205,10 @@ function renderDashboardCharts() {
     // Dong bo filteredData vao AppState de Insights/Alert dung cung data
     AppState.filteredData = filteredData;
 
-    // DEDUPE: moi order_code chi dem 1 lan (giu dong dau tien)
+    // DEDUPE + CHI GIU DON BE VO: loai 'Khac', moi order_code chi dem 1 lan
     const seenOrders = new Set();
     const damageData = filteredData.filter(d => {
+        if ((d.mapped_label || '').trim() === 'Khác') return false;
         const key = String(d.clean_order || '').trim();
         if (!key || seenOrders.has(key)) return false;
         seenOrders.add(key);
@@ -1226,11 +1227,10 @@ function renderDashboardCharts() {
         cfUi.style.cssText = 'margin-bottom: 15px; padding: 10px 15px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; display: none; align-items: center; justify-content: space-between;';
         cfUi.innerHTML = `<span><i style="margin-right:8px">🔍</i> Đang lọc theo: <strong id="cf-text"></strong></span>
                           <button id="cf-clear" style="background:var(--accent-danger);color:#fff;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px;">Xóa bộ lọc</button>`;
-        const header = document.querySelector('.top-header'); // Fix class name
+        const header = document.querySelector('.top-header');
         if (header && header.nextSibling) {
             header.parentNode.insertBefore(cfUi, header.nextSibling);
         } else {
-            // Fallback to prepend to dashboard-content
             document.getElementById('dashboard-content').prepend(cfUi);
         }
         cfUi.querySelector('#cf-clear').addEventListener('click', () => {

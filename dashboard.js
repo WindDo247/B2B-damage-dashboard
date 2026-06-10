@@ -1383,6 +1383,9 @@ function renderDashboardCharts() {
         return total > 0 ? parseFloat(((damaged / total) * 100).toFixed(2)) : 0;
     });
 
+    // === DEBUG trend chart ===
+    console.log('[DEBUG TREND] weeks:', weeks, 'weekGroups 25/05:', weekGroups['25/05/2026']?.length, 'trendRateData:', trendRateData);
+
     createChart('trendChart', 'line', {
         labels: weeks,
         datasets: [{ label: 'Damage Rate %', data: trendRateData, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', borderWidth: 2.5, tension: 0.4, fill: true, pointBackgroundColor: '#ef4444', pointBorderColor: '#fff', pointRadius: 5, pointHoverRadius: 7 }]

@@ -882,12 +882,22 @@ btnProcess.addEventListener('click', () => {
 // Helper function to normalize Vietnamese text (NFC), lowercase, and remove extra spaces
 function normalizeStr(str) {
     if (!str) return '';
-    return String(str)
+    let s = String(str)
         .normalize('NFC')
         .toLowerCase()
         .replace(/[\u200B-\u200D\uFEFF]/g, '') // Remove zero-width spaces
         .replace(/\s+/g, ' ')
         .trim();
+    // Fix loi chinh ta Tieng Viet pho bien: thieu dau moc tren nguyen am
+    // VD: "uớt" (thieu dau moc) → "ướt", "oạ" → "oạ"
+    const typoMap = [
+        [/uớ/g, 'ướ'], [/uờ/g, 'ườ'], [/uở/g, 'ưở'], [/uỡ/g, 'ưỡ'], [/uợ/g, 'ượ'],
+        [/uơ/g, 'ươ'], [/oă/g, 'oă'], // thêm nếu cần
+    ];
+    for (const [from, to] of typoMap) {
+        s = s.replace(from, to);
+    }
+    return s;
 }
 
 function processData() {

@@ -1,4 +1,4 @@
-﻿// Global state
+// Global state
 const AppState = {
     dbData: [],
     kwData: [],
@@ -1712,7 +1712,20 @@ function createChart(id, type, data, options = {}) {
     if (typeof ChartDataLabels !== 'undefined') {
         Chart.register(ChartDataLabels);
         if (type === 'doughnut' || type === 'pie') {
-            baseOptions.plugins.datalabels = { display: false };
+            baseOptions.plugins.datalabels = {
+                color: '#fff', font: { weight: 'bold', size: 11 }, textAlign: 'center',
+                anchor: 'center', align: 'center', clip: false,
+                display: function(ctx) {
+                    let sum = 0;
+                    ctx.chart.data.datasets[0].data.forEach(d => { sum += parseFloat(d); });
+                    return sum > 0 && (ctx.dataset.data[ctx.dataIndex] / sum * 100) >= 5;
+                },
+                formatter: function(value, ctx) {
+                    let sum = 0;
+                    ctx.chart.data.datasets[0].data.forEach(d => { sum += parseFloat(d); });
+                    return sum > 0 ? (value / sum * 100).toFixed(1) + '%' : '';
+                }
+            };
         } else {
         const isH = options.indexAxis === 'y';
         baseOptions.plugins.datalabels = {

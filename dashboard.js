@@ -1,4 +1,4 @@
-// Global state
+﻿// Global state
 const AppState = {
     dbData: [],
     kwData: [],
@@ -1495,7 +1495,22 @@ function renderDashboardCharts() {
     createChart('labelChart', 'doughnut', {
         labels: typeLabels,
         datasets: [{ data: typeData, backgroundColor: ['#ef4444','#f59e0b','#2dd4bf','#388ef5','#8b5cf6','#ec4899','#64748b','#06b6d4','#84cc16','#f97316'], borderWidth: 0, hoverOffset: 4 }]
-    }, { cutout: '65%' });
+        }, {
+        cutout: '65%',
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    label: function(ctx) {
+                        const val = ctx.parsed;
+                        let sum = 0;
+                        ctx.chart.data.datasets[0].data.forEach(d => { sum += parseFloat(d); });
+                        const pct = sum > 0 ? (val / sum * 100).toFixed(1) : 0;
+                        return ctx.label + ': ' + val.toLocaleString() + ' don (' + pct + '%)';
+                    }
+                }
+            }
+        }
+    });
 
     // 7. Client Chart (damage only)
     const clientGroups = groupBy(damageData, 'clean_client');
@@ -1696,6 +1711,9 @@ function createChart(id, type, data, options = {}) {
     if (options.cutout) baseOptions.cutout = options.cutout;
     if (typeof ChartDataLabels !== 'undefined') {
         Chart.register(ChartDataLabels);
+        if (type === 'doughnut' || type === 'pie') {
+            baseOptions.plugins.datalabels = { display: false };
+        } else {
         const isH = options.indexAxis === 'y';
         baseOptions.plugins.datalabels = {
             color: '#fff', font: { weight: 'bold', size: 11 }, textAlign: 'center',
@@ -1717,10 +1735,7 @@ function createChart(id, type, data, options = {}) {
                 let sum = 0;
                 ctx.chart.data.datasets[0].data.forEach(d => { sum += parseFloat(d); });
                 if (sum === 0) return value;
-                const pct = (value * 100 / sum);
-                // An label cho segments nho (< 5%) tren doughnut/pie
-                if ((ctx.chart.config.type === 'doughnut' || ctx.chart.config.type === 'pie') && pct < 5) return '';
-                return value + '\n(' + pct.toFixed(1) + '%)';
+                return value + '\n(' + (value * 100 / sum).toFixed(1) + '%)';
             }
         };
         if (type === 'line') {
@@ -1729,6 +1744,7 @@ function createChart(id, type, data, options = {}) {
                 if (options.forceAbsolute) return v;
                 return v + '%';
             };
+        }
         }
     }
     AppState.charts[id] = new Chart(ctx, { type, data, options: baseOptions });

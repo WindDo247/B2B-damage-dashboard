@@ -1,75 +1,86 @@
-# Hướng Dẫn Sử Dụng B2B Logistics Dashboard
+# 📘 Hướng Dẫn Sử Dụng — B2B Damage Analysis Dashboard
 
-Chào mừng bạn đến với tài liệu hướng dẫn sử dụng Hệ thống B2B Logistics Dashboard. Công cụ này được thiết kế đặc biệt dành riêng cho việc phân tích, thống kê tỉ lệ bể vỡ/hư hỏng hàng điện máy.
+## 1. Đăng Nhập
+- Đăng nhập bằng tài khoản Google (@ghn.vn)
+- Tài khoản phải nằm trong danh sách whitelist (kiểm tra server-side)
+- Session tự hết hạn sau 24 giờ → cần đăng nhập lại
+- Logout sẽ xóa toàn bộ dữ liệu trong trình duyệt
 
----
+## 2. Giao Diện Chính
+Gồm 4 tab chính trong sidebar:
+- 📡 **Collect Data** — Thu thập dữ liệu
+- 🔀 **Mapping Table** — Bảng dữ liệu đã mapping
+- 📊 **Dashboard** — Biểu đồ phân tích
+- 💡 **Insights & Alerts** — Báo cáo thông minh
 
-## 1. Tổng Quan Giao Diện
-Công cụ bao gồm hai thẻ (Tab) chính nằm ở cột điều hướng bên trái:
-- **Nhập Dữ Liệu:** Nơi bạn cung cấp các file dữ liệu đầu vào.
-- **Dashboard & Report:** Nơi hệ thống hiển thị biểu đồ phân tích và bảng dữ liệu chuyên sâu.
+## 3. Tab Collect Data
+- Dữ liệu tự động sync từ Google Sheets API khi đăng nhập
+- 4 nguồn dữ liệu:
+  1. Data Hư Hỏng (Damage) — sheet chính chứa đơn hàng
+  2. Keyword Map — bảng từ khóa → nhãn (damage/Khác)
+  3. Danh sách KTC/KCT — mapping kho
+  4. Data Đơn Lấy (Pickup) — dữ liệu sản lượng lấy hàng
+- Thanh progress bar hiển thị tiến trình tải
+- Nút "Xử Lý Dữ Liệu" sáng khi 3 file đầu tải xong
+- ✅ Tự động đồng bộ mỗi 60 phút (bật/tắt bằng checkbox)
 
----
+## 4. Tab Dashboard
+### 4.1 KPI Cards (3 thẻ)
+| Icon | Thẻ | Ý nghĩa |
+|------|------|----------|
+| 📦 | Tổng Đơn Lấy | Tổng pickup từ tất cả kho |
+| 💥 | Tổng Đơn Bể Vỡ | Đơn được label "damage" (unique order_code) |
+| 📊 | Tỷ lệ bể vỡ | = Đơn Bể Vỡ / Đơn Lấy × 100% |
 
-## 2. Quy Trình Nhập Dữ Liệu Đầu Vào
+### 4.2 Bộ lọc toàn cục
+- Multi-select dropdown: Tuần, Khách hàng, Ngành hàng
+- Chọn/bỏ chọn → tất cả biểu đồ + KPI cập nhật real-time
 
-Hệ thống yêu cầu 3 nguồn dữ liệu bắt buộc:
-1. **File Database Tổng (Data):** File chứa toàn bộ đơn hàng và thông tin vận hành (có các cột mã đơn, tuần, loại hư hỏng, chi tiết lỗi, v.v.).
-2. **File Mapping Keyword:** Chứa từ khóa để hệ thống tự động nhận diện và gán nhãn (Label) cho các lỗi (ví dụ: "rách", "móp", "bể").
-3. **Danh Sách Kho GXT & KTC:** Chứa cấu trúc mạng lưới (Kho Giao và các Kho Trung Chuyển liền kề trước đó).
+### 4.3 Biểu đồ (8 loại)
+1. Sản Lượng Đơn Lấy Theo Ngày (bar chart)
+2. Xu Hướng Bể Vỡ (Damage Rate %) — line chart theo tuần
+3. Top KTC Nhiều Đơn Hư Hỏng (absolute) — bar chart
+4. Top KTC Tỷ Lệ Hư Hỏng Cao (rate %) — bar chart
+5. Top Kho GXT Nhiều Đơn Hư Hỏng (absolute) — bar chart
+6. Top Kho GXT Tỷ Lệ Hư Hỏng Cao (rate %) — bar chart
+7. Phân Loại Hư Hỏng — doughnut chart
+8. Đơn Lấy Theo Khách Hàng — bar chart
 
-### 2.1 Cách thức tải dữ liệu
-Tại mỗi ô tương ứng, bạn có 2 cách tải dữ liệu:
-- **Tải File:** Bấm **"Chọn File"** và trỏ đến file `.csv` hoặc `.xlsx` trên máy tính.
-- **Nhập Link:** 
-  - Chuyển sang Tab "Nhập Link" và dán đường dẫn Google Sheets/Google Drive vào. 
-  - (Lưu ý: Link Google cần được mở quyền chia sẻ *"Bất kỳ ai có đường liên kết - Anyone with the link"*).
-  - Bấm **"Tải Link"**. Hệ thống sẽ tự động lưu lại link này để tự động điền trong các lần sử dụng tiếp theo.
+- Hover tooltip hiển thị số tuyệt đối + tỷ lệ
+- Click vào bar/segment → cross-filter toàn dashboard
+- Click lại hoặc click biểu đồ khác → reset filter
 
-### 2.2 Xử lý dữ liệu (QUAN TRỌNG)
-Sau khi cả 3 ô đều hiện trạng thái màu xanh (Đã tải xong), nút **"Xử Lý Dữ Liệu"** sẽ sáng lên.
-- Bạn **bắt buộc phải bấm vào "Xử Lý Dữ Liệu"** để hệ thống bắt đầu quy trình dọn dẹp, chuẩn hóa font chữ (NFC) và ánh xạ từ khóa. Nếu chỉ nhấn `F5` tải lại trang, hệ thống sẽ sử dụng dữ liệu cũ lưu trong bộ nhớ tạm.
+### 4.4 Bảng Chi Tiết
+- Click header cột → sắp xếp tăng/giảm
+- Nút "📥 Xuất CSV" để export
+- Phân trang (20 dòng/trang)
 
----
+## 5. Tab Mapping Table
+- Hiển thị toàn bộ dữ liệu đã mapping (label, keyword hit, KTC...)
+- Lọc theo từng cột (dropdown Excel-style)
+- Sắp xếp, phân trang
+- Dữ liệu tự động push ngược về Google Sheet "Mapped"
 
-## 3. Khai Thác Dashboard & Báo Cáo
+## 6. Tab Insights & Alerts
+- Báo cáo AI tự động: tổng hợp xu hướng, top KTC/GXT, cảnh báo
+- Nút "Xuất Báo Cáo PDF" để tải về
 
-Giao diện báo cáo được chia làm 3 phần chính:
+## 7. Cơ Chế Nhận Dạng Cột (Dual-Scan)
+- Quét header: tìm cột chứa keyword "mã đơn", "loại lỗi", "chi tiết"...
+- Quét nội dung: nếu header không rõ, dò pattern trong dữ liệu
+- Hỗ trợ nhiều tên cột khác nhau
 
-### Phần 1: Biểu Đồ Thống Kê (Dashboard)
-- **Biểu đồ Đường (Xu Hướng Hư Hỏng):** Hiển thị số lượng lỗi phát sinh theo từng tuần vận hành.
-- **Top 10 KTC/KCT & Top 10 Kho Giao:** Lọc riêng các lỗi có nhãn chứa từ khóa **"damage"**.
-- **Biểu đồ Tròn & Biểu đồ Ngang:** Thể hiện tỉ trọng các loại lỗi và Top 5 khách hàng B2B chịu thiệt hại.
+## 8. Logic Nhận Dạng Damage
+- Gom tất cả dòng cùng order_code → ghép text Type + Detail
+- Normalize: NFC + lowercase + fix typo tiếng Việt (VD: "Uớt"→"ướt")
+- Match keyword (ưu tiên dài nhất trước)
+- Chỉ đếm label "damage", mỗi order_code đếm 1 lần
 
-### Phần 2: Báo Cáo Chi Tiết B2B (Text Report)
-Hệ thống AI tự động tổng hợp câu chữ báo cáo để bạn có thể Copy và gửi trực tiếp cho khối Vận Hành (Operations), chỉ ra rõ đâu là "điểm nóng" cần khắc phục.
-
-### Phần 3: Bảng Dữ Liệu & Bộ Lọc Đa Lớp (Data Filter)
-Bảng hiển thị chi tiết tất cả các đơn hàng sau khi hệ thống đã "làm sạch" và tự động gán nhãn.
-- **Bộ Lọc Excel-Style:** Ngay dưới tiêu đề của các cột (Mã Đơn, Tuần, Khách Hàng, GXT, KTC, Chi Tiết Lỗi...) là các ô tìm kiếm hoặc danh sách thả xuống. Bạn có thể gõ trực tiếp vào các ô này để lọc dữ liệu chéo nhau giống y hệt tính năng Data Filter của Excel.
-- **Chỉnh sửa Nhãn Thủ Công:** Click thẳng vào cột Label trong bảng để chọn lại nhãn từ danh sách. Biểu đồ sẽ tự động thay đổi theo.
-- **Xuất Excel:** Bấm "Xuất Báo Cáo" để tải toàn bộ dữ liệu (đã kèm nhãn Label) về máy.
-
----
-
-## 4. Cơ Chế Nhận Diện Cột Nâng Cao (Dual-Scan)
-
-Hệ thống được trang bị bộ máy tự động nhận diện tên cột cực mạnh:
-1. Nó có khả năng tự động hiểu được các tên cột biến thể. Ví dụ: cột Chi tiết lỗi có thể được đặt tên là *"Chi tiết, Ghi chú, Mô tả, Tình trạng, Nội dung, Lỗi, Vấn đề, Nguyên nhân..."*
-2. **Dual-Scan:** Nếu Google Sheets bị lỗi định dạng khiến dòng tiêu đề bị đẩy xuống thành dòng dữ liệu đầu tiên, hệ thống vẫn sẽ tự động quét xuống dòng dữ liệu để tìm ra đúng cột cần lấy.
-
----
-
-## 5. Xử Lý Sự Cố (Troubleshooting)
-
-**1. Bảng dữ liệu trống trơn ở một số cột (ví dụ: Chi tiết lỗi bị trống)**
-- Nguyên nhân 1: Dữ liệu bị lưu Cache. -> **Cách sửa:** Quay về tab Nhập Dữ Liệu và bấm lại nút **"Xử Lý Dữ Liệu"**.
-- Nguyên nhân 2: Tên cột trong Google Sheets của bạn không chứa bất kỳ từ khóa nào mà hệ thống nhận diện được. -> **Cách sửa:** Đổi tên cột trong Google Sheets thành "Chi tiết lỗi" hoặc "Ghi chú".
-
-**2. Toàn bộ đơn hàng đều bị gán nhãn "Khác"**
-- Kéo xuống cuối trang Báo cáo và xem **Bảng Gỡ Lỗi (Debug Log)**. Nếu phần "Số lượng từ khóa đọc được" là **0 từ**, nghĩa là file Keyword của bạn đang trống hoặc bạn dán nhầm link Data vào ô Keyword.
-- **Cách sửa:** Lấy đúng link của sheet Keyword và tải lại, sau đó bấm "Xử Lý Dữ Liệu".
-
-**3. Web bị treo "Đang xử lý dữ liệu..."**
-- Do lỗi kết nối mạng khiến việc lấy dữ liệu từ Google Sheets bị Timeout (vượt quá 15s).
-- **Cách sửa:** Nhấn F5 để tải lại trang web và thử lại. Công cụ có bộ nhớ đệm (Persistent Session) nên bạn sẽ không bị mất các link đã nhập.
+## 9. Xử Lý Sự Cố
+| Vấn đề | Giải pháp |
+|--------|----------|
+| Timeout 15s khi tải API | Thử lại hoặc kiểm tra kết nối |
+| Session hết hạn | Đăng nhập lại (tự động sau 24h) |
+| Dữ liệu cũ | Bật auto-sync hoặc reload trang |
+| Biểu đồ trống | Kiểm tra bộ lọc + chờ pickup data tải xong |
+| Debug đơn hàng | F12 → Console → gõ debugOrder('MÃ_ĐƠN') |

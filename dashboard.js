@@ -1,4 +1,4 @@
-// Global state
+﻿// Global state
 const AppState = {
     dbData: [],
     kwData: [],
@@ -1698,13 +1698,14 @@ function createChart(id, type, data, options = {}) {
     if (type === 'bar' || type === 'line') {
         const cs = options.scales || {};
         baseOptions.scales = {
-            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { callback: v => v.toLocaleString() }, ...(cs.y || {}) },
+            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { callback: function(v) { var lbl = this.getLabelForValue(v); return (lbl != null && isNaN(lbl)) ? lbl : Number(v).toLocaleString(); } }, ...(cs.y || {}) },
             x: { grid: { display: false }, ...(cs.x || {}) }
         };
         if (cs.y1) baseOptions.scales.y1 = cs.y1;
         if (options.indexAxis === 'y') {
             baseOptions.indexAxis = 'y';
             baseOptions.scales.x.grid = { color: 'rgba(255,255,255,0.05)' };
+            baseOptions.scales.x.ticks = { callback: function(v) { return Number(v).toLocaleString(); } };
             baseOptions.scales.y.grid = { display: false };
         }
     }

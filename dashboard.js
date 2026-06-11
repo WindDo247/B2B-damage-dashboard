@@ -1698,7 +1698,7 @@ function createChart(id, type, data, options = {}) {
     if (type === 'bar' || type === 'line') {
         const cs = options.scales || {};
         baseOptions.scales = {
-            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ...(cs.y || {}) },
+            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { callback: v => v.toLocaleString() }, ...(cs.y || {}) },
             x: { grid: { display: false }, ...(cs.x || {}) }
         };
         if (cs.y1) baseOptions.scales.y1 = cs.y1;
@@ -1736,19 +1736,19 @@ function createChart(id, type, data, options = {}) {
             clip: false,
             formatter: (value, ctx) => {
                 if (value === 0) return '';
-                if (options.forceAbsolute) return value;
+                if (options.forceAbsolute) return value.toLocaleString();
                 if (options.forceRate) return value + '%';
                 
                 const label = ctx.chart.data.labels[ctx.dataIndex];
                 const pMap = options._pickupMap || null;
                 if (pMap && label) {
                     const pickup = pMap[label] || 0;
-                    if (pickup > 0) { return value + '\n(' + ((value / pickup) * 100).toFixed(1) + '%)'; }
+                    if (pickup > 0) { return value.toLocaleString() + '\n(' + ((value / pickup) * 100).toFixed(1) + '%)'; }
                 }
                 let sum = 0;
                 ctx.chart.data.datasets[0].data.forEach(d => { sum += parseFloat(d); });
-                if (sum === 0) return value;
-                return value + '\n(' + (value * 100 / sum).toFixed(1) + '%)';
+                if (sum === 0) return value.toLocaleString();
+                return value.toLocaleString() + '\n(' + (value * 100 / sum).toFixed(1) + '%)';
             }
         };
         if (type === 'line') {

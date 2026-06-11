@@ -1,4 +1,4 @@
-﻿// Global state
+// Global state
 const AppState = {
     dbData: [],
     kwData: [],
@@ -1717,7 +1717,10 @@ function createChart(id, type, data, options = {}) {
                 let sum = 0;
                 ctx.chart.data.datasets[0].data.forEach(d => { sum += parseFloat(d); });
                 if (sum === 0) return value;
-                return value + '\n(' + (value * 100 / sum).toFixed(1) + '%)';
+                const pct = (value * 100 / sum);
+                // An label cho segments nho (< 5%) tren doughnut/pie
+                if ((ctx.chart.config.type === 'doughnut' || ctx.chart.config.type === 'pie') && pct < 5) return '';
+                return value + '\n(' + pct.toFixed(1) + '%)';
             }
         };
         if (type === 'line') {
